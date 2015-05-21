@@ -4,7 +4,7 @@
 #include "math_util.h"
 #include "camera.h"
 
-#include "UnitTest++/UnitTest++.h"
+#include "unittest++/UnitTest++.h"
 
 TEST(quad)
 {

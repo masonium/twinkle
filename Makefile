@@ -1,16 +1,14 @@
-SFLAGS = -Wall -fsyntax-only -std=c++0x -I/home/mason/include
+SFLAGS = -Wall -fsyntax-only -std=c++0x
 SRCS = $(wildcard lib/*.cpp)
 OBJSTMP = $(SRCS:.cpp=.o)
 OBJS = $(OBJSTMP:lib/%=obj/%)
 
 EXES = twinkle test_twinkle
 
-LFLAGS =  -pthread -lm  -I/home/mason/include -L/home/mason/lib -lUnitTest++ -Ilib/
+LFLAGS =  -pthread -lm  -lUnitTest++ -Ilib/
 CXXFLAGS = -Wall -std=c++0x -g
 
-.PHONY: test
-
-all: $(EXES)
+all: twinkle
 
 obj:
 	mkdir -p obj
