@@ -8,10 +8,7 @@ void BWIntegrator::render(Camera* cam, Scene* scene, Film* film)
     {
       Ray r = cam->sample_pixel_ray(film, x, y);
       Intersection isect = scene->intersect(r);
-      if (isect.valid())
-        (*film)(x, y) = static_cast<spectrum>(1);
-      else
-        (*film)(x, y) = static_cast<spectrum>(0);
+      film->add_sample(x, y, spectrum{scalar(isect.valid() ? 1.0 : 0.0)});
     }
   }
 }

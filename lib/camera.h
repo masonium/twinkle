@@ -3,50 +3,11 @@
 #include <vector>
 #include <iostream>
 #include "math_util.h"
+#include "spectrum.h"
+#include "film.h"
 
 using std::vector;
 using std::ostream;
-typedef scalar spectrum;
-
-class Film
-{
-public:  
-  Film(uint w_, uint h_) : width(w_), height(h_), plate(w_ * h_)
-  {
-    
-  }
-
-  spectrum& operator()(uint x, uint y)
-  {
-    return at(x, y);
-  }
-  spectrum operator()(uint x, uint y) const
-  {
-    return at(x, y);
-  }
-  
-  spectrum& at(uint x, uint y)
-  {
-    return plate[index(x, y)];
-  }
-  
-  spectrum at(uint x, uint y) const
-  {
-    return plate[index(x, y)];
-  }
-
-  void render(ostream& out);
-  
-  const uint width, height;
-  
-private:
-  uint index(uint x, uint y) const 
-  {
-    return y * width + x;
-  }
-  
-  vector<spectrum> plate;
-};
 
 class Camera
 {

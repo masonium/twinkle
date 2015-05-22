@@ -1,24 +1,6 @@
 #include "camera.h"
 
-void Film::render(ostream& out)
-{
-  for (int y = height - 1; y >= 0; --y)
-  {
-    for (uint x = 0; x < width; ++x)
-    {
-      spectrum s = at(x, y);
-      if (s > 0.5)
-        out << '*';
-      else if (s > 0.25)
-        out << '.';
-      else
-        out << ' ';
-    }
-    out << '\n';
-  }
-}
 
-////////////////////////////////////////////////////////////////////////////////
 Camera::Camera(Vec3 pos, Vec3 lookat_, Vec3 up_,
                scalar fov_, scalar aspect_) :
   position(pos), aspect(aspect_)

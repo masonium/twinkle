@@ -1,3 +1,7 @@
+# Used for debugging makefile
+#OLD_SHELL := $(SHELL)
+#SHELL = $(warning Building $@$(if $<, (from $<))%(if $?, ($? newer)))$(OLD_SHELL)
+
 SFLAGS = -Wall -fsyntax-only -std=c++0x
 SRCS = $(wildcard lib/*.cpp)
 OBJSTMP = $(SRCS:.cpp=.o)
@@ -8,12 +12,10 @@ EXES = twinkle test_twinkle
 LFLAGS =  -pthread -lm  -lUnitTest++ -Ilib/
 CXXFLAGS = -Wall -std=c++0x -g
 
+
 all: twinkle
 
-obj:
-	mkdir -p obj
-
-obj/%.o: lib/%.cpp obj
+obj/%.o: lib/%.cpp
 	g++ -c -o $@ $< $(CXXFLAGS) $(LFLAGS)
 
 twinkle: $(OBJS) main.cpp
@@ -26,7 +28,7 @@ test: test_twinkle
 	./test_twinkle
 
 clean:
-	rm -rf $(EXES) obj
+	rm -rf $(EXES) $(OBJS)
 
 check-syntax:
 	$(CXX) $(SFLAGS) $(CHK_SOURCES)

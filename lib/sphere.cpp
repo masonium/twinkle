@@ -1,5 +1,7 @@
 #include "sphere.h"
 
+using std::move;
+
 scalar Sphere::intersect(const Ray& r) const
 {
   const Vec3 to = r.position - position;
@@ -14,4 +16,13 @@ scalar Sphere::intersect(const Ray& r) const
 Vec3 Sphere::normal(Vec3 point) const
 {
   return (point - position).normal();
+}
+
+Vec3&& Sphere::sample_shadow_ray_dir(const Intersection& isect,
+                             scalar r1, scalar r2) const
+{
+  scalar theta = 2 * PI * r1;
+  scalar phi = 2 * asin(sqrt(r2));
+  
+  return move(Vec3::from_euler(theta, phi) * radius + position - isect.position);
 }
