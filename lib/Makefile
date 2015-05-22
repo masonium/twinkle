@@ -1,0 +1,3 @@
+twinkle:
+	cd .. && make twinkle
+

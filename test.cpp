@@ -6,6 +6,58 @@
 
 #include "unittest++/UnitTest++.h"
 
+class VecFixture
+{
+public:
+  VecFixture() : x{0.0, 1.0, 2.0}, y{1.0}, z{} {}
+
+  Vec3 x, y, z;
+};
+
+TEST_FIXTURE(VecFixture, Vec3_add)
+{
+  CHECK_ARRAY_CLOSE((x+y).v, Vec3(1.0, 2.0, 3.0).v, 3, 0.0001);
+  CHECK_ARRAY_CLOSE((x+z).v, Vec3(0.0, 1.0, 2.0).v, 3, 0.0001);
+}
+
+TEST_FIXTURE(VecFixture, Vec3_sub)
+{
+  CHECK_ARRAY_CLOSE((x-y).v, Vec3(-1.0, 0.0, 1.0).v, 3, 0.0001);
+  CHECK_ARRAY_CLOSE((x-z).v, Vec3(0.0, 1.0, 2.0).v, 3, 0.0001);
+}
+
+TEST_FIXTURE(VecFixture, Vec3_scalar_mult)
+{
+  CHECK_ARRAY_CLOSE( (x * 2.0).v, Vec3(0.0, 2.0, 4.0).v, 3, 0.00001);
+}
+
+TEST_FIXTURE(VecFixture, Vec3_scalar_div)
+{
+  CHECK_ARRAY_CLOSE( (x / 2.0).v, Vec3(0.0, 0.5, 1.0).v, 3, 0.00001);
+}
+
+TEST(Vec_assign)
+{
+  Vec3 x{2.0, 4.0, 5.0};
+  Vec3 y = x;
+  CHECK_ARRAY_CLOSE(x.v, y.v, 3, 0.00001);
+}
+
+TEST(Vec_ref)
+{
+  Vec3 x{2.0, 4.0, 5.0};
+  Vec3& y = x;
+  CHECK_ARRAY_CLOSE(x.v, y.v, 3, 0.00001);
+}
+
+TEST(Vec_rval)
+{
+  Vec3 x{2.0, 4.0, 5.0};
+  Vec3 y = x;
+  Vec3 z = move(x);
+  CHECK_ARRAY_CLOSE(y.v, z.v, 3, 0.00001);
+}
+
 TEST(quad)
 {
   CHECK_CLOSE(qf(1.0, -6.0f, 9.0f), 3.0, 0.000001);
@@ -18,7 +70,7 @@ class SingleSphereFixture
 public:
   SingleSphereFixture() : d{1.0}, sphere{Vec3{0.0, 0.0, 0.0}, 1.0},
     ray{Vec3{5.0, 0.0, 0.0}, Vec3{-2.0, 0.0, 0.0}},
-    shape{&sphere, &d}
+    shape{&sphere, &d, new SolidColor(spectrum{1.0})}
   {
     scene.add_shape(&shape);
   }
@@ -70,8 +122,13 @@ TEST(Camera)
 {
   Camera cam {Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0, 1.0};
 
+  const Vec3 pos = cam.position;
   const Vec3 fn = cam.aspect_forward.normal();
   const Vec3 up = cam.up;
+  
+  CHECK_ARRAY_CLOSE(Vec3(0, 0, 5).v, pos.v, 3, 0.00001);
+  CHECK_ARRAY_CLOSE(Vec3(0, 0, 5).v, cam.position.v, 3, 0.00001);
+  
   CHECK_ARRAY_CLOSE(Vec3(0, 0, -1).v, fn.v, 3, 0.00001);
   CHECK_ARRAY_CLOSE(Vec3(0, 1, 0).v, up.v, 3, 0.00001);
   CHECK_ARRAY_CLOSE(Vec3(1, 0, 0).v, cam.right.v, 3, 0.00001);

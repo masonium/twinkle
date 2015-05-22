@@ -3,3 +3,5 @@ twinkle
 test_twinkle
 *~
 *.o
+*.ppm
+*.png
