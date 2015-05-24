@@ -18,7 +18,7 @@ Vec3 Sphere::normal(Vec3 point) const
   return (point - position).normal();
 }
 
-Vec3&& Sphere::sample_shadow_ray_dir(const Intersection& isect,
+Vec3 Sphere::sample_shadow_ray_dir(const Intersection& isect,
                              scalar r1, scalar r2) const
 {
   scalar theta = 2 * PI * r1;

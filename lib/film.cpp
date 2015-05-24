@@ -33,9 +33,12 @@ void Film::render_to_ppm(ostream& out, ImageSampleFilter* filter, ToneMapper* ma
   mapper->tonemap(comb, final, width, height);
   out << "P3 " << width << " " << height << " 255\n";
 
+  int i = 0;
   for (auto& c: final)
   {
     out << int(c.x * 255) << " " << int(c.y * 255) << " " << int(c.z * 255) << " ";
+    if (++i % height == 0)
+      out << "\n";
   }
   
 }

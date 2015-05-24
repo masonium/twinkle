@@ -36,9 +36,9 @@ public:
     spectrum a = *this;
     return (a *= r); 
   }
-  spectrum&& clamp(scalar m, scalar M) const
+  spectrum clamp(scalar m, scalar M) const
   {
-    return move(spectrum{max(m, min(x, M)), max(m, min(y, M)), max(m, min(z, M))});
+    return spectrum{max(m, min(x, M)), max(m, min(y, M)), max(m, min(z, M))};
   }
 };
 

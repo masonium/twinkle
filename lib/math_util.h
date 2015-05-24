@@ -27,8 +27,6 @@ public:
   VectorT3(VectorT3<vec_type>& a) : x(a.x), y(a.y), z(a.z)
   {
   }
-  VectorT3(VectorT3<vec_type>&& a) = default;
-  VectorT3& operator=(VectorT3<vec_type>&& a) = default;
   
   union 
   {
@@ -70,9 +68,9 @@ public:
     return static_cast<vec_type>(a -= r); 
   }
 
-  vec_type&& operator-() const
+  vec_type operator-() const
   {
-    return move(vec_type(-x, -y, -z));
+    return vec_type(-x, -y, -z);
   }
   
   vec_type& operator*=(scalar a)
@@ -127,10 +125,10 @@ public:
   Vec3(scalar x, scalar y, scalar z) : VectorT3<Vec3>(x, y, z) { }
   Vec3(VectorT3<Vec3>& s) : VectorT3<Vec3>(s) { }
   
-  Vec3&& normal() const
+  Vec3 normal() const
   {
     scalar len = norm();
-    return std::move(Vec3(x / len, y / len, z / len));
+    return Vec3(x / len, y / len, z / len);
   }
 
   Vec3 cross(const Vec3& other) const
@@ -171,7 +169,7 @@ public:
     return *this;
   }
 
-  Ray nudge(scalar eps = 0.00001) const;
+  Ray nudge(scalar eps = 0.001) const;
   
   Vec3 position, direction;
 };

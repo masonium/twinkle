@@ -13,16 +13,16 @@ public:
   virtual scalar intersect(const Ray& r) const = 0;
   virtual scalar shadow_intersect(const Ray& r) const = 0;
   virtual Vec3 normal(Vec3 point) const = 0;
-  virtual Vec3&& sample_shadow_ray_dir(const Intersection& isect,
-                                       scalar r1, scalar r2) const = 0;
+  virtual Vec3 sample_shadow_ray_dir(const Intersection& isect,
+                                     scalar r1, scalar r2) const = 0;
 };
 
 class PossibleEmissive
 {
 public:
   virtual spectrum emission() const = 0;
-  virtual Vec3&& sample_shadow_ray_dir(const Intersection& isect,
-                                  scalar r1, scalar r2) const = 0;
+  virtual Vec3 sample_shadow_ray_dir(const Intersection& isect,
+                                     scalar r1, scalar r2) const = 0;
 };
 
 class Shape : public PossibleEmissive
@@ -52,7 +52,7 @@ public:
     return brdf->emission();
   }
 
-  Vec3&& sample_shadow_ray_dir(const Intersection& isect, scalar r1, scalar r2) const
+  Vec3 sample_shadow_ray_dir(const Intersection& isect, scalar r1, scalar r2) const
   {
     return geometry->sample_shadow_ray_dir(isect, r1, r2);
   }

@@ -25,7 +25,7 @@ PossibleEmissive const* Scene::sample_emissive(scalar r1, scalar* light_prob) co
   return lights[min(max_light_idx, decltype(max_light_idx)(r1 * lights.size()))];
 }
 
-Intersection&& Scene::intersect(const Ray& ray) const
+Intersection Scene::intersect(const Ray& ray) const
 {
   Shape const* best_shape = nullptr;
   scalar best_t = numeric_limits<double>::max();
@@ -40,11 +40,11 @@ Intersection&& Scene::intersect(const Ray& ray) const
     }
   }
   if (best_shape != nullptr)
-    return move(Intersection(best_shape, ray, best_t));
-  return move(Intersection(nullptr, ray, -1));
+    return Intersection(best_shape, ray, best_t);
+  return Intersection(nullptr, ray, -1);
 }
 
-Intersection&& Scene::shadow_intersect(const Ray& ray) const
+Intersection Scene::shadow_intersect(const Ray& ray) const
 {
   Shape const* best_shape = nullptr;
   scalar best_t = numeric_limits<double>::max();
@@ -59,6 +59,6 @@ Intersection&& Scene::shadow_intersect(const Ray& ray) const
     }
   }
   if (best_shape != nullptr)
-    return move(Intersection(best_shape, ray, best_t));
-  return move(Intersection(nullptr, ray, -1));
+    return Intersection(best_shape, ray, best_t);
+  return Intersection(nullptr, ray, -1);
 }

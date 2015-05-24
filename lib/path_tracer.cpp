@@ -1,7 +1,7 @@
 #include "integrator.h"
 
 PathTracerIntegrator::PathTracerIntegrator()
-  : randr(0.0, 1.0), samples_per_pixel(1), russian_roulette(true), max_depth(10)
+  : randr(0.0, 1.0), samples_per_pixel(16), russian_roulette(true), max_depth(10)
 {
   
 }
@@ -47,7 +47,7 @@ spectrum PathTracerIntegrator::trace_ray(Scene* scene, const Ray& ray)
     Ray shadow_ray{ isect.position, shadow_ray_dir.normal() };
     scalar ca = isect.shape->brdf->reflectance( shadow_ray.direction,
                                                 -ray_dir_normal, isect.normal );
-    total += trace_shadow_ray( scene, em, shadow_ray.nudge() ) * spectrum{NL * ca / light_prob};
+    total += trace_shadow_ray( scene, em, shadow_ray.nudge(0.0005) ) * spectrum{NL * ca / light_prob};
   }
 
   return total * isect.texture_at_point();

@@ -15,15 +15,15 @@ int main(int argc, char** args)
 
   BRDF* light = new EmissiveBRDF{spectrum{4.0}};
   
-  scene.add_shape( new Shape( new Sphere{ Vec3{-1.0, -1.0, 0.5}, 0.5},
-                              light,
-                              new SolidColor(spectrum{1.0})) );
+  // scene.add_shape( new Shape( new Sphere{ Vec3{-1.0, -1.0, 0.5}, 0.5},
+  //                             light,
+  //                             new SolidColor(spectrum{1.0})) );
   
   scene.add_shape( new Shape( new Sphere{ Vec3{2.0, -1.0, 0.0}, 1.0},
                               b,
                               new SolidColor(spectrum{1.0, 0.2, 0.3})) );
   
-  scene.add_shape( new Shape( new Sphere{ Vec3{1.0, 1.0, 0.5}, 0.5},
+  scene.add_shape( new Shape( new Sphere{ Vec3{1.0, 1.0, 0.5}, 0.05},
                               light,
                               new SolidColor(spectrum{1.0})) );
   
@@ -33,7 +33,7 @@ int main(int argc, char** args)
   
   scene.add_shape( new Shape( new Sphere{ Vec3{0.0, -1000.0, 0.0}, 998.0},
                               b,
-                              new SolidColor(spectrum{0.1, 0.05, 1.0})) );
+                              new SolidColor(spectrum{0.0, 0.0, 1.0})) );
 
   const uint WIDTH = 800;
   const uint HEIGHT = 600;
