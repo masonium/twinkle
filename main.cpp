@@ -45,7 +45,7 @@ int main(int argc, char** args)
 
   igr.render(&cam, &scene, &f);
   //f.render_to_console(cout);
-  f.render_to_ppm(cout, new BoxFilter, new CutoffToneMapper);
+  f.render_to_ppm(cout, new BoxFilter, new LinearToneMapper);
   
   return 0;
 }

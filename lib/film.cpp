@@ -72,7 +72,7 @@ spectrum BoxFilter::combine_samples(const vector<spectrum>& samples) const
   for (auto a: samples)
     res += a;
 
-  auto r = res / scalar(samples.size());
+  auto r = res / spectrum(samples.size());
   return r;
 }
 
@@ -82,4 +82,15 @@ void CutoffToneMapper::tonemap(const vector<spectrum>& input, vector<spectrum>& 
 {
   transform(input.begin(), input.end(), std::back_inserter(output),
             [](const spectrum& s) { return s.clamp(0.0, 1.0); });
+}
+
+void LinearToneMapper::tonemap(const vector<spectrum>& input, vector<spectrum>& output,
+                               uint w, uint h) const
+{
+  spectrum M = accumulate(input.begin(), input.end(),  spectrum::one, spectrum::max);
+  scalar cM = max(max(M.x, M.y), M.z);
+
+
+  transform(input.begin(), input.end(), std::back_inserter(output),
+            [&](const spectrum& s) { return s / spectrum{cM}; });
 }

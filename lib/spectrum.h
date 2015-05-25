@@ -36,10 +36,26 @@ public:
     spectrum a = *this;
     return (a *= r); 
   }
+
+  spectrum& operator/=(const spectrum& r)
+  {
+    this->x /= r.x;
+    this->y /= r.y;
+    this->z /= r.z;
+    return *this;
+  }
+  spectrum operator/(const spectrum& r) const
+  {
+    spectrum a = *this;
+    return (a /= r); 
+  }
+
   spectrum clamp(scalar m, scalar M) const
   {
-    return spectrum{max(m, min(x, M)), max(m, min(y, M)), max(m, min(z, M))};
+    return spectrum{::max(m, ::min(x, M)), ::max(m, ::min(y, M)), ::max(m, ::min(z, M))};
   }
+
+  static spectrum max(const spectrum &a, const spectrum& b);
 
   static const spectrum one;
   static const spectrum zero;

@@ -35,6 +35,13 @@ public:
                uint w, uint h) const override;
 };
 
+class LinearToneMapper : public ToneMapper
+{
+public:
+  void tonemap(const vector<spectrum>& input, vector<spectrum>& output,
+               uint w, uint h) const override;
+};
+
 class Film
 {
 public:  
