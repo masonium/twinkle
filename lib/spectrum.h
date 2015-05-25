@@ -40,9 +40,9 @@ public:
   {
     return spectrum{max(m, min(x, M)), max(m, min(y, M)), max(m, min(z, M))};
   }
+
+  static const spectrum one;
+  static const spectrum zero;
 };
 
 ostream&  operator<<(ostream& out, spectrum s);
-  
-const spectrum spectrum_zero{0.0};
-const spectrum spectrum_one{1.0};

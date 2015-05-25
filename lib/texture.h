@@ -11,7 +11,7 @@ public:
 class SolidColor : public Texture
 {
 public:
-  SolidColor(spectrum x = spectrum_zero) : color(x) {}
+  SolidColor(spectrum x = spectrum::zero) : color(x) {}
 
   spectrum at_point(const Vec3& pos) const override
   {

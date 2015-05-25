@@ -27,7 +27,7 @@ spectrum PathTracerIntegrator::trace_ray(Scene* scene, const Ray& ray, int depth
 {
   Intersection isect = scene->intersect(ray);
   if (!isect.valid())
-    return spectrum_zero;
+    return spectrum::zero;
   if (isect.shape->is_emissive())
     return isect.shape->emission() * isect.texture_at_point();
   
@@ -95,5 +95,5 @@ spectrum PathTracerIntegrator::trace_shadow_ray(Scene* scene, PossibleEmissive c
   if (isect.valid() && isect.shape == em)
     return em->emission();
   else 
-    return spectrum_zero;
+    return spectrum::zero;
 }

@@ -67,7 +67,7 @@ void Film::render_to_console(ostream& out)
 spectrum BoxFilter::combine_samples(const vector<spectrum>& samples) const
 {
   if (samples.empty())
-    return spectrum_zero;
+    return spectrum::zero;
   spectrum res{0};
   for (auto a: samples)
     res += a;

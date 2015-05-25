@@ -17,7 +17,7 @@ public:
   }
   virtual spectrum emission() const
   {
-    return spectrum_zero;
+    return spectrum::zero;
   }
 };
 
