@@ -38,5 +38,6 @@ private:
   
   uint samples_per_pixel;
   bool russian_roulette;
+  scalar rr_kill_prob;
   uint max_depth;
 };
