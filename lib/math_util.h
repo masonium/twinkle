@@ -146,9 +146,19 @@ public:
   {
     return res * (this->dot(res) / (res.dot(res)));
   }
-};
+  
+  Vec3 rotateMatch(const Vec3& from, const Vec3& to) const;
 
-const Vec3 vec_zero{0.0};
+  Vec3 rotateAxisAngle(const Vec3& axis, scalar angle) const;
+
+  static Vec3 x_axis;
+  static Vec3 y_axis;
+  static Vec3 z_axis;
+  static Vec3 zero;
+
+private:
+  Vec3 _rotateAxisAngle(const Vec3& axis, scalar cos_angle, scalar sin_angle) const;
+};
 
 class Ray
 {

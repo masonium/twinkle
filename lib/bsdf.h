@@ -10,7 +10,7 @@ public:
                              const Vec3& normal) const = 0;
 
   virtual Vec3 sample(const Vec3& incoming, const Vec3& normal,
-                      scalar r1, scalar r2) const = 0;
+                      scalar r1, scalar r2, scalar& p) const = 0;
   virtual bool is_emissive() const
   {
     return false;
@@ -37,7 +37,7 @@ public:
   }
 
   Vec3 sample(const Vec3& incoming, const Vec3& normal,
-              scalar r1, scalar r2) const = 0;
+              scalar r1, scalar r2, scalar& p) const override;
 
   scalar r;
 };
@@ -56,9 +56,10 @@ public:
   }
 
   Vec3 sample(const Vec3& incoming, const Vec3& normal,
-              scalar r1, scalar r2) const override
+              scalar r1, scalar r2, scalar& p) const override
   {
-    return vec_zero;
+    p = 0;
+    return Vec3::zero;
   }
 
   bool is_emissive() const override
