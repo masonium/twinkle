@@ -33,6 +33,8 @@ private:
   spectrum trace_ray(Scene* scene, const Ray& r, int depth);
   spectrum trace_shadow_ray(Scene* scene, PossibleEmissive const* em, const Ray& r);
 
+  spectrum environmental_lighting(const Vec3& ray_dir) const;
+
   unique_ptr<UniformSampler> sampler;  
   uint samples_per_pixel;
   bool russian_roulette;

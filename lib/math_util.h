@@ -179,7 +179,7 @@ public:
     return *this;
   }
 
-  Ray nudge(scalar eps = 0.001) const;
+  Ray nudge(scalar eps = SURFACE_EPSILON) const;
   
   Vec3 position, direction;
 };

@@ -10,7 +10,12 @@ scalar Sphere::intersect(const Ray& r) const
   const scalar b = 2.0 * r.direction.dot(to);
   const scalar c = to.norm2() - radius2;
 
-  return qf(a, b, c);
+  scalar res = qf(a, b, c);
+
+  if (res > -0.0001)
+    return max<scalar>(res, 0.0001);
+  else
+    return res;
 }
 
 Vec3 Sphere::normal(Vec3 point) const

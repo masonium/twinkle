@@ -10,7 +10,7 @@ public:
                              const Vec3& normal) const = 0;
 
   virtual Vec3 sample(const Vec3& incoming, const Vec3& normal,
-                      scalar r1, scalar r2, scalar& p) const = 0;
+                      scalar r1, scalar r2, scalar& p, scalar& reflectance) const = 0;
   virtual bool is_emissive() const
   {
     return false;
@@ -24,7 +24,7 @@ public:
 class Diffuse : public BRDF
 {
 public:
-  explicit Diffuse( scalar r_ ) : r(r_ / PI)
+  explicit Diffuse( scalar r_ ) : r(r_ / (2.0 * PI))
   {
   }
 
@@ -37,7 +37,7 @@ public:
   }
 
   Vec3 sample(const Vec3& incoming, const Vec3& normal,
-              scalar r1, scalar r2, scalar& p) const override;
+              scalar r1, scalar r2, scalar& p, scalar& reflectance) const override;
 
   scalar r;
 };
@@ -56,9 +56,10 @@ public:
   }
 
   Vec3 sample(const Vec3& incoming, const Vec3& normal,
-              scalar r1, scalar r2, scalar& p) const override
+              scalar r1, scalar r2, scalar& p, scalar& reflectance) const override
   {
     p = 0;
+    reflectance = 0;
     return Vec3::zero;
   }
 
@@ -73,4 +74,28 @@ public:
 
 private:
   spectrum em;
+};
+
+
+class PerfectMirrorBRDF : public BRDF
+{
+public:
+  explicit PerfectMirrorBRDF( )
+  {
+  }
+
+  scalar reflectance(const Vec3& incoming, const Vec3& outgoing,
+                     const Vec3& normal) const override
+  {
+    return 0.0;
+  }
+
+  Vec3 sample(const Vec3& incoming, const Vec3& normal,
+              scalar r1, scalar r2, scalar& p, scalar& reflectance) const override
+  {
+    p = 1.0;
+    reflectance = 1.0;
+    Vec3 proj = incoming.projectOnto(normal);
+    return proj * 2.0 - incoming;
+  }
 };

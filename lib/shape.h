@@ -81,9 +81,10 @@ public:
     return shape->texture->at_point(position);
   }
 
-  Vec3 sample_brdf(const Vec3& incoming, scalar r1, scalar r2, scalar& p) const
+  Vec3 sample_brdf(const Vec3& incoming, scalar r1, scalar r2, 
+                   scalar& p, scalar& reflectance) const
   {
-    return shape->brdf->sample(incoming, normal, r1, r2, p);
+    return shape->brdf->sample(incoming, normal, r1, r2, p, reflectance);
   }
   
   const Shape* shape;

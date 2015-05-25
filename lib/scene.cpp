@@ -16,10 +16,15 @@ void Scene::add_shape(Shape* shape)
     lights.push_back(shape);
 }
 
-PossibleEmissive const* Scene::sample_emissive(scalar r1, scalar* light_prob) const
+PossibleEmissive const* Scene::sample_emissive(scalar r1, scalar& light_prob) const
 {
-  if (light_prob != nullptr)
-    *light_prob = scalar{1.0} / lights.size();
+  if (lights.size() == 0)
+  {
+    light_prob = 0.0;
+    return nullptr;
+  }
+
+  light_prob = scalar{1.0} / lights.size();
 
   auto max_light_idx = lights.size() - 1;
   return lights[min(max_light_idx, decltype(max_light_idx)(r1 * lights.size()))];
