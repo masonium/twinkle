@@ -80,9 +80,10 @@ spectrum PathTracerIntegrator::trace_ray(Scene* scene, const Ray& ray, int depth
     scalar brdf_p = 0;
     auto brdf_u = sampler->sample_2d();
     Vec3 brdf_dir = isect.sample_brdf(ray_dir_normal, brdf_u.u[0], brdf_u.u[1], brdf_p);
+    scalar ca = isect.shape->brdf->reflectance( brdf_dir, ray_dir_normal, isect.normal );
     if (brdf_p > 0)
       total += trace_ray( scene, Ray{isect.position, brdf_dir}.nudge(), depth + 1 ) * 
-        spectrum{p_mult / brdf_p};
+        spectrum{p_mult * brdf_dir.dot(isect.normal) * ca / brdf_p};
   }
 
   return total * isect.texture_at_point();
