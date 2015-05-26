@@ -92,5 +92,5 @@ void LinearToneMapper::tonemap(const vector<spectrum>& input, vector<spectrum>& 
 
 
   transform(input.begin(), input.end(), std::back_inserter(output),
-            [&](const spectrum& s) { return s / spectrum{cM}; });
+            [&](const spectrum& s) { return s / cM; });
 }

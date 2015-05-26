@@ -33,6 +33,13 @@ public:
     this->z *= r.z;
     return *this;
   }
+
+  using VectorT3<spectrum>::operator*;
+  using VectorT3<spectrum>::operator*=;
+
+  using VectorT3<spectrum>::operator/;
+  using VectorT3<spectrum>::operator/=;
+
   spectrum operator*(const spectrum& r) const
   {
     spectrum a = *this;
