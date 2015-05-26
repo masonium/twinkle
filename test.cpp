@@ -4,6 +4,7 @@
 #include "math_util.h"
 #include "camera.h"
 #include "sampler.h"
+#include "spectrum.h"
 
 #include "unittest++/UnitTest++.h"
 
@@ -120,6 +121,15 @@ TEST(Vec_rval)
   CHECK_ARRAY_CLOSE(y.v, z.v, 3, PRECISE_EPS);
 }
 
+TEST(spectrum_hsv)
+{
+spectrum red{1.0, 0.0, 0.0};
+CHECK_ARRAY_CLOSE(red.v, spectrum::from_hsv(0.0, 1.0, 1.0).v, 3, EPS);
+spectrum yellow{1.0, 1.0, 0.0};
+CHECK_ARRAY_CLOSE(yellow.v, spectrum::from_hsv(60.0, 1.0, 1.0).v, 3, EPS);
+
+}
+
 TEST(halton_1d_base2)
 {
   HaltonSampler samp;
@@ -211,7 +221,7 @@ TEST(SinglePixelCamera)
 {
   Camera cam {Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0, 1.0};
   Film f(1, 1);
-  Ray r = cam.sample_pixel_ray(&f, 0, 0);
+  Ray r = cam.sample_pixel_ray(&f, 0, 0, 0.5, 0.5);
   r.normalize();
   CHECK_CLOSE(1.0, r.direction.norm(), PRECISE_EPS);
   CHECK_ARRAY_CLOSE(Vec3(0.0, 0.0, -1.0).v, r.direction.v, 3, PRECISE_EPS);
@@ -221,9 +231,9 @@ TEST(TwoPixelCamera)
 {
   Camera cam {Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0, 1.0};
   Film f(2, 2);
-  Ray r1 = cam.sample_pixel_ray(&f, 0, 0);
-  Ray r2 = cam.sample_pixel_ray(&f, 0, 1);
-  Ray r3 = cam.sample_pixel_ray(&f, 1, 0);  
+  Ray r1 = cam.sample_pixel_ray(&f, 0, 0, 0.5, 0.5);
+  Ray r2 = cam.sample_pixel_ray(&f, 0, 1, 0.5, 0.5);
+  Ray r3 = cam.sample_pixel_ray(&f, 1, 0, 0.5, 0.5);  
   r1.normalize();
   r2.normalize();
   r3.normalize();

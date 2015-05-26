@@ -11,6 +11,10 @@ template <int n>
 struct Sample
 {
   scalar u[n];
+  scalar operator[](int i) const
+  {
+    return u[i];
+  }
 };
 
 typedef Sample<2> Sample2D;
