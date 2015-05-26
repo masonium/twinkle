@@ -38,36 +38,48 @@ int main(int argc, char** args)
   Scene scene;
   BRDF* b = new Diffuse{1.0};
 
-  BRDF* light = new EmissiveBRDF{spectrum{4.0}};
+  BRDF* light = new EmissiveBRDF{spectrum{2.0}};
   BRDF* mirror = new PerfectMirrorBRDF{};
 
   //smallpt_scene(scene);
   
-  scene.add_shape( new Shape( new Sphere{ Vec3{-2.0, -1.0, 0.0}, 1.0},
+  scene.add_shape( new Shape( new Sphere{ Vec3{0.0, -1.0, 0.0}, 1.0},
                               mirror,
                               new SolidColor(spectrum{1.0})) );
   
-  scene.add_shape( new Shape( new Sphere{ Vec3{2.0, -1.0, 0.0}, 1.0},
-                              b,
-                              new SolidColor(spectrum{1.0, 0.2, 0.3})) );
-  
-  scene.add_shape( new Shape( new Sphere{ Vec3{-2.0, 1.0, 0.0}, 1.0},
-                              b,
-                              new SolidColor(spectrum{0.2, 1.0, 0.3})) );
+  // scene.add_shape( new Shape( new Sphere{ Vec3{2.0, -1.0, 0.0}, 1.0},
+  //                             b,
+  //                             new SolidColor(spectrum::from_hsv(0.0, 1.0, 0.8))) );
+
+  for (int i = 0; i < 6; ++i)
+  {
+    const scalar angle = 2 * PI * i / 6;
+    const scalar pr = 4.0;
+    scene.add_shape( new Shape( new Sphere{ Vec3{pr*cos(angle), -1.0, pr*sin(angle)}, 1.0},
+                                b,
+                                new SolidColor(spectrum::from_hsv(i*60, 1.0, 1.0))));
+  }
   
   scene.add_shape( new Shape( new Sphere{ Vec3{0.0, -1000.0, 0.0}, 998.0},
                               b,
-                              new SolidColor(spectrum{0.1, 0.2, 0.9})));
-  
-  scene.add_shape( new Shape( new Sphere{ Vec3{0.0, 3.0, 1.0}, 0.05},
-                              light,
-                              new SolidColor(spectrum{1.0})) );
+                              new SolidColor(spectrum{0.6})));
 
-  const uint WIDTH = 800;
-  const uint HEIGHT = 600;
+  const int NUM_LIGHTS = 6;
+  for (int i = 0; i < NUM_LIGHTS; ++i)
+  {
+    const scalar angle = 2 * PI * i / NUM_LIGHTS;
+    const scalar light_pr = 6.0;
+    scene.add_shape( new Shape( new Sphere{ Vec3{light_pr * cos(angle), 1.0, light_pr * sin(angle)}, 0.20},
+                                new EmissiveBRDF{spectrum{1.0}},
+                                new SolidColor(spectrum{1.0})) );
+
+  }
+
+  const uint WIDTH = 1600;
+  const uint HEIGHT = 1200;
 
   Film f(WIDTH, HEIGHT);
-  Camera cam {Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0,
+  Camera cam {Vec3{0, 3, 7.5}, Vec3{0, -1.0, 0}, Vec3{0, 1, 0}, PI / 2.0,
   scalar(WIDTH)/HEIGHT};
   // Vec3 pos{50, 52, 295.6};
   // Vec3 dir = Vec3{0, -0.042612, -1}.normal();

@@ -106,6 +106,5 @@ spectrum PathTracerIntegrator::trace_shadow_ray(Scene* scene, PossibleEmissive c
 
 spectrum PathTracerIntegrator::environmental_lighting(const Vec3& ray_dir) const
 {
-  return spectrum{0.0};
-  //return spectrum{max<scalar>(2.0 * ray_dir.y, 0.0)};
+  return spectrum{0.5};
 }

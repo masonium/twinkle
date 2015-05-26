@@ -2,10 +2,12 @@
 
 #include "math_util.h"
 #include <iostream>
+#include <string>
 
 using std::min;
 using std::max;
 using std::move;
+using std::string;
 using std::ostream;
 
 class spectrum : public VectorT3<spectrum>
@@ -50,13 +52,12 @@ public:
     return (a /= r); 
   }
 
-  spectrum clamp(scalar m, scalar M) const
-  {
-    return spectrum{::max(m, ::min(x, M)), ::max(m, ::min(y, M)), ::max(m, ::min(z, M))};
-  }
+  spectrum clamp(scalar m, scalar M) const;
 
   static spectrum max(const spectrum &a, const spectrum& b);
-
+  static spectrum from_hex(uint hex_color);
+  static spectrum from_hsv(scalar hue, scalar sat, scalar value);
+  
   static const spectrum one;
   static const spectrum zero;
 };
