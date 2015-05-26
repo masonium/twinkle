@@ -75,7 +75,7 @@ TEST(Vec3_rotate_aa_180)
   for (int i = 0; i < 10; ++i)
   {
     Vec3 target = Vec3{rus(), rus(), 1.0} * (rf() + 0.01) * 5.0;
-    CHECK_ARRAY_CLOSE(Vec3(-target.x, -target.y, target.z).v, 
+    CHECK_ARRAY_CLOSE(Vec3(-target.x, -target.y, target.z).v,
                       target.rotateAxisAngle(z_axis, PI).v,
                       3, PRECISE_EPS);
   }
@@ -85,14 +85,14 @@ TEST(Vec3_rotate_aa)
 {
   {
     Vec3 a{1.0, 1.0, 0.0};
-    CHECK_ARRAY_CLOSE(Vec3(-1.0, 1.0, 0.0).v, 
+    CHECK_ARRAY_CLOSE(Vec3(-1.0, 1.0, 0.0).v,
                       a.rotateAxisAngle(Vec3(0.0, 0.0, 1.0), PI*0.5).v,
                       3, EPS);
   }
 
   {
     Vec3 b{1.0, 1.0, 1.0};
-    CHECK_ARRAY_CLOSE(Vec3(-1.0, 1.0, 1.0).v, 
+    CHECK_ARRAY_CLOSE(Vec3(-1.0, 1.0, 1.0).v,
                       b.rotateAxisAngle(Vec3(0.0, 0.0, 1.0), PI*0.5).v,
                       3, EPS);
   }
@@ -176,7 +176,7 @@ TEST_FIXTURE(SingleSphereFixture, scene_test)
 TEST_FIXTURE(SingleSphereFixture, sphere)
 {
   Intersection isect = scene.intersect(ray);
-  
+
   CHECK_CLOSE(isect.t, 2.0, EPS);
   CHECK_CLOSE(sphere.intersect(ray), 2.0, EPS);
 }
@@ -194,7 +194,7 @@ TEST(dot_product)
 {
   Vec3 x{sqrt(2), -sqrt(2), sqrt(12)};
   CHECK_CLOSE(x.norm(), 4.0, 0.000001);
-}  
+}
 
 TEST(pi)
 {
@@ -208,10 +208,10 @@ TEST(Camera)
   const Vec3 pos = cam.position;
   const Vec3 fn = cam.aspect_forward.normal();
   const Vec3 up = cam.up;
-  
+
   CHECK_ARRAY_CLOSE(Vec3(0, 0, 5).v, pos.v, 3, PRECISE_EPS);
   CHECK_ARRAY_CLOSE(Vec3(0, 0, 5).v, cam.position.v, 3, PRECISE_EPS);
-  
+
   CHECK_ARRAY_CLOSE(Vec3(0, 0, -1).v, fn.v, 3, PRECISE_EPS);
   CHECK_ARRAY_CLOSE(Vec3(0, 1, 0).v, up.v, 3, PRECISE_EPS);
   CHECK_ARRAY_CLOSE(Vec3(1, 0, 0).v, cam.right.v, 3, PRECISE_EPS);
@@ -220,8 +220,8 @@ TEST(Camera)
 TEST(SinglePixelCamera)
 {
   Camera cam {Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0, 1.0};
-  Film f(1, 1);
-  Ray r = cam.sample_pixel_ray(&f, 0, 0, 0.5, 0.5);
+  Film f(1, 1, new BoxFilter);
+  Ray r = cam.sample_pixel(&f, 0, 0, 0.5, 0.5).ray;
   r.normalize();
   CHECK_CLOSE(1.0, r.direction.norm(), PRECISE_EPS);
   CHECK_ARRAY_CLOSE(Vec3(0.0, 0.0, -1.0).v, r.direction.v, 3, PRECISE_EPS);
@@ -230,18 +230,18 @@ TEST(SinglePixelCamera)
 TEST(TwoPixelCamera)
 {
   Camera cam {Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0, 1.0};
-  Film f(2, 2);
-  Ray r1 = cam.sample_pixel_ray(&f, 0, 0, 0.5, 0.5);
-  Ray r2 = cam.sample_pixel_ray(&f, 0, 1, 0.5, 0.5);
-  Ray r3 = cam.sample_pixel_ray(&f, 1, 0, 0.5, 0.5);  
+  Film f(2, 2, new BoxFilter);
+  Ray r1 = cam.sample_pixel(&f, 0, 0, 0.5, 0.5).ray;
+  Ray r2 = cam.sample_pixel(&f, 0, 1, 0.5, 0.5).ray;
+  Ray r3 = cam.sample_pixel(&f, 1, 0, 0.5, 0.5).ray;
   r1.normalize();
   r2.normalize();
   r3.normalize();
-  
+
   CHECK_CLOSE(r1.direction.x, r2.direction.x, PRECISE_EPS);
   CHECK_CLOSE(r1.direction.y, -r2.direction.y, PRECISE_EPS);
   CHECK_CLOSE(r1.direction.z, r2.direction.z, PRECISE_EPS);
-  
+
   CHECK_CLOSE(-r1.direction.x, r3.direction.x, PRECISE_EPS);
   CHECK_CLOSE(r1.direction.y, r3.direction.y, PRECISE_EPS);
   CHECK_CLOSE(r1.direction.z, r3.direction.z, PRECISE_EPS);

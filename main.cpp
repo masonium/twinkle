@@ -75,10 +75,10 @@ int main(int argc, char** args)
 
   }
 
-  const uint WIDTH = 1600;
-  const uint HEIGHT = 1200;
+  const uint WIDTH = 400;
+  const uint HEIGHT = 300;
 
-  Film f(WIDTH, HEIGHT);
+  Film f(WIDTH, HEIGHT, new BoxFilter);
   Camera cam {Vec3{0, 3, 7.5}, Vec3{0, -1.0, 0}, Vec3{0, 1, 0}, PI / 2.0,
   scalar(WIDTH)/HEIGHT};
   // Vec3 pos{50, 52, 295.6};
@@ -89,7 +89,7 @@ int main(int argc, char** args)
 
   igr.render(&cam, &scene, &f);
   //f.render_to_console(cout);
-  f.render_to_ppm(cout, new BoxFilter, new LinearToneMapper);
+  f.render_to_ppm(cout, new LinearToneMapper);
   
   return 0;
 }

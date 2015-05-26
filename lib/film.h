@@ -1,5 +1,6 @@
 #pragma once
 
+#include "math_util.h"
 #include "spectrum.h"
 #include <iostream>
 #include <cassert>
@@ -8,17 +9,31 @@
 using std::vector;
 using std::ostream;
 
+class Film;
+
+struct PixelSample
+{
+  PixelSample(int x_, int y_, scalar px_, scalar py_, Ray ray_) :
+    x(x_), y(y_), px(px_), py(py_), ray(ray_)
+  {
+  }
+
+  int x, y;
+  scalar px, py;
+  Ray ray;
+};
+
 class ImageSampleFilter
 {
 public:
-  virtual spectrum combine_samples(const vector<spectrum>& samples) const = 0;
+  virtual void add_sample(Film* film, const PixelSample& p, const spectrum& s) const = 0;
 };
 
 
 class BoxFilter : public ImageSampleFilter
 {
 public:
-  spectrum combine_samples(const vector<spectrum>& samples) const override;
+  void add_sample(Film* film, const PixelSample& p, const spectrum& s) const override;
 };
 
 class ToneMapper
@@ -42,19 +57,37 @@ public:
                uint w, uint h) const override;
 };
 
+struct FilmPixel
+{
+  scalar weight;
+  spectrum total;
+};
+
 class Film
 {
 public:  
-  Film(uint w_, uint h_);
+  Film(uint w_, uint h_, ImageSampleFilter* f);
   
-  void add_sample(int x, int y, const spectrum& s);
+  void add_sample(const PixelSample& ps, const spectrum& s);
   
   void render_to_console(ostream& out);
-  void render_to_ppm(ostream& out, ImageSampleFilter* filter, ToneMapper* mapper);
+  void render_to_ppm(ostream& out, ToneMapper* mapper);
   
-  const uint width, height;
-  
+  FilmPixel at(int x, int y) const
+  {
+    return plate[index(x, y)];
+  }
+
+  FilmPixel& at(int x, int y)
+  {
+    return plate[index(x, y)];
+  }
+
+  const uint width, height;  
+
 private:
+  vector<spectrum> pixel_list() const;
+
   uint index(uint x, uint y) const 
   {
     assert(0 <= y && y < height);
@@ -62,5 +95,6 @@ private:
     return y * width + x;
   }
   
-  vector<vector<spectrum>> plate;
+  vector<FilmPixel> plate;
+  ImageSampleFilter* filter;
 };

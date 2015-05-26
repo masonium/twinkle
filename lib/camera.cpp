@@ -1,6 +1,5 @@
 #include "camera.h"
 
-
 Camera::Camera(Vec3 pos, Vec3 lookat_, Vec3 up_,
                scalar fov_, scalar aspect_) :
   position(pos), aspect(aspect_)
@@ -11,9 +10,11 @@ Camera::Camera(Vec3 pos, Vec3 lookat_, Vec3 up_,
   aspect_forward = forward.normal() * 0.5 / tan(fov_ / 2); 
 }
 
-Ray Camera::sample_pixel_ray(Film* f, int x, int y, scalar r1, scalar r2)
+PixelSample Camera::sample_pixel(Film* f, int x, int y, scalar r1, scalar r2)
 {
   const scalar dw = 1.0 / f->width, dh = 1.0 / f->height;
   const scalar fx = (x + r1) * dw - 0.5, fy = (y + r2) * dh - 0.5;
-  return Ray( position, up * fy + right * fx * aspect + aspect_forward );
+  Ray r{ position, up * fy + right * fx * aspect + aspect_forward };
+
+  return PixelSample(x, y, fx, fy, r);
 }

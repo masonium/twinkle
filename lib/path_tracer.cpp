@@ -9,6 +9,7 @@ PathTracerIntegrator::PathTracerIntegrator()
 
 void PathTracerIntegrator::render(Camera* cam, Scene* scene, Film* film)
 {
+
   for (uint x = 0; x < film->width; ++x)
   {
     for (uint y = 0; y < film->height; ++y)
@@ -16,9 +17,9 @@ void PathTracerIntegrator::render(Camera* cam, Scene* scene, Film* film)
       for (uint d = 0; d < samples_per_pixel; ++d)
       {
         auto sample = sampler->sample_2d();
-        Ray r = cam->sample_pixel_ray(film, x, y, sample[0], sample[1]);
-        spectrum s = trace_ray(scene, r, 1);
-        film->add_sample(x, y, s);
+        PixelSample ps = cam->sample_pixel(film, x, y, sample[0], sample[1]);
+        spectrum s = trace_ray(scene, ps.ray, 1);
+        film->add_sample(ps, s);
       }
     }
   }
@@ -37,7 +38,6 @@ spectrum PathTracerIntegrator::trace_ray(Scene* scene, const Ray& ray, int depth
   // the light from that shape if appropriate
   scalar light_prob;
   auto em = scene->sample_emissive(sampler->sample_1d(), light_prob);
-
 
   spectrum total{0};
 

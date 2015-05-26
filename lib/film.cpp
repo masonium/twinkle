@@ -1,3 +1,4 @@
+
 #include "film.h"
 #include <numeric>
 #include <iterator>
@@ -10,27 +11,28 @@ using std::cout;
 using std::ostream_iterator;
 using std::accumulate;
 
-Film::Film(uint w_, uint h_) : width(w_), height(h_), plate(w_ * h_)
+Film::Film(uint w_, uint h_, ImageSampleFilter* f) : width(w_), height(h_), plate(w_ * h_), filter(f)
 {
 }
 
-void Film::add_sample(int x, int y, const spectrum& s)
+void Film::add_sample(const PixelSample& ps, const spectrum& s)
 {
-  plate[index(x, y)].push_back(s);
+  filter->add_sample(this, ps, s);
 }
 
-void Film::render_to_ppm(ostream& out, ImageSampleFilter* filter, ToneMapper* mapper)
+vector<spectrum> Film::pixel_list() const
 {
-  vector<spectrum> comb;
-  for (int y = height - 1; y >= 0; --y)
-  {
-    for (uint x = 0; x < width; ++x)
-    {
-      comb.push_back( filter->combine_samples(plate[index(x, y)]) );
-    }
-  }
+  vector<spectrum> ret;
+  transform(plate.begin(), plate.end(), std::back_inserter(ret), 
+            [] (const FilmPixel& s) { return s.total / s.weight; });
+  return ret;
+}
+
+void Film::render_to_ppm(ostream& out, ToneMapper* mapper)
+{
   vector<spectrum> final;
-  mapper->tonemap(comb, final, width, height);
+  vector<spectrum> raw = pixel_list();
+  mapper->tonemap(raw, final, width, height);
   out << "P3 " << width << " " << height << " 255\n";
 
   int i = 0;
@@ -49,8 +51,7 @@ void Film::render_to_console(ostream& out)
   {
     for (uint x = 0; x < width; ++x)
     {
-      vector<spectrum>& pixel = plate[index(x, y)];
-      spectrum s = pixel.empty() ? spectrum{0} : pixel[0];
+      spectrum s = plate[index(x,y)].total;
       if (norm(s) > 0.5)
         out << '*';
       else if (norm(s) > 0.25)
@@ -64,16 +65,11 @@ void Film::render_to_console(ostream& out)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-spectrum BoxFilter::combine_samples(const vector<spectrum>& samples) const
+void BoxFilter::add_sample(Film* film, const PixelSample& p, const spectrum& s) const
 {
-  if (samples.empty())
-    return spectrum::zero;
-  spectrum res{0};
-  for (auto a: samples)
-    res += a;
-
-  auto r = res / spectrum(samples.size());
-  return r;
+  FilmPixel& fp = film->at(p.x, p.y);
+  fp.total += s;
+  fp.weight += 1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
