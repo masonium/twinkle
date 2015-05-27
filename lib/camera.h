@@ -5,6 +5,7 @@
 #include "math_util.h"
 #include "spectrum.h"
 #include "film.h"
+#include "ray.h"
 
 using std::vector;
 using std::ostream;

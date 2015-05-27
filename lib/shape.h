@@ -4,6 +4,7 @@
 #include "bsdf.h"
 #include "spectrum.h"
 #include "texture.h"
+#include "ray.h"
 
 class Intersection;
 
@@ -71,6 +72,11 @@ public:
       normal = s->geometry->normal(position);
   }
 
+  operator bool() const 
+  {
+    return valid();
+  }
+  
   bool valid() const
   {
     return shape != nullptr;

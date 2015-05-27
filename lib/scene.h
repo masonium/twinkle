@@ -12,17 +12,17 @@ class Scene
 public:
   Scene();
 
-  void add_shape(Shape* shape);
-  void add_light(Light* light);
-
-  PossibleEmissive const* sample_emissive(scalar r1, scalar&) const;
+  void add(Shape* shape);
+  void add(Light* light);
+  
+  Light const* sample_light(scalar r1, scalar&) const;
   
   Intersection intersect(const Ray& ray) const;
   Intersection shadow_intersect(const Ray& ray) const;
   
 private:
   vector<Shape const*> shapes;
-  vector<PossibleEmissive const*> lights;
+  vector<Light const*> lights;
 
   mutable int em_counter;
 };

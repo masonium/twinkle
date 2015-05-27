@@ -1,4 +1,7 @@
 #include "integrator.h"
+#include <iostream>
+
+using std::cerr;
 
 PathTracerIntegrator::PathTracerIntegrator()
   : sampler(unique_ptr<UniformSampler>(new UniformSampler())), samples_per_pixel(16), 
@@ -37,24 +40,26 @@ spectrum PathTracerIntegrator::trace_ray(Scene* scene, const Ray& ray, int depth
   // direct lighting: randomly choose a light or emissive shape, and contribute
   // the light from that shape if appropriate
   scalar light_prob;
-  auto em = scene->sample_emissive(sampler->sample_1d(), light_prob);
+  const Light* light = scene->sample_light(sampler->sample_1d(), light_prob);
 
   spectrum total{0};
 
   if (light_prob > 0)
   {
-    Sample2D shadow_ray_sample = sampler->sample_2d();
-    const Vec3 shadow_ray_dir = em->sample_shadow_ray_dir(isect, shadow_ray_sample.u[0],
-                                                          shadow_ray_sample.u[1]);
-    const scalar NL = shadow_ray_dir.dot(isect.normal);
-  
-    if (NL > 0)
+    Sample2D light_s = sampler->sample_2d();
+    LightSample ls = light->sample_emission(isect, light_s[0], light_s[1]);
+    
+    if (ls)
     {
-      Ray shadow_ray{ isect.position, shadow_ray_dir.normal() };
-      scalar ca = isect.shape->brdf->reflectance( shadow_ray.direction,
-                                                  ray_dir_n, isect.normal );
-      total += trace_shadow_ray( scene, em, shadow_ray.nudge() ) * 
-        spectrum{NL * ca / light_prob};
+      if (!ls.is_occluded(scene))
+      {
+        scalar NL = max<scalar>(ls.direction().dot(isect.normal), 0.0);
+        scalar ca = isect.shape->brdf->reflectance( ls.direction(),
+                                                    ray_dir_n, isect.normal );
+        
+        auto light_contrib = ls.emission() * spectrum{NL * ca / light_prob};
+        total += light_contrib;
+      }
     }
   }
 
@@ -106,5 +111,5 @@ spectrum PathTracerIntegrator::trace_shadow_ray(Scene* scene, PossibleEmissive c
 
 spectrum PathTracerIntegrator::environmental_lighting(const Vec3& ray_dir) const
 {
-  return spectrum{0.5};
+  return spectrum{1.0};
 }

@@ -2,6 +2,7 @@
 
 #include "math_util.h"
 #include "spectrum.h"
+#include "vec3.h"
 
 class BRDF
 {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "math_util.h"
+#include "vector.h"
 #include <iostream>
 #include <string>
 
@@ -59,6 +60,8 @@ public:
     return (a /= r); 
   }
 
+  using VectorT3<spectrum>::operator/;
+  
   spectrum clamp(scalar m, scalar M) const;
 
   static spectrum max(const spectrum &a, const spectrum& b);
