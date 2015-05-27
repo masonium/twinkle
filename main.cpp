@@ -50,7 +50,6 @@ int main(int argc, char** args)
   Scene scene;
   BRDF* b = new Diffuse{1.0};
 
-  BRDF* light = new EmissiveBRDF{spectrum{2.0}};
   BRDF* mirror = new PerfectMirrorBRDF{};
 
   //smallpt_scene(scene);
@@ -71,7 +70,7 @@ int main(int argc, char** args)
   {
     const scalar angle = 2 * PI * i / num_sides;
     const scalar pr = 4.0;
-    scene.add( new Shape( new Sphere{ Vec3{pr*cos(angle), -1.0, pr*sin(angle)}, sphere_radius},
+    scene.add( new Shape( new Sphere{ Vec3(pr*cos(angle), -1.0, pr*sin(angle)), sphere_radius},
                                 b,
                                 new SolidColor(spectrum::from_hsv(i*360/num_sides, 1.0, 1.0))));
   }
@@ -85,7 +84,7 @@ int main(int argc, char** args)
   {
     const scalar angle = 2 * PI * i / NUM_LIGHTS;
     const scalar light_pr = 6.0;
-    const Vec3 light_dir{light_pr * cos(angle), 1.0, light_pr * sin(angle)};
+    const Vec3 light_dir(light_pr * cos(angle), 1.0, light_pr * sin(angle));
     scene.add( new DirectionalLight( light_dir, spectrum{4.0}));
 
   }
