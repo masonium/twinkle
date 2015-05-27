@@ -4,7 +4,7 @@
 using std::cerr;
 
 PathTracerIntegrator::PathTracerIntegrator()
-  : sampler(unique_ptr<UniformSampler>(new UniformSampler())), samples_per_pixel(16), 
+  : samples_per_pixel(16), sampler(unique_ptr<UniformSampler>(new UniformSampler())),  
     russian_roulette(true), rr_kill_prob(0.2), max_depth(10)
 {
   assert(0.0 <= rr_kill_prob && rr_kill_prob <= 1.0); 
@@ -12,7 +12,6 @@ PathTracerIntegrator::PathTracerIntegrator()
 
 void PathTracerIntegrator::render(Camera* cam, Scene* scene, Film* film)
 {
-
   for (uint x = 0; x < film->width; ++x)
   {
     for (uint y = 0; y < film->height; ++y)
