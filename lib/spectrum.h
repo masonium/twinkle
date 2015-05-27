@@ -59,8 +59,6 @@ public:
     spectrum a = *this;
     return (a /= r); 
   }
-
-  using VectorT3<spectrum>::operator/;
   
   spectrum clamp(scalar m, scalar M) const;
 
