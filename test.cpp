@@ -27,107 +27,112 @@ Vec3 random_normal()
   return Vec3{rus(), rus(), rus()}.normal();
 }
 
-class VecFixture
+SUITE(Vec3)
 {
-public:
-  VecFixture() : x{0.0, 1.0, 2.0}, y{1.0}, z{} {}
-
-  Vec3 x, y, z;
-};
-
-
-TEST_FIXTURE(VecFixture, Vec3_add)
-{
-  CHECK_ARRAY_CLOSE((x+y).v, Vec3(1.0, 2.0, 3.0).v, 3, EPS);
-  CHECK_ARRAY_CLOSE((x+z).v, Vec3(0.0, 1.0, 2.0).v, 3, EPS);
-}
-
-TEST_FIXTURE(VecFixture, Vec3_sub)
-{
-  CHECK_ARRAY_CLOSE((x-y).v, Vec3(-1.0, 0.0, 1.0).v, 3, EPS);
-  CHECK_ARRAY_CLOSE((x-z).v, Vec3(0.0, 1.0, 2.0).v, 3, EPS);
-}
-
-TEST_FIXTURE(VecFixture, Vec3_scalar_mult)
-{
-  CHECK_ARRAY_CLOSE( (x * 2.0).v, Vec3(0.0, 2.0, 4.0).v, 3, PRECISE_EPS);
-}
-
-TEST_FIXTURE(VecFixture, Vec3_scalar_div)
-{
-  CHECK_ARRAY_CLOSE( (x / 2.0).v, Vec3(0.0, 0.5, 1.0).v, 3, PRECISE_EPS);
-}
-
-TEST(Vec3_rotate_aa_none)
-{
-  for (int i = 0; i < 10; ++i)
+  class VecFixture
   {
-    Vec3 axis = random_normal();
-    Vec3 target = random_normal() * (rf() + 0.01) * 5.0;
-    CHECK_ARRAY_CLOSE(target.v, target.rotateAxisAngle(axis, 0).v,
-                      3, PRECISE_EPS);
+  public:
+    VecFixture() : x{0.0, 1.0, 2.0}, y{1.0}, z{} {}
+
+    Vec3 x, y, z;
+  };
+
+
+  TEST_FIXTURE(VecFixture, Vec3_add)
+  {
+    CHECK_ARRAY_CLOSE((x+y).v, Vec3(1.0, 2.0, 3.0).v, 3, EPS);
+    CHECK_ARRAY_CLOSE((x+z).v, Vec3(0.0, 1.0, 2.0).v, 3, EPS);
+  }
+
+  TEST_FIXTURE(VecFixture, Vec3_sub)
+  {
+    CHECK_ARRAY_CLOSE((x-y).v, Vec3(-1.0, 0.0, 1.0).v, 3, EPS);
+    CHECK_ARRAY_CLOSE((x-z).v, Vec3(0.0, 1.0, 2.0).v, 3, EPS);
+  }
+
+  TEST_FIXTURE(VecFixture, Vec3_scalar_mult)
+  {
+    CHECK_ARRAY_CLOSE( (x * 2.0).v, Vec3(0.0, 2.0, 4.0).v, 3, PRECISE_EPS);
+  }
+
+  TEST_FIXTURE(VecFixture, Vec3_scalar_div)
+  {
+    CHECK_ARRAY_CLOSE( (x / 2.0).v, Vec3(0.0, 0.5, 1.0).v, 3, PRECISE_EPS);
+  }
+
+  TEST(Vec3_rotate_aa_none)
+  {
+    for (int i = 0; i < 10; ++i)
+    {
+      Vec3 axis = random_normal();
+      Vec3 target = random_normal() * (rf() + 0.01) * 5.0;
+      CHECK_ARRAY_CLOSE(target.v, target.rotateAxisAngle(axis, 0).v,
+                        3, PRECISE_EPS);
+    }
+  }
+
+  TEST(Vec3_rotate_aa_180)
+  {
+    const Vec3 z_axis{0.0, 0.0, 1.0};
+    for (int i = 0; i < 10; ++i)
+    {
+      Vec3 target = Vec3{rus(), rus(), 1.0} * (rf() + 0.01) * 5.0;
+      CHECK_ARRAY_CLOSE(Vec3(-target.x, -target.y, target.z).v,
+                        target.rotateAxisAngle(z_axis, PI).v,
+                        3, PRECISE_EPS);
+    }
+  }
+
+  TEST(Vec3_rotate_aa)
+  {
+    {
+      Vec3 a{1.0, 1.0, 0.0};
+      CHECK_ARRAY_CLOSE(Vec3(-1.0, 1.0, 0.0).v,
+                        a.rotateAxisAngle(Vec3(0.0, 0.0, 1.0), PI*0.5).v,
+                        3, EPS);
+    }
+
+    {
+      Vec3 b{1.0, 1.0, 1.0};
+      CHECK_ARRAY_CLOSE(Vec3(-1.0, 1.0, 1.0).v,
+                        b.rotateAxisAngle(Vec3(0.0, 0.0, 1.0), PI*0.5).v,
+                        3, EPS);
+    }
+
+  }
+
+  TEST(Vec_assign)
+  {
+    Vec3 x{2.0, 4.0, 5.0};
+    Vec3 y = x;
+    CHECK_ARRAY_CLOSE(x.v, y.v, 3, PRECISE_EPS);
+  }
+
+  TEST(Vec_ref)
+  {
+    Vec3 x{2.0, 4.0, 5.0};
+    Vec3& y = x;
+    CHECK_ARRAY_CLOSE(x.v, y.v, 3, PRECISE_EPS);
+  }
+
+  TEST(Vec_rval)
+  {
+    Vec3 x{2.0, 4.0, 5.0};
+    Vec3 y = x;
+    Vec3 z = move(x);
+    CHECK_ARRAY_CLOSE(y.v, z.v, 3, PRECISE_EPS);
   }
 }
 
-TEST(Vec3_rotate_aa_180)
+SUITE(spectrum)
 {
-  const Vec3 z_axis{0.0, 0.0, 1.0};
-  for (int i = 0; i < 10; ++i)
+  TEST(spectrum_hsv)
   {
-    Vec3 target = Vec3{rus(), rus(), 1.0} * (rf() + 0.01) * 5.0;
-    CHECK_ARRAY_CLOSE(Vec3(-target.x, -target.y, target.z).v,
-                      target.rotateAxisAngle(z_axis, PI).v,
-                      3, PRECISE_EPS);
+    spectrum red{1.0, 0.0, 0.0};
+    CHECK_ARRAY_CLOSE(red.v, spectrum::from_hsv(0.0, 1.0, 1.0).v, 3, EPS);
+    spectrum yellow{1.0, 1.0, 0.0};
+    CHECK_ARRAY_CLOSE(yellow.v, spectrum::from_hsv(60.0, 1.0, 1.0).v, 3, EPS);
   }
-}
-
-TEST(Vec3_rotate_aa)
-{
-  {
-    Vec3 a{1.0, 1.0, 0.0};
-    CHECK_ARRAY_CLOSE(Vec3(-1.0, 1.0, 0.0).v,
-                      a.rotateAxisAngle(Vec3(0.0, 0.0, 1.0), PI*0.5).v,
-                      3, EPS);
-  }
-
-  {
-    Vec3 b{1.0, 1.0, 1.0};
-    CHECK_ARRAY_CLOSE(Vec3(-1.0, 1.0, 1.0).v,
-                      b.rotateAxisAngle(Vec3(0.0, 0.0, 1.0), PI*0.5).v,
-                      3, EPS);
-  }
-
-}
-
-TEST(Vec_assign)
-{
-  Vec3 x{2.0, 4.0, 5.0};
-  Vec3 y = x;
-  CHECK_ARRAY_CLOSE(x.v, y.v, 3, PRECISE_EPS);
-}
-
-TEST(Vec_ref)
-{
-  Vec3 x{2.0, 4.0, 5.0};
-  Vec3& y = x;
-  CHECK_ARRAY_CLOSE(x.v, y.v, 3, PRECISE_EPS);
-}
-
-TEST(Vec_rval)
-{
-  Vec3 x{2.0, 4.0, 5.0};
-  Vec3 y = x;
-  Vec3 z = move(x);
-  CHECK_ARRAY_CLOSE(y.v, z.v, 3, PRECISE_EPS);
-}
-
-TEST(spectrum_hsv)
-{
-spectrum red{1.0, 0.0, 0.0};
-CHECK_ARRAY_CLOSE(red.v, spectrum::from_hsv(0.0, 1.0, 1.0).v, 3, EPS);
-spectrum yellow{1.0, 1.0, 0.0};
-CHECK_ARRAY_CLOSE(yellow.v, spectrum::from_hsv(60.0, 1.0, 1.0).v, 3, EPS);
-
 }
 
 TEST(halton_1d_base2)
@@ -152,8 +157,8 @@ class SingleSphereFixture
 {
 public:
   SingleSphereFixture() : d{1.0}, sphere{Vec3{0.0, 0.0, 0.0}, 1.0},
-    ray{Vec3{5.0, 0.0, 0.0}, Vec3{-2.0, 0.0, 0.0}},
-    shape{&sphere, &d, new SolidColor(spectrum{1.0})}
+                          ray{Vec3{5.0, 0.0, 0.0}, Vec3{-2.0, 0.0, 0.0}},
+                          shape{&sphere, &d, new SolidColor(spectrum{1.0})}
   {
     scene.add(&shape);
   }
