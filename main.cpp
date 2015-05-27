@@ -63,14 +63,14 @@ int main(int argc, char** args)
   //                             new SolidColor(spectrum::from_hsv(0.0, 1.0, 0.8))) );
 
   scalar distance_from_center = 3.0;
-  scalar sphere_radius = 0.25;
+  scalar sphere_radius = 0.75;
 
   const int num_sides = PI / atan(sphere_radius / (distance_from_center));
   for (int i = 0; i < num_sides; ++i)
   {
     const scalar angle = 2 * PI * i / num_sides;
     const scalar pr = 4.0;
-    scene.add( new Shape( new Sphere{ Vec3(pr*cos(angle), -1.0, pr*sin(angle)), sphere_radius},
+    scene.add( new Shape( new Sphere{ Vec3(pr*cos(angle), -2.0+sphere_radius, pr*sin(angle)), sphere_radius},
                                 b,
                                 new SolidColor(spectrum::from_hsv(i*360/num_sides, 1.0, 1.0))));
   }
@@ -79,16 +79,14 @@ int main(int argc, char** args)
                               b,
                               new SolidColor(spectrum{0.6})));
 
-  const int NUM_LIGHTS = 6;
-  for (int i = 0; i < NUM_LIGHTS; ++i)
+  const int num_lights = 3;
+  for (int i = 0; i < num_lights; ++i)
   {
-    const scalar angle = 2 * PI * i / NUM_LIGHTS;
-    const scalar light_pr = 6.0;
-    const Vec3 light_dir(light_pr * cos(angle), 1.0, light_pr * sin(angle));
-    scene.add( new DirectionalLight( light_dir, spectrum{4.0}));
-
+    const scalar angle = 2 * PI * i / num_lights + PI/12;
+    const scalar pr = 4.0;
+    scene.add( new PointLight{ Vec3(pr*cos(angle), 2.0, pr*sin(angle)), spectrum{5.0} });
   }
-  
+
   const uint WIDTH = atoi(args[1]);
   const uint HEIGHT = atoi(args[2]);
 
@@ -99,7 +97,7 @@ int main(int argc, char** args)
   }
   
   Film f(WIDTH, HEIGHT, new BoxFilter);
-  Camera cam {Vec3{0, 2, 7.5}, Vec3{0, -1.0, 0}, Vec3{0, 1, 0}, PI / 2.0,
+  Camera cam {Vec3{0, 2, 7.5}*0.8, Vec3{0, -2.0, 0}, Vec3{0, 1, 0}, PI / 2.0,
   scalar(WIDTH)/HEIGHT};
 
   
