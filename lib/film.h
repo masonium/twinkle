@@ -1,7 +1,7 @@
 #pragma once
 
-#include "math_util.h"
 #include "spectrum.h"
+#include "ray.h"
 #include <iostream>
 #include <cassert>
 #include <vector>

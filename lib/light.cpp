@@ -22,7 +22,7 @@ bool LightSample::is_occluded(Scene* scene) const
   case OCCLUSION_POINTS:
     {
       auto isect = scene->intersect(ray);
-      return isect && approx_gt(isect.t, 1.0);
+      return isect.valid() && approx_gt(1.0, isect.t);
     }
     
   default:
@@ -36,10 +36,9 @@ LightSample PointLight::sample_emission(const Intersection& isect,
 {
   // inverse-squared falloff
   const auto d = position - isect.position;
-  spectrum emit = d.dot(isect.normal) > 0 ? emission / (position - isect.position).norm2()
-    : spectrum::zero;
+  spectrum emit = emission;// / d.norm2();
 
-  return LightSample{emit, isect.position, position};
+  return LightSample{emit, isect.position + d.normal() * 0.001, position};
 }
 
 LightSample DirectionalLight::sample_emission(const Intersection& isect,
