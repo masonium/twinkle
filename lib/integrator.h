@@ -28,6 +28,8 @@ public:
   PathTracerIntegrator();
   
   virtual void render(Camera* cam, Scene* scene, Film* film) override;
+  
+  uint samples_per_pixel;
 
 private:
   spectrum trace_ray(Scene* scene, const Ray& r, int depth);
@@ -36,7 +38,6 @@ private:
   spectrum environmental_lighting(const Vec3& ray_dir) const;
 
   unique_ptr<UniformSampler> sampler;  
-  uint samples_per_pixel;
   bool russian_roulette;
   scalar rr_kill_prob;
   int max_depth;

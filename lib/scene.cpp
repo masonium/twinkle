@@ -9,14 +9,18 @@ Scene::Scene() : em_counter(0)
 {
 }
 
-void Scene::add_shape(Shape* shape)
+void Scene::add(Shape* shape)
 {
   shapes.push_back(shape);
-  if (shape->is_emissive())
-    lights.push_back(shape);
 }
 
-PossibleEmissive const* Scene::sample_emissive(scalar r1, scalar& light_prob) const
+void Scene::add(Light* light)
+{
+  lights.push_back(light);
+}
+
+
+Light const* Scene::sample_light(scalar r1, scalar& light_prob) const
 {
   if (lights.size() == 0)
   {

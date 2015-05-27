@@ -1,3 +1,10 @@
+#include "math_util.h"
+
+scalar approx_gt(scalar x, scalar y)
+{
+  return x > y - SCALAR_EPSILON;
+}
+
 scalar qf(scalar a, scalar b, scalar c)
 {
   const scalar disc = b * b - 4 * a * c;

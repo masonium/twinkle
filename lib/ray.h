@@ -21,6 +21,12 @@ public:
     return *this;
   }
 
+  Ray normal() const
+  {
+    return Ray{position, direction.normal()};
+  }
+
+  
   Ray nudge(scalar eps = SURFACE_EPSILON) const;
   
   Vec3 position, direction;

@@ -155,7 +155,7 @@ public:
     ray{Vec3{5.0, 0.0, 0.0}, Vec3{-2.0, 0.0, 0.0}},
     shape{&sphere, &d, new SolidColor(spectrum{1.0})}
   {
-    scene.add_shape(&shape);
+    scene.add(&shape);
   }
   Diffuse d;
   Scene scene;

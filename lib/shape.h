@@ -72,6 +72,11 @@ public:
       normal = s->geometry->normal(position);
   }
 
+  operator bool() const 
+  {
+    return valid();
+  }
+  
   bool valid() const
   {
     return shape != nullptr;
