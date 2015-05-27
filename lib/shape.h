@@ -4,6 +4,7 @@
 #include "bsdf.h"
 #include "spectrum.h"
 #include "texture.h"
+#include "ray.h"
 
 class Intersection;
 

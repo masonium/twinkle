@@ -1,3 +1,11 @@
+#include "ray.h"
+#include <cmath>
+
+Ray Ray::nudge(scalar epsilon) const
+{
+  return Ray(position + direction.normal() * epsilon, direction);
+}
+
 scalar qf(scalar a, scalar b, scalar c)
 {
   const scalar disc = b * b - 4 * a * c;

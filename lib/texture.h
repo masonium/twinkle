@@ -1,6 +1,7 @@
 #pragma once
 
 #include "spectrum.h"
+#include "vec3.h"
 
 class Texture
 {
