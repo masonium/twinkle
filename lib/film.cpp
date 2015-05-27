@@ -23,8 +23,9 @@ void Film::add_sample(const PixelSample& ps, const spectrum& s)
 vector<spectrum> Film::pixel_list() const
 {
   vector<spectrum> ret;
-  transform(plate.begin(), plate.end(), std::back_inserter(ret), 
-            [] (const FilmPixel& s) { return s.total / s.weight; });
+  for (const auto& p: plate)
+    ret.push_back( p.total / p.weight );
+
   return ret;
 }
 
@@ -35,14 +36,15 @@ void Film::render_to_ppm(ostream& out, ToneMapper* mapper)
   mapper->tonemap(raw, final, width, height);
   out << "P3 " << width << " " << height << " 255\n";
 
-  int i = 0;
-  for (auto& c: final)
+  for (int y = height - 1; y >= 0; --y)
   {
-    out << int(c.x * 255) << " " << int(c.y * 255) << " " << int(c.z * 255) << " ";
-    if (++i % height == 0)
-      out << "\n";
+    for(uint x = 0; x < width; ++x)
+    {
+      const auto& c = final[index(x, y)];
+      out << int(c.x * 255) << " " << int(c.y * 255) << " " << int(c.z * 255) << " ";
+    }
+    out << "\n";  
   }
-  
 }
 
 void Film::render_to_console(ostream& out)
@@ -85,7 +87,6 @@ void LinearToneMapper::tonemap(const vector<spectrum>& input, vector<spectrum>& 
 {
   spectrum M = accumulate(input.begin(), input.end(),  spectrum::one, spectrum::max);
   scalar cM = max(max(M.x, M.y), M.z);
-
 
   transform(input.begin(), input.end(), std::back_inserter(output),
             [&](const spectrum& s) { return s / cM; });
