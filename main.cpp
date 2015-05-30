@@ -39,15 +39,8 @@ void usage(char** args)
   cerr << args[0] << ": WIDTH HEIGHT SAMPLES-PER-PIXEL\n";
 }
 
-int main(int argc, char** args)
+void default_scene(Scene& scene)
 {
-  if (argc < 4)
-  {
-    usage(args);
-    exit(1);
-  }
-  
-  Scene scene;
   BRDF* b = new Diffuse{1.0};
 
   BRDF* mirror = new PerfectMirrorBRDF{};
@@ -86,6 +79,18 @@ int main(int argc, char** args)
     const scalar pr = 4.0;
     scene.add( new PointLight{ Vec3(pr*cos(angle), 2.0, pr*sin(angle)), spectrum{5.0} });
   }
+}
+
+int main(int argc, char** args)
+{
+  if (argc < 4)
+  {
+    usage(args);
+    exit(1);
+  }
+  
+  Scene scene;
+  default_scene(scene);
 
   const uint WIDTH = atoi(args[1]);
   const uint HEIGHT = atoi(args[2]);

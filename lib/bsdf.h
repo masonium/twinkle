@@ -100,3 +100,39 @@ public:
     return proj * 2.0 - incoming;
   }
 };
+
+namespace refraction_index
+{
+  const scalar CROWN_GLASS = 1.52;
+  const scalar PYREX = 1.47;
+  const scalar WATER = 1.333;
+  const scalar ICE = 1.31;
+  const scalar AIR = 1.0003;
+  const scalar VACUUM = 1.0;
+}
+
+class FresnelMirrorBRDF : public BRDF
+{
+public:
+  explicit FresnelMirrorBRDF( scalar refrac = refraction_index::WATER ) : ri(refrac)
+  {
+  }
+
+  scalar reflectance(const Vec3& incoming, const Vec3& outgoing,
+                     const Vec3& normal) const override
+  {
+    return 0.0;
+  }
+
+  Vec3 sample(const Vec3& incoming, const Vec3& normal,
+              scalar r1, scalar r2, scalar& p, scalar& reflectance) const override
+  {
+    p = 1.0;
+    reflectance = fresnel_reflectance(normal, incoming, refraction_index::AIR, ri);
+    Vec3 proj = incoming.projectOnto(normal);
+    return proj * 2.0 - incoming;
+  }
+
+private:
+  scalar ri;
+};

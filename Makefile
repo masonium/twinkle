@@ -13,11 +13,11 @@ OBJSTMP = $(SRCS:.cpp=.o)
 OBJS = $(OBJSTMP:lib/%=obj/%)
 DEPS = $(OBJS:.o=.d)
 
-EXES = twinkle test_twinkle
+EXES = twinkle test_twinkle fresnel_test
 
 .PHONY: test
 
-all: twinkle test_twinkle
+all: $(EXES)
 
 -include $(DEPS)
 
@@ -34,6 +34,9 @@ twinkle: $(OBJS) main.cpp
 	g++ -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
 test_twinkle: $(OBJS) test.cpp	
+	g++ -o $@ $^ $(CXXFLAGS) $(LFLAGS)
+
+fresnel_test: $(OBJS) fresnel_test.cpp	
 	g++ -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
 test: test_twinkle
