@@ -15,10 +15,16 @@ struct Sample
   {
     return u[i];
   }
+  scalar& operator[](int i)
+  {
+    return u[i];
+  }
+
 };
 
 typedef Sample<2> Sample2D;
 typedef Sample<4> Sample4D;
+typedef Sample<5> Sample5D;
 
 class Sampler1D
 {
@@ -38,7 +44,19 @@ public:
   virtual void sample_4d(scalar& r1, scalar& r2, scalar& r3, scalar& r4) = 0;
 };
 
-class UniformSampler : public Sampler1D, public Sampler2D, public Sampler4D
+class Sampler5D
+{
+public:
+  virtual void sample_5d(scalar& r1, scalar& r2, scalar& r3, scalar& r4, scalar& r5) = 0;
+  Sample5D sample_5d()
+  {
+    Sample5D s;
+    sample_5d(s[0], s[1], s[2], s[3], s[4]);
+    return s;
+  }
+};
+
+class UniformSampler : public Sampler1D, public Sampler2D, public Sampler4D, public Sampler5D
 {
 public:
   UniformSampler();
@@ -54,6 +72,9 @@ public:
 
   void sample_2d(scalar& r1, scalar& r2);
   void sample_4d(scalar& r1, scalar& r2, scalar& r3, scalar& r4) override;
+  
+  using Sampler5D::sample_5d;
+  void sample_5d(scalar& r1, scalar& r2, scalar& r3, scalar& r4, scalar& r5) override;
 
 private:
   std::default_random_engine reng;

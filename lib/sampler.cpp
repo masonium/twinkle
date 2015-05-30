@@ -28,6 +28,15 @@ void UniformSampler::sample_4d(scalar& r1, scalar& r2, scalar& r3, scalar& r4)
   r4 = randr(reng);
 }
 
+void UniformSampler::sample_5d(scalar& r1, scalar& r2, scalar& r3, scalar& r4, scalar& r5)
+{
+  r1 = randr(reng);
+  r2 = randr(reng);
+  r3 = randr(reng);
+  r4 = randr(reng);
+  r5 = randr(reng);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 HaltonSampler::HaltonSampler() : index(1), bases{2, 3, 5, 7},
                                  inv_bases{1/2.0, 1/3.0, 1/5.0, 1/7.0}
