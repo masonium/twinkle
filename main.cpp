@@ -4,7 +4,7 @@
 #include "scene.h"
 #include "sphere.h"
 #include "bsdf.h"
-#include "integrator.h"
+#include "path_tracer.h"
 
 using std::cerr;
 using std::cout;
@@ -46,11 +46,11 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
   BRDF* mirror = new PerfectMirrorBRDF{};
 
   //smallpt_scene(scene);
-  
+
   scene.add( new Shape( new Sphere{ Vec3{0.0, -1.0, 0.0}, 1.0},
                               mirror,
                               new SolidColor(spectrum{1.0})) );
-  
+
   // scene.add( new Shape( new Sphere{ Vec3{2.0, -1.0, 0.0}, 1.0},
   //                             b,
   //                             new SolidColor(spectrum::from_hsv(0.0, 1.0, 0.8))) );
@@ -67,7 +67,7 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
                                 b,
                                 new SolidColor(spectrum::from_hsv(i*360/num_sides, 1.0, 1.0))));
   }
-  
+
   scene.add( new Shape( new Sphere{ Vec3{0.0, -1000.0, 0.0}, 998.0},
                               b,
                               new SolidColor(spectrum{0.6})));
@@ -79,7 +79,7 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
     const scalar pr = 4.0;
     scene.add( new PointLight{ Vec3(pr*cos(angle), 2.0, pr*sin(angle)), spectrum{5.0} });
   }
-  
+
   auto cam_pos = Vec3{0, 2, 7.5}*0.8;
 
   return PerspectiveCamera(cam_pos, Vec3{0, -2.0, 0}, Vec3{0, 1, 0}, PI / 2.0,
@@ -90,7 +90,7 @@ PerspectiveCamera dof_scene(Scene& scene, scalar ar)
 {
   BRDF* mirr = new PerfectMirrorBRDF();
   BRDF* diff = new Diffuse(1.0);
-  
+
   scene.add( new Shape( new Sphere( Vec3{0, 0, -2}, 1.0 ),
                         mirr,
                         new SolidColor(spectrum::one)));
@@ -104,11 +104,9 @@ PerspectiveCamera dof_scene(Scene& scene, scalar ar)
                        new SolidColor(spectrum{0.3, 0.1, 1.0})));
 
   scene.add( new DirectionalLight( Vec3(-1, 1, -1), spectrum{5.0}));
-                                  
+
   return PerspectiveCamera(Vec3::zero, -Vec3::z_axis, Vec3::y_axis,
                            PI/2, ar, 0.02, 1.0);
-                        
-
 }
 
 int main(int argc, char** args)
@@ -126,29 +124,30 @@ int main(int argc, char** args)
     usage(args);
     exit(1);
   }
-  
-  Scene scene;
-  PerspectiveCamera cam = dof_scene(scene, scalar(WIDTH)/scalar(HEIGHT));
 
-  
+  Scene scene;
+  PerspectiveCamera cam = default_scene(scene, scalar(WIDTH)/scalar(HEIGHT));
+
   Film f(WIDTH, HEIGHT, new BoxFilter);
-  
-  PathTracerIntegrator igr;
+
+  PathTracerIntegrator::Options opt;
+
   const uint per_pixel = atoi(args[3]);
   if (per_pixel == 0)
   {
     usage(args);
     exit(1);
   }
-  
-  igr.samples_per_pixel = per_pixel;
+
+  opt.samples_per_pixel = per_pixel;
+
+  PathTracerIntegrator igr(opt);
 
   cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, " << per_pixel << " samples per pixel\n";
-  
+
   igr.render(&cam, &scene, &f);
   //f.render_to_console(cout);
   f.render_to_ppm(cout, new LinearToneMapper);
-  
+
   return 0;
 }
-

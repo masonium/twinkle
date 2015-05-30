@@ -21,24 +21,5 @@ class BWIntegrator : public Integrator
 public:
   virtual void render(Camera* cam, Scene* scene, Film* film) override;
 };
-  
-class PathTracerIntegrator : public Integrator
-{
-public:
-  PathTracerIntegrator();
-  
-  virtual void render(Camera* cam, Scene* scene, Film* film) override;
-  
-  uint samples_per_pixel;
 
-private:
-  spectrum trace_ray(Scene* scene, const Ray& r, int depth);
-  spectrum trace_shadow_ray(Scene* scene, PossibleEmissive const* em, const Ray& r);
 
-  spectrum environmental_lighting(const Vec3& ray_dir) const;
-
-  unique_ptr<UniformSampler> sampler;  
-  bool russian_roulette;
-  scalar rr_kill_prob;
-  int max_depth;
-};
