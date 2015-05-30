@@ -1,4 +1,5 @@
 #include "math_util.h"
+#include "vec3.h"
 
 scalar approx_gt(scalar x, scalar y)
 {
@@ -21,4 +22,26 @@ scalar qf(scalar a, scalar b, scalar c)
 scalar norm(const scalar& s)
 {
   return fabs(s);
+}
+
+scalar fresnel_reflectance(const Vec3& incoming, const Vec3& normal,
+                           scalar n1, scalar n2)
+{
+  const scalar ci = incoming.dot(normal);
+  const scalar si2 = 1 - ci * ci;
+
+  const scalar nr = n1/n2;
+  
+  const scalar u = sqrt( 1 - nr * nr * si2 );
+
+  const scalar sq_Rs = (nr * ci - u) / (nr * ci + u);
+  const scalar sq_Rp = (nr * u - ci) / (nr * u + ci);
+
+  return 0.5 * (sq_Rs * sq_Rs + sq_Rp * sq_Rp);
+}
+
+scalar fresnel_transmittance(const Vec3& incoming, const Vec3& normal,
+                             scalar n1, scalar n2)
+{
+  return 1 - fresnel_reflectance(incoming, normal, n1, n2);
 }

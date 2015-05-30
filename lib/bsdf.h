@@ -125,14 +125,8 @@ public:
   }
 
   Vec3 sample(const Vec3& incoming, const Vec3& normal,
-              scalar r1, scalar r2, scalar& p, scalar& reflectance) const override
-  {
-    p = 1.0;
-    reflectance = fresnel_reflectance(normal, incoming, refraction_index::AIR, ri);
-    Vec3 proj = incoming.projectOnto(normal);
-    return proj * 2.0 - incoming;
-  }
-
+              scalar r1, scalar r2, scalar& p, scalar& reflectance) const override;
+  
 private:
   scalar ri;
 };
