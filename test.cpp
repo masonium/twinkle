@@ -208,7 +208,7 @@ TEST(pi)
 
 TEST(Camera)
 {
-  Camera cam {Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0, 1.0};
+  PerspectiveCamera cam {Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0, 1.0};
 
   const Vec3 pos = cam.position;
   const Vec3 fn = cam.aspect_forward.normal();
@@ -224,9 +224,9 @@ TEST(Camera)
 
 TEST(SinglePixelCamera)
 {
-  Camera cam {Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0, 1.0};
+  PerspectiveCamera cam {Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0, 1.0};
   Film f(1, 1, new BoxFilter);
-  Ray r = cam.sample_pixel(&f, 0, 0, 0.5, 0.5).ray;
+  Ray r = cam.sample_pixel(&f, 0, 0, Sample5D{0.5, 0.5, 0, 0, 0}).ray;
   r.normalize();
   CHECK_CLOSE(1.0, r.direction.norm(), PRECISE_EPS);
   CHECK_ARRAY_CLOSE(Vec3(0.0, 0.0, -1.0).v, r.direction.v, 3, PRECISE_EPS);
@@ -234,11 +234,12 @@ TEST(SinglePixelCamera)
 
 TEST(TwoPixelCamera)
 {
-  Camera cam {Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0, 1.0};
+  PerspectiveCamera cam {Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0, 1.0};
   Film f(2, 2, new BoxFilter);
-  Ray r1 = cam.sample_pixel(&f, 0, 0, 0.5, 0.5).ray;
-  Ray r2 = cam.sample_pixel(&f, 0, 1, 0.5, 0.5).ray;
-  Ray r3 = cam.sample_pixel(&f, 1, 0, 0.5, 0.5).ray;
+  Sample5D samp{0.5, 0.5, 0, 0, 0} ;
+  Ray r1 = cam.sample_pixel(&f, 0, 0, samp).ray;
+  Ray r2 = cam.sample_pixel(&f, 0, 1, samp).ray;
+  Ray r3 = cam.sample_pixel(&f, 1, 0, samp).ray;
   r1.normalize();
   r2.normalize();
   r3.normalize();

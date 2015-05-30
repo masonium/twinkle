@@ -6,6 +6,7 @@
 #include "spectrum.h"
 #include "film.h"
 #include "ray.h"
+#include "sampler.h"
 
 using std::vector;
 using std::ostream;
@@ -13,14 +14,25 @@ using std::ostream;
 class Camera
 {
 public:
-  Camera(Vec3 pos, Vec3 lookat_, Vec3 up,
-         scalar fov_, scalar aspect_);
+  virtual PixelSample sample_pixel(Film* f, int x, int y, const Sample5D&) = 0;
+
+  virtual ~Camera() { }
+};
+
+class PerspectiveCamera : public Camera
+{
+public:
+  PerspectiveCamera(Vec3 pos, Vec3 lookat_, Vec3 up,
+         scalar fov_, scalar aspect_,
+         scalar aperture_radius_ = 0.0, scalar f = 1.0);
   
-  PixelSample sample_pixel(Film* f, int x, int y, scalar r1, scalar r2);
+  PixelSample sample_pixel(Film* f, int x, int y, const Sample5D&) override;
 
   Vec3 position;
   Vec3 aspect_forward;
   Vec3 up;
   Vec3 right;
   scalar aspect;
+  const scalar aperture, focal_length;
 };
+

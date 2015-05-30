@@ -18,8 +18,8 @@ void PathTracerIntegrator::render(Camera* cam, Scene* scene, Film* film)
     {
       for (uint d = 0; d < samples_per_pixel; ++d)
       {
-        auto sample = sampler->sample_2d();
-        PixelSample ps = cam->sample_pixel(film, x, y, sample[0], sample[1]);
+        auto sample = sampler->sample_5d();
+        PixelSample ps = cam->sample_pixel(film, x, y, sample);
         spectrum s = trace_ray(scene, ps.ray, 1);
         film->add_sample(ps, s);
       }

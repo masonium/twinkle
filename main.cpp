@@ -39,7 +39,7 @@ void usage(char** args)
   cerr << args[0] << ": WIDTH HEIGHT SAMPLES-PER-PIXEL\n";
 }
 
-void default_scene(Scene& scene)
+PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
 {
   BRDF* b = new Diffuse{1.0};
 
@@ -79,6 +79,36 @@ void default_scene(Scene& scene)
     const scalar pr = 4.0;
     scene.add( new PointLight{ Vec3(pr*cos(angle), 2.0, pr*sin(angle)), spectrum{5.0} });
   }
+  
+  auto cam_pos = Vec3{0, 2, 7.5}*0.8;
+
+  return PerspectiveCamera(cam_pos, Vec3{0, -2.0, 0}, Vec3{0, 1, 0}, PI / 2.0,
+                           aspect_ratio);
+}
+
+PerspectiveCamera dof_scene(Scene& scene, scalar ar)
+{
+  BRDF* mirr = new PerfectMirrorBRDF();
+  BRDF* diff = new Diffuse(1.0);
+  
+  scene.add( new Shape( new Sphere( Vec3{0, 0, -2}, 1.0 ),
+                        mirr,
+                        new SolidColor(spectrum::one)));
+
+  scene.add( new Shape(new Sphere( Vec3{0, 0, 2}, 1.0 ),
+                       diff,
+                       new SolidColor(spectrum{1.0, 0.2, 0.3})));
+
+  scene.add( new Shape(new Sphere( Vec3{0.5, 0, -0.5}, 0.2),
+                       diff,
+                       new SolidColor(spectrum{0.3, 0.1, 1.0})));
+
+  scene.add( new DirectionalLight( Vec3(-1, 1, -1), spectrum{5.0}));
+                                  
+  return PerspectiveCamera(Vec3::zero, -Vec3::z_axis, Vec3::y_axis,
+                           PI/2, ar, 0.02, 1.0);
+                        
+
 }
 
 int main(int argc, char** args)
@@ -88,10 +118,6 @@ int main(int argc, char** args)
     usage(args);
     exit(1);
   }
-  
-  Scene scene;
-  default_scene(scene);
-
   const uint WIDTH = atoi(args[1]);
   const uint HEIGHT = atoi(args[2]);
 
@@ -101,10 +127,11 @@ int main(int argc, char** args)
     exit(1);
   }
   
-  Film f(WIDTH, HEIGHT, new BoxFilter);
-  Camera cam {Vec3{0, 2, 7.5}*0.8, Vec3{0, -2.0, 0}, Vec3{0, 1, 0}, PI / 2.0,
-  scalar(WIDTH)/HEIGHT};
+  Scene scene;
+  PerspectiveCamera cam = dof_scene(scene, scalar(WIDTH)/scalar(HEIGHT));
 
+  
+  Film f(WIDTH, HEIGHT, new BoxFilter);
   
   PathTracerIntegrator igr;
   const uint per_pixel = atoi(args[3]);
