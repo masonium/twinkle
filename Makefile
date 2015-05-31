@@ -15,6 +15,8 @@ DEPS = $(OBJS:.o=.d)
 
 EXES = twinkle test_twinkle fresnel_test
 
+CXX = g++
+
 .PHONY: test
 
 all: $(EXES)
@@ -22,8 +24,8 @@ all: $(EXES)
 -include $(DEPS)
 
 obj/%.o: lib/%.cpp
-	g++ -c -o $@ $< $(CXXFLAGS) $(LFLAGS)
-	g++ -MM $(CXXFLAGS) $(LFLAGS) $< > obj/$*.d
+	$(CXX) -c -o $@ $< $(CXXFLAGS) $(LFLAGS)
+	$(CXX) -MM $(CXXFLAGS) $(LFLAGS) $< > obj/$*.d
 	@mv -f obj/$*.d obj/$*.d.tmp
 	@sed -e 's|.*:|obj/$*.o:|' < obj/$*.d.tmp > obj/$*.d
 	@sed -e 's/.*://' -e 's/\\$$//' < obj/$*.d.tmp | fmt -1 | \
@@ -31,13 +33,13 @@ obj/%.o: lib/%.cpp
 	@rm -f obj/$*.d.tmp
 
 twinkle: $(OBJS) main.cpp
-	g++ -o $@ $^ $(CXXFLAGS) $(LFLAGS)
+	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
 test_twinkle: $(OBJS) test.cpp	
-	g++ -o $@ $^ $(CXXFLAGS) $(LFLAGS)
+	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
 fresnel_test: $(OBJS) fresnel_test.cpp	
-	g++ -o $@ $^ $(CXXFLAGS) $(LFLAGS)
+	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
 test: test_twinkle
 	./test_twinkle
