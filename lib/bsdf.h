@@ -95,7 +95,9 @@ public:
               scalar r1, scalar r2, scalar& p, scalar& reflectance) const override
   {
     p = 1.0;
-    reflectance = 1.0;
+    
+    reflectance = 1.0 / incoming.dot(normal);
+    
     Vec3 proj = incoming.projectOnto(normal);
     return proj * 2.0 - incoming;
   }

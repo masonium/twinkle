@@ -11,7 +11,7 @@ Vec3 Diffuse::sample(const Vec3& incoming, const Vec3& normal,
 
   scalar x = radius * cos(theta), y = radius * sin(theta);
 
-  scalar z{sqrt(max(scalar(0.0), 1 - x*x - y*y))};
+  scalar z = sqrt(max(scalar(0.0), 1 - x*x - y*y));
   p = z / PI;
   reflectance = r;
 
