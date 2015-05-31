@@ -12,7 +12,7 @@ LightSample::LightSample(spectrum s, const Ray& ray_) :
   
 }
 
-bool LightSample::is_occluded(Scene* scene) const
+bool LightSample::is_occluded(const Scene* scene) const
 {
   switch (occ_type)
   {

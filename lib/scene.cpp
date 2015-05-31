@@ -5,7 +5,7 @@ using std::move;
 using std::numeric_limits;
 using std::min;
 
-Scene::Scene() : em_counter(0)
+Scene::Scene()
 {
 }
 

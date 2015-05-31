@@ -23,6 +23,4 @@ public:
 private:
   vector<Shape const*> shapes;
   vector<Light const*> lights;
-
-  mutable int em_counter;
 };
