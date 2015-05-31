@@ -1,33 +1,93 @@
 #include "path_tracer.h"
+#include "util.h"
 #include <iostream>
+#include <queue>
+#include <thread>
+#include <mutex>
+#include <memory>
 
 using std::cerr;
+using std::queue;
+using std::mutex;
+using std::lock_guard;
+using std::make_shared;
+using std::shared_ptr;
+using std::thread;
+
+
+PathTracerIntegrator::Options::Options()
+  : russian_roulette(false), rr_kill_prob(0.1),
+    max_depth(10), samples_per_pixel(16), num_threads(1)
+{
+  assert( 0.0 <= rr_kill_prob && rr_kill_prob <= 1.0 );
+}
+
 
 PathTracerIntegrator::PathTracerIntegrator(const PathTracerIntegrator::Options& opt_)
-  : sampler(unique_ptr<UniformSampler>(new UniformSampler())),
-      opt(opt_)
+  : rays_traced(0), primary_rays_traced(0), opt(opt_)
 {
 }
 
-void PathTracerIntegrator::render(Camera* cam, Scene* scene, Film* film)
+void PathTracerIntegrator::render(const Camera* cam, const Scene* scene, Film& film)
 {
-  for (uint x = 0; x < film->width; ++x)
+  int num_threads = opt.num_threads;
+  if (num_threads == 0)
   {
-    for (uint y = 0; y < film->height; ++y)
+    num_threads = num_system_procs();
+  }
+
+  TaskQueue queue;
+
+  const uint PER_SIDE = 2;
+  const int SAMPLES_PER_TASK = 16;
+  
+  int samples_left = opt.samples_per_pixel;
+  
+  // Populate the task queue.
+  while (samples_left > 0)
+  {
+    int task_samples = min(samples_left, SAMPLES_PER_TASK);
+    samples_left -= SAMPLES_PER_TASK;
+    for (uint i = 0; i < PER_SIDE; ++i)
     {
-      for (uint d = 0; d < opt.samples_per_pixel; ++d)
+      uint x = film.width * i / PER_SIDE;
+      uint w = film.width * (i+1) / PER_SIDE - film.width * i / PER_SIDE;
+      
+      for (uint j = 0; j < PER_SIDE; ++j)
       {
-        auto sample = sampler->sample_5d();
-        PixelSample ps = cam->sample_pixel(film, x, y, sample);
-        spectrum s = trace_ray(scene, ps.ray, 1);
-        film->add_sample(ps, s);
+        uint y = film.height * j / PER_SIDE;
+        uint h = film.height * (j+1) / PER_SIDE - film.height * j / PER_SIDE;
+
+        queue.emplace(Film::Rect{x, y, w, h}, static_cast<uint>(task_samples));
       }
     }
   }
+
+  // Create adn run the threads.
+  vector<shared_ptr<Film>> films;
+  vector<thread> threads;
+  for (int i = 0; i < num_threads; ++i)
+  {
+    films.push_back(make_shared<Film>(film.width, film.height, film.filter));
+    threads.push_back(thread(&PathTracerIntegrator::render_thread,
+                             this, cam, scene, std::ref(queue), films[i]));
+  }
+
+  // Merge and join the results.
+  for (auto& th: threads)
+    th.join();
+  
+  for (const auto& f: films)
+    film.merge(*f.get());
 }
 
-spectrum PathTracerIntegrator::trace_ray(Scene* scene, const Ray& ray, int depth)
+spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
+                                         shared_ptr<UniformSampler> sampler, int depth) const
 {
+  ++rays_traced;
+  if (depth == 1)
+    ++primary_rays_traced;
+  
   Intersection isect = scene->intersect(ray);
   const Vec3 ray_dir_n = -ray.direction.normal();
   if (!isect.valid())
@@ -87,27 +147,62 @@ spectrum PathTracerIntegrator::trace_ray(Scene* scene, const Ray& ray, int depth
     scalar brdf_reflectance;
     Vec3 brdf_dir = isect.sample_brdf(ray_dir_n, brdf_u.u[0], brdf_u.u[1],
                                       brdf_p, brdf_reflectance);
+
+    scalar nl = max<scalar>(brdf_dir.dot(isect.normal), 0.0);
     if (brdf_p > 0)
     {
-       total += trace_ray( scene, Ray{isect.position, brdf_dir}.nudge(), depth + 1 ) *
-        spectrum{p_mult / brdf_p * brdf_dir.dot(isect.normal) * brdf_reflectance};
+      total += trace_ray(scene, Ray{isect.position, brdf_dir}.nudge(),
+                         sampler, depth + 1) *
+        spectrum{p_mult / brdf_p * nl * brdf_reflectance};
     }
   }
 
   return total * isect.texture_at_point();
 }
 
-spectrum PathTracerIntegrator::trace_shadow_ray(Scene* scene, PossibleEmissive const* em,
-                                                const Ray& ray)
-{
-  auto isect = scene->shadow_intersect(ray);
-  if (isect.valid() && isect.shape == em)
-    return em->emission();
-  else
-    return spectrum::zero;
-}
-
 spectrum PathTracerIntegrator::environmental_lighting(const Vec3& ray_dir) const
 {
   return spectrum{1.0};
 }
+
+void PathTracerIntegrator::render_thread(const Camera* cam, const Scene* scene,
+                                         TaskQueue& queue, shared_ptr<Film> film) const
+{
+  auto sampler = make_shared<UniformSampler>();
+  
+  while (true)
+  {
+    Task task;
+    
+    {
+      lock_guard<mutex> lock(render_queue_mutex);
+      if (queue.empty())
+        break;
+      task = queue.front();
+      queue.pop();
+    }
+
+    if (task.samples_per_pixel == 0)
+      break;
+
+    for (uint x = 0; x < task.rect.width; ++x)
+    {
+      for (uint y = 0; y < task.rect.height; ++y)
+      {
+        for (uint d = 0; d < task.samples_per_pixel; ++d)
+        {
+          auto sample = sampler->sample_5d();
+          
+          int px = x + task.rect.x;
+          int py = y + task.rect.y;
+          
+          PixelSample ps = cam->sample_pixel(*film, px, py, sample);
+          spectrum s = trace_ray(scene, ps.ray, sampler, 1);
+          
+          film->add_sample(ps, s);
+        }
+      }
+    }
+  }
+}
+

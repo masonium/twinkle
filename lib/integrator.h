@@ -12,14 +12,14 @@ using std::unique_ptr;
 class Integrator
 {
 public:
-  virtual void render(Camera* cam, Scene* scene, Film* film) = 0;
+  virtual void render(const Camera* cam, const Scene* scene, Film& film) = 0;
 };
 
 
 class BWIntegrator : public Integrator
 {
 public:
-  virtual void render(Camera* cam, Scene* scene, Film* film) override;
+  virtual void render(const Camera* cam, const Scene* scene, Film& film) override;
 };
 
 

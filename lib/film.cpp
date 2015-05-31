@@ -11,7 +11,8 @@ using std::cout;
 using std::ostream_iterator;
 using std::accumulate;
 
-Film::Film(uint w_, uint h_, ImageSampleFilter* f) : width(w_), height(h_), plate(w_ * h_), filter(f)
+Film::Film(uint w_, uint h_, const ImageSampleFilter* f)
+  : width(w_), height(h_), filter(f), plate(w_ * h_)
 {
 }
 
@@ -27,6 +28,14 @@ vector<spectrum> Film::pixel_list() const
     ret.push_back( p.total / p.weight );
 
   return ret;
+}
+
+void Film::merge(const Film& f) 
+{
+  transform( plate.begin(), plate.end(),
+             f.plate.begin(),
+             plate.begin(),
+             [](Pixel a, Pixel b) { return Pixel{a.weight + b.weight, a.total + b.total}; });
 }
 
 void Film::render_to_ppm(ostream& out, ToneMapper* mapper)
@@ -69,7 +78,7 @@ void Film::render_to_console(ostream& out)
 
 void BoxFilter::add_sample(Film* film, const PixelSample& p, const spectrum& s) const
 {
-  FilmPixel& fp = film->at(p.x, p.y);
+  Film::Pixel& fp = film->at(p.x, p.y);
   fp.total += s;
   fp.weight += 1;
 }

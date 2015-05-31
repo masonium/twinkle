@@ -19,10 +19,15 @@ struct PixelSample
   }
 
   int x, y;
-  scalar px, py;
+  scalar px, py; // (0.5, 0.5) is the center of the pixel.
   Ray ray;
 };
 
+/**
+ * An image sample filter combines adds a pixel sample to the film. A given
+ * pixel sample is allowed to contribute to multiple pixels, but the filter must
+ * be linear.
+ */
 class ImageSampleFilter
 {
 public:
@@ -30,6 +35,10 @@ public:
 };
 
 
+/**
+ * In a BoxFilter, each pixel sample contributes only to its native pixel. All
+ * samples within the pixel are counted equally.
+ */
 class BoxFilter : public ImageSampleFilter
 {
 public:
@@ -57,33 +66,45 @@ public:
                uint w, uint h) const override;
 };
 
-struct FilmPixel
-{
-  scalar weight;
-  spectrum total;
-};
-
 class Film
 {
-public:  
-  Film(uint w_, uint h_, ImageSampleFilter* f);
+public:
+  struct Rect
+  {
+    Rect(uint x_, uint y_, uint w_, uint h_) : x(x_), y(y_), width(w_), height(h_) {} 
+    Rect() : Rect(0, 0, 0, 0) {}
+    
+    uint x, y;
+    uint width, height;
+  };
+
+  struct Pixel
+  {
+    scalar weight;
+    spectrum total;
+  };
+  
+  Film(uint w_, uint h_, const ImageSampleFilter* f);
   
   void add_sample(const PixelSample& ps, const spectrum& s);
   
   void render_to_console(ostream& out);
   void render_to_ppm(ostream& out, ToneMapper* mapper);
+
+  void merge(const Film& other);
   
-  FilmPixel at(int x, int y) const
+  Pixel at(int x, int y) const
   {
     return plate[index(x, y)];
   }
 
-  FilmPixel& at(int x, int y)
+  Pixel& at(int x, int y)
   {
     return plate[index(x, y)];
   }
 
   const uint width, height;  
+  const ImageSampleFilter* filter;
 
 private:
   vector<spectrum> pixel_list() const;
@@ -95,6 +116,5 @@ private:
     return y * width + x;
   }
   
-  vector<FilmPixel> plate;
-  ImageSampleFilter* filter;
+  vector<Pixel> plate;
 };

@@ -5,6 +5,7 @@
 #include "sphere.h"
 #include "bsdf.h"
 #include "path_tracer.h"
+#include "util.h"
 
 using std::cerr;
 using std::cout;
@@ -47,7 +48,7 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
 
   //smallpt_scene(scene);
 
-  scene.add( new Shape( new Sphere{ Vec3{0.0, -1.0, 0.0}, 1.0},
+  scene.add( new Shape( new Sphere{ Vec3{0.0, -1.0, 0.0}, 2.0},
                               mirror,
                               new SolidColor(spectrum{1.0})) );
 
@@ -140,13 +141,20 @@ int main(int argc, char** args)
   }
 
   opt.samples_per_pixel = per_pixel;
-
+  if (argc >= 5)
+    opt.num_threads = atoi(args[4]);
+  else
+    opt.num_threads = 1;
+  
   PathTracerIntegrator igr(opt);
 
-  cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, " << per_pixel << " samples per pixel\n";
+  cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, "
+       << per_pixel << " samples per pixel\n";
 
-  igr.render(&cam, &scene, &f);
-  //f.render_to_console(cout);
+  igr.render(&cam, &scene, f);
+
+  cerr << "Rendered " << igr.num_primary_rays_traced() << " rays.";
+  
   f.render_to_ppm(cout, new LinearToneMapper);
 
   return 0;
