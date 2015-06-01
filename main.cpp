@@ -45,16 +45,13 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
   BRDF* b = new Diffuse{1.0};
 
   BRDF* mirror = new PerfectMirrorBRDF{};
+  BRDF* emit = new EmissiveBRDF{spectrum{1}};
 
-  //smallpt_scene(scene);
+  GridTexture2D* check = new GridTexture2D(spectrum::one, spectrum::zero, 10.0, 0.1);
 
-  scene.add( new Shape( new Sphere{ Vec3{0.0, -1.0, 0.0}, 2.0},
-                              mirror,
-                              new SolidColor(spectrum{1.0})) );
-
-  // scene.add( new Shape( new Sphere{ Vec3{2.0, -1.0, 0.0}, 1.0},
-  //                             b,
-  //                             new SolidColor(spectrum::from_hsv(0.0, 1.0, 0.8))) );
+  scene.add( new Shape( new Sphere{ Vec3{0.0, -1.0, 0.0}, 1.0},
+                              b,
+                              check) );
 
   scalar distance_from_center = 3.0;
   scalar sphere_radius = 0.75;
@@ -64,9 +61,10 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
   {
     const scalar angle = 2 * PI * i / num_sides;
     const scalar pr = 4.0;
-    scene.add( new Shape( new Sphere{ Vec3(pr*cos(angle), -2.0+sphere_radius, pr*sin(angle)), sphere_radius},
-                                b,
-                                new SolidColor(spectrum::from_hsv(i*360/num_sides, 1.0, 1.0))));
+    const Vec3 sp(pr*cos(angle), -2.0+sphere_radius, pr*sin(angle));
+    scene.add( new Shape( new Sphere{ sp, sphere_radius},
+                          b,
+                          new SolidColor(spectrum::from_hsv(i*360/num_sides, 1.0, 1.0))));
   }
 
   scene.add( new Shape( new Sphere{ Vec3{0.0, -1000.0, 0.0}, 998.0},
@@ -154,8 +152,8 @@ int main(int argc, char** args)
   igr.render(&cam, &scene, f);
 
   cerr << "Rendered " << igr.num_primary_rays_traced() << " rays.";
-  
-  f.render_to_ppm(cout, new LinearToneMapper);
 
+  f.render_to_ppm(cout, new LinearToneMapper);
+  
   return 0;
 }
