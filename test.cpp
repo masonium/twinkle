@@ -11,6 +11,8 @@
 #define EPS 0.0001
 #define PRECISE_EPS 0.00001
 
+#define CHECK_VEC3(x, y) CHECK_ARRAY_CLOSE((x).x, (y).v, 3, EPS)
+
 scalar rf()
 {
   return rand() / (1.0 + RAND_MAX);
@@ -121,6 +123,20 @@ SUITE(Vec3)
     Vec3 y = x;
     Vec3 z = move(x);
     CHECK_ARRAY_CLOSE(y.v, z.v, 3, PRECISE_EPS);
+  }
+
+  TEST(Vec_angle)
+  {
+    for (int i = 0; i < 20; ++i)
+    {
+      scalar theta = rf() * 2 * PI;
+      scalar phi = rf() * PI;
+      Vec3 x = Vec3::from_euler(theta, phi);
+      scalar t2, p2;
+      x.to_euler(t2, p2);
+      CHECK_CLOSE(theta, t2, EPS);
+      CHECK_CLOSE(phi, p2, EPS);
+    }
   }
 }
 

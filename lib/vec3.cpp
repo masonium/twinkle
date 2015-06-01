@@ -1,4 +1,5 @@
 #include "vec3.h"
+#include "math_util.h"
 
 Vec3 Vec3::x_axis{1.0, 0.0, 0.0};
 Vec3 Vec3::y_axis{0.0, 1.0, 0.0};
@@ -47,4 +48,12 @@ Vec3 Vec3::_rotateAxisAngle(const Vec3& axis, scalar c, scalar s) const
   Vec3 y = axis.cross(x);
 
   return invariant + (x * c) + (y * s);
+}
+
+void Vec3::to_euler(scalar& theta, scalar& phi) const
+{
+  phi = acos(z);
+  theta = atan2(y, x);
+  if (theta < 0)
+    theta += 2 * PI;
 }

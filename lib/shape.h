@@ -12,10 +12,19 @@ class Geometry
 {
 public:
   virtual scalar intersect(const Ray& r) const = 0;
-  virtual scalar shadow_intersect(const Ray& r) const = 0;
   virtual Vec3 normal(Vec3 point) const = 0;
   virtual Vec3 sample_shadow_ray_dir(const Intersection& isect,
                                      scalar r1, scalar r2) const = 0;
+  
+  virtual bool is_differential() const { return false; }
+  
+  /*
+   * texture_coord must be implemented if is_differential is true
+   */
+  virtual void texture_coord(const Vec3& pos, const Vec3& normal,
+                             scalar& u, scalar& v, Vec3& dpdu, Vec3& dpdv) const
+  {
+  }
 };
 
 class PossibleEmissive
@@ -29,18 +38,14 @@ public:
 class Shape : public PossibleEmissive
 {
 public:
-  Shape(Geometry* geom, BRDF* ref, Texture* tex) : geometry(geom), brdf(ref), texture(tex)
+  Shape(Geometry* geom, BRDF* ref, Texture2D* tex)
+    : geometry(geom), brdf(ref), texture(tex)
   {
   }
   
   scalar intersect(const Ray& r) const
   {
     return geometry->intersect(r);
-  }
-  
-  scalar shadow_intersect(const Ray& r) const
-  {
-    return geometry->shadow_intersect(r);
   }
 
   bool is_emissive() const
@@ -53,47 +58,17 @@ public:
     return brdf->emission();
   }
 
+  bool is_differential() const
+  {
+    return geometry->is_differential();
+  }
+  
   Vec3 sample_shadow_ray_dir(const Intersection& isect, scalar r1, scalar r2) const
   {
     return geometry->sample_shadow_ray_dir(isect, r1, r2);
   }
+  
   const Geometry* geometry;
   BRDF* brdf;
-  Texture* texture;
-};
-
-class Intersection
-{
-public:
-  Intersection(const Shape* s, const Ray& r, scalar t_) :
-    shape(s), t(t_), position(r.evaluate(t))
-  {
-    if (s != nullptr)
-      normal = s->geometry->normal(position);
-  }
-
-  operator bool() const 
-  {
-    return valid();
-  }
-  
-  bool valid() const
-  {
-    return shape != nullptr;
-  }
-
-  spectrum texture_at_point() const
-  {
-    return shape->texture->at_point(position);
-  }
-
-  Vec3 sample_brdf(const Vec3& incoming, scalar r1, scalar r2, 
-                   scalar& p, scalar& reflectance) const
-  {
-    return shape->brdf->sample(incoming, normal, r1, r2, p, reflectance);
-  }
-  
-  const Shape* shape;
-  scalar t;
-  Vec3 position, normal;
+  Texture2D* texture;
 };

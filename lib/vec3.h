@@ -26,6 +26,11 @@ public:
    * the (0, 0, 1) vector.
    */
   static Vec3 from_euler(scalar theta, scalar phi);
+
+  /*
+   * Assumes that the calling vector is normal.
+   */
+  void to_euler(scalar& theta, scalar& phi) const;
   
   Vec3 projectOnto(Vec3 res) const
   {
@@ -36,6 +41,7 @@ public:
 
   Vec3 rotateAxisAngle(const Vec3& axis, scalar angle) const;
 
+  
   static Vec3 x_axis;
   static Vec3 y_axis;
   static Vec3 z_axis;

@@ -52,22 +52,3 @@ Intersection Scene::intersect(const Ray& ray) const
     return Intersection(best_shape, ray, best_t);
   return Intersection(nullptr, ray, -1);
 }
-
-Intersection Scene::shadow_intersect(const Ray& ray) const
-{
-  Shape const* best_shape = nullptr;
-  scalar best_t = numeric_limits<double>::max();
-
-  for (auto s: shapes)
-  {
-    scalar t = s->shadow_intersect(ray);
-    if (t > 0 && t < best_t)
-    {
-      best_t = t;
-      best_shape = s;
-    }
-  }
-  if (best_shape != nullptr)
-    return Intersection(best_shape, ray, best_t);
-  return Intersection(nullptr, ray, -1);
-}
