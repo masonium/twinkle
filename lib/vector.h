@@ -2,6 +2,10 @@
 
 #include "twinkle.h"
 #include <cmath>
+#include <iostream>
+
+using std::istream;
+using std::ostream;
 
 template <typename vec_type>
 class VectorT3
@@ -110,5 +114,18 @@ public:
   {
     return sqrt(norm2());
   }
-  
+
+  static vec_type deserialize(istream& in);
+  void serialize(ostream& out)
+  {
+    out.write(reinterpret_cast<char*>(v), sizeof(v));
+  }
 };
+
+template <typename vec_type>
+vec_type VectorT3<vec_type>::deserialize(istream& in)
+{
+  vec_type x;
+  in.read(reinterpret_cast<char*>(x.v), sizeof(x.v));
+  return x;
+}

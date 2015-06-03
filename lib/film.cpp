@@ -1,8 +1,8 @@
-
-#include "film.h"
 #include <numeric>
 #include <iterator>
 #include <algorithm>
+#include <cstring>
+#include "film.h"
 
 using std::transform;
 using std::back_inserter;
@@ -14,6 +14,29 @@ using std::accumulate;
 Film::Film(uint w_, uint h_, const ImageSampleFilter* f)
   : width(w_), height(h_), filter(f), plate(w_ * h_)
 {
+}
+
+
+Film::Film(istream& in) : width(0), height(0), filter(new BoxFilter)
+{
+  char buf[8];
+  in.read(buf, 8);
+  if (strncmp(buf, "TWINKLE", 8) != 0)
+    return;
+
+  in.read(reinterpret_cast<char*>(const_cast<uint32_t*>(&width)), sizeof(width));
+  in.read(reinterpret_cast<char*>(const_cast<uint32_t*>(&height)), sizeof(height));
+
+  if (!in.good())
+    return;
+  if (width == 0 || height == 0)
+    return;
+
+  plate.resize(width*height);
+  for (uint32_t i = 0; i < width * height; ++i)
+  {
+    plate[i] = Pixel{ scalar(1.0), spectrum::deserialize(in) };
+  }
 }
 
 void Film::add_sample(const PixelSample& ps, const spectrum& s)
@@ -56,7 +79,17 @@ void Film::render_to_ppm(ostream& out, ToneMapper* mapper)
   }
 }
 
-void Film::render_to_console(ostream& out)
+void Film::render_to_twi(ostream& out) const
+{
+  vector<spectrum> raw = pixel_list();
+  out.write("TWINKLE", 8);
+  out.write(reinterpret_cast<const char*>(&width), sizeof(width));
+  out.write(reinterpret_cast<const char*>(&height), sizeof(height));
+  for (auto& s: raw)
+    s.serialize(out);
+}
+
+void Film::render_to_console(ostream& out) const
 {
   for (int y = height - 1; y >= 0; --y)
   {
@@ -81,22 +114,4 @@ void BoxFilter::add_sample(Film* film, const PixelSample& p, const spectrum& s) 
   Film::Pixel& fp = film->at(p.x, p.y);
   fp.total += s;
   fp.weight += 1;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void CutoffToneMapper::tonemap(const vector<spectrum>& input, vector<spectrum>& output,
-                               uint w, uint h) const
-{
-  transform(input.begin(), input.end(), std::back_inserter(output),
-            [](const spectrum& s) { return s.clamp(0.0, 1.0); });
-}
-
-void LinearToneMapper::tonemap(const vector<spectrum>& input, vector<spectrum>& output,
-                               uint w, uint h) const
-{
-  spectrum M = accumulate(input.begin(), input.end(),  spectrum::one, spectrum::max);
-  scalar cM = max(max(M.x, M.y), M.z);
-
-  transform(input.begin(), input.end(), std::back_inserter(output),
-            [&](const spectrum& s) { return s / cM; });
 }

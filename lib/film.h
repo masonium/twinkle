@@ -34,7 +34,6 @@ public:
   virtual void add_sample(Film* film, const PixelSample& p, const spectrum& s) const = 0;
 };
 
-
 /**
  * In a BoxFilter, each pixel sample contributes only to its native pixel. All
  * samples within the pixel are counted equally.
@@ -66,6 +65,16 @@ public:
                uint w, uint h) const override;
 };
 
+class RSSFToneMapper : public ToneMapper
+{
+public:
+  void tonemap(const vector<spectrum>& input, vector<spectrum>& output,
+               uint w, uint h) const override;
+
+private:
+  scalar middle_luminance;
+};
+
 class Film
 {
 public:
@@ -80,17 +89,22 @@ public:
 
   struct Pixel
   {
+    Pixel() = default;
+    Pixel(scalar w, const spectrum& t) : weight(w), total(t) { }
+    
     scalar weight;
     spectrum total;
   };
   
   Film(uint w_, uint h_, const ImageSampleFilter* f);
+  Film(istream& in);
   
   void add_sample(const PixelSample& ps, const spectrum& s);
   
-  void render_to_console(ostream& out);
+  void render_to_console(ostream& out) const;
   void render_to_ppm(ostream& out, ToneMapper* mapper);
-
+  void render_to_twi(ostream& out) const;
+  
   void merge(const Film& other);
   
   Pixel at(int x, int y) const
@@ -103,10 +117,11 @@ public:
     return plate[index(x, y)];
   }
 
-  const uint width, height;  
+  const uint32_t width, height;  
   const ImageSampleFilter* filter;
 
 private:
+  
   vector<spectrum> pixel_list() const;
 
   uint index(uint x, uint y) const 

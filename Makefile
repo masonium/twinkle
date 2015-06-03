@@ -13,7 +13,7 @@ OBJSTMP = $(SRCS:.cpp=.o)
 OBJS = $(OBJSTMP:lib/%=obj/%)
 DEPS = $(OBJS:.o=.d)
 
-EXES = twinkle test_twinkle fresnel_test
+EXES = twinkle test_twinkle fresnel_test tonemap
 
 CXX = g++
 
@@ -33,6 +33,9 @@ obj/%.o: lib/%.cpp
 	@rm -f obj/$*.d.tmp
 
 twinkle: $(OBJS) main.cpp
+	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
+
+tonemap: $(OBJS) tonemap_main.cpp
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
 test_twinkle: $(OBJS) test.cpp	

@@ -151,9 +151,9 @@ int main(int argc, char** args)
 
   igr.render(&cam, &scene, f);
 
-  cerr << "Rendered " << igr.num_primary_rays_traced() << " rays.";
+  cerr << "Rendered " << igr.num_primary_rays_traced() << " rays.\n";
 
-  f.render_to_ppm(cout, new LinearToneMapper);
+  f.render_to_twi(cout);
   
   return 0;
 }

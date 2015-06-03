@@ -65,6 +65,8 @@ public:
   static spectrum max(const spectrum &a, const spectrum& b);
   static spectrum from_hex(uint hex_color);
   static spectrum from_hsv(scalar hue, scalar sat, scalar value);
+
+  scalar luminance() const;
   
   static const spectrum one;
   static const spectrum zero;

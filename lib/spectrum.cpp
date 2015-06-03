@@ -16,6 +16,7 @@ spectrum spectrum::from_hex(uint hex)
   const scalar denom = 256.0;
   return spectrum{r / denom, g / denom, b / denom};
 }
+
 spectrum spectrum::from_hsv(scalar hue, scalar sat, scalar value)
 {
   const scalar c = sat * value;
@@ -56,6 +57,11 @@ spectrum spectrum::from_hsv(scalar hue, scalar sat, scalar value)
 spectrum spectrum::max(const spectrum &a, const spectrum& b)
 {
   return spectrum{::max(a.x, b.x), ::max(a.y, b.y), ::max(a.z, b.z)};
+}
+
+scalar spectrum::luminance() const
+{
+  return 0.3 * x + 0.54 * y + 0.16 * z;
 }
 
 ostream& operator<<(ostream& out, spectrum s)
