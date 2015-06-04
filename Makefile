@@ -8,9 +8,9 @@ ifndef CONFIG
 CONFIG=Debug
 endif
 
-SRCS = $(wildcard lib/*.cpp)
+SRCS = $(wildcard src/*.cpp)
 OBJSTMP = $(SRCS:.cpp=.o)
-OBJS = $(OBJSTMP:lib/%=obj/%)
+OBJS = $(OBJSTMP:src/%=obj/%)
 DEPS = $(OBJS:.o=.d)
 
 EXES = twinkle test_twinkle fresnel_test tonemap
@@ -23,7 +23,7 @@ all: $(EXES)
 
 -include $(DEPS)
 
-obj/%.o: lib/%.cpp
+obj/%.o: src/%.cpp
 	$(CXX) -c -o $@ $< $(CXXFLAGS) $(LFLAGS)
 	$(CXX) -MM $(CXXFLAGS) $(LFLAGS) $< > obj/$*.d
 	@mv -f obj/$*.d obj/$*.d.tmp
