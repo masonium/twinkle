@@ -5,7 +5,7 @@
 #include <numeric>
 
 using std::vector;
-using std::weak_ptr;
+using std::shared_ptr;
 
 class ToneMapper
 {
@@ -43,11 +43,11 @@ private:
 class CompositeToneMapper : public ToneMapper
 {
 public:
-  CompositeToneMapper(std::initializer_list<weak_ptr<ToneMapper>> lst);
+  CompositeToneMapper(std::initializer_list<shared_ptr<ToneMapper>> lst);
 
   void tonemap(const vector<spectrum>& input, vector<spectrum>& output,
                uint w, uint h) const override;
 
 private:
-  vector<weak_ptr<ToneMapper>> mappers;
+  vector<shared_ptr<ToneMapper>> mappers;
 };

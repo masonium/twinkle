@@ -11,7 +11,7 @@
 #define EPS 0.0001
 #define PRECISE_EPS 0.00001
 
-#define CHECK_VEC3(x, y) CHECK_ARRAY_CLOSE((x).x, (y).v, 3, EPS)
+#define CHECK_VEC(x, y) CHECK_ARRAY_CLOSE((x).v, (y).v, 3, EPS)
 
 scalar rf()
 {
@@ -268,6 +268,35 @@ TEST(TwoPixelCamera)
   CHECK_CLOSE(r1.direction.y, r3.direction.y, PRECISE_EPS);
   CHECK_CLOSE(r1.direction.z, r3.direction.z, PRECISE_EPS);
 }
+
+SUITE(ToneMap)
+{
+  TEST(LinearNoOp)
+  {
+    LinearToneMapper tm;
+    spectrum val{0.2, 0.5, 0.3};
+    vector<spectrum> image{val};
+    tm.tonemap(image, image, 1, 1);
+    CHECK_VEC(val, image[0]);
+  }
+  TEST(Linear)
+  {
+    LinearToneMapper tm;
+    spectrum val{0.2, 2.0, 0.3};
+    spectrum lin_val{0.1, 1.0, 0.15};
+    vector<spectrum> image{val};
+    tm.tonemap(image, image, 1, 1);
+    CHECK_VEC(lin_val, image[0]);
+  }
+  TEST(Cutoff)
+  {
+    CutoffToneMapper tm;
+    spectrum val{0.2, 2.0, 0.3};
+    spectrum cut_val{0.2, 1.0, 0.3};
+    vector<spectrum> image{val};
+    tm.tonemap(image, image, 1, 1);
+    CHECK_VEC(cut_val, image[0]);
+  }}
 
 int main(int argc, char** args)
 {

@@ -76,7 +76,6 @@ spectrum spectrum::rescale_luminance(scalar nl) const
     return spectrum::zero;
 
   scalar m = ::max(x, ::max(y, z));
-  cout << "max: " << m << "\n";
   spectrum coef = *this / m;
 
   spectrum ret;
