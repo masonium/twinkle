@@ -67,6 +67,7 @@ public:
   static spectrum from_hsv(scalar hue, scalar sat, scalar value);
 
   scalar luminance() const;
+  spectrum rescale_luminance(scalar new_luminance) const;
   
   static const spectrum one;
   static const spectrum zero;

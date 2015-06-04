@@ -1,4 +1,7 @@
 #include "spectrum.h"
+#include <iostream>
+
+using std::cout;
 
 const spectrum spectrum::zero{0.0};
 const spectrum spectrum::one{1.0};
@@ -59,9 +62,27 @@ spectrum spectrum::max(const spectrum &a, const spectrum& b)
   return spectrum{::max(a.x, b.x), ::max(a.y, b.y), ::max(a.z, b.z)};
 }
 
+static const spectrum LC{0.299, 0.587, 0.114};
+
 scalar spectrum::luminance() const
 {
-  return 0.3 * x + 0.54 * y + 0.16 * z;
+  return LC.x * x + LC.y * y + LC.z * z;
+}
+
+spectrum spectrum::rescale_luminance(scalar nl) const
+{
+  scalar L = luminance();
+  if (L == 0)
+    return spectrum::zero;
+
+  scalar m = ::max(x, ::max(y, z));
+  cout << "max: " << m << "\n";
+  spectrum coef = *this / m;
+
+  spectrum ret;
+  const scalar max_denom = (LC.x * coef.x + LC.y * coef.y + LC.z * coef.z);
+
+  return coef * nl / max_denom;
 }
 
 ostream& operator<<(ostream& out, spectrum s)

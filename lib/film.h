@@ -1,13 +1,16 @@
 #pragma once
 
-#include "spectrum.h"
-#include "ray.h"
 #include <iostream>
 #include <cassert>
 #include <vector>
+#include <memory>
+#include "spectrum.h"
+#include "ray.h"
+#include "tonemap.h"
 
 using std::vector;
 using std::ostream;
+using std::weak_ptr;
 
 class Film;
 
@@ -44,37 +47,6 @@ public:
   void add_sample(Film* film, const PixelSample& p, const spectrum& s) const override;
 };
 
-class ToneMapper
-{
-public:
-  virtual void tonemap(const vector<spectrum>& input, vector<spectrum>& output,
-                       uint w, uint h) const = 0;
-};
-
-class CutoffToneMapper : public ToneMapper
-{
-public:
-  void tonemap(const vector<spectrum>& input, vector<spectrum>& output,
-               uint w, uint h) const override;
-};
-
-class LinearToneMapper : public ToneMapper
-{
-public:
-  void tonemap(const vector<spectrum>& input, vector<spectrum>& output,
-               uint w, uint h) const override;
-};
-
-class RSSFToneMapper : public ToneMapper
-{
-public:
-  void tonemap(const vector<spectrum>& input, vector<spectrum>& output,
-               uint w, uint h) const override;
-
-private:
-  scalar middle_luminance;
-};
-
 class Film
 {
 public:
@@ -102,7 +74,7 @@ public:
   void add_sample(const PixelSample& ps, const spectrum& s);
   
   void render_to_console(ostream& out) const;
-  void render_to_ppm(ostream& out, ToneMapper* mapper);
+  void render_to_ppm(ostream& out, weak_ptr<ToneMapper> mapper);
   void render_to_twi(ostream& out) const;
   
   void merge(const Film& other);

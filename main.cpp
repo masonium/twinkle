@@ -45,7 +45,7 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
   BRDF* b = new Diffuse{1.0};
 
   BRDF* mirror = new PerfectMirrorBRDF{};
-  BRDF* emit = new EmissiveBRDF{spectrum{1}};
+  BRDF* emit = new EmissiveBRDF{spectrum{5}};
 
   GridTexture2D* check = new GridTexture2D(spectrum::one, spectrum::zero, 10.0, 0.1);
 
@@ -63,7 +63,7 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
     const scalar pr = 4.0;
     const Vec3 sp(pr*cos(angle), -2.0+sphere_radius, pr*sin(angle));
     scene.add( new Shape( new Sphere{ sp, sphere_radius},
-                          b,
+                          i % 5 == 0 ? emit : b,
                           new SolidColor(spectrum::from_hsv(i*360/num_sides, 1.0, 1.0))));
   }
 

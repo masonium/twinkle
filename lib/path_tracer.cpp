@@ -162,7 +162,7 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
 
 spectrum PathTracerIntegrator::environmental_lighting(const Vec3& ray_dir) const
 {
-  return spectrum{1.0};
+  return spectrum{0.0};
 }
 
 void PathTracerIntegrator::render_thread(const Camera* cam, const Scene* scene,

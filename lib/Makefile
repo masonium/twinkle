@@ -1,3 +1,3 @@
 twinkle:
-	cd .. && make twinkle
+	cd .. && make
 

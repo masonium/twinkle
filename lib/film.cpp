@@ -61,11 +61,11 @@ void Film::merge(const Film& f)
              [](Pixel a, Pixel b) { return Pixel{a.weight + b.weight, a.total + b.total}; });
 }
 
-void Film::render_to_ppm(ostream& out, ToneMapper* mapper)
+void Film::render_to_ppm(ostream& out, weak_ptr<ToneMapper> mapper)
 {
   vector<spectrum> final;
   vector<spectrum> raw = pixel_list();
-  mapper->tonemap(raw, final, width, height);
+  mapper.lock()->tonemap(raw, final, width, height);
   out << "P3 " << width << " " << height << " 255\n";
 
   for (int y = height - 1; y >= 0; --y)
