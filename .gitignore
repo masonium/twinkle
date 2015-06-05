@@ -2,9 +2,14 @@ obj/
 twinkle
 test_twinkle
 fresnel_test
-tonepmap
+tonemap
 *~
 *.o
 *.ppm
 *.png
 *.d
+*.twi
+GPATH
+GRTAGS
+GSYMS
+GTAGS
