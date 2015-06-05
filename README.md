@@ -37,6 +37,11 @@ BRDFs
 Output Formats
 * ASCII(Console)
 * PPM
+Multithreading
+ToneMaps
+* RSSF
+Textures
+* Grid
 
 
 ##  Planned Features
