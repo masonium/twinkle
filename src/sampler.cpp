@@ -87,12 +87,19 @@ void HaltonSampler::sample_4d(scalar& r0, scalar& r1, scalar& r2, scalar& r3)
 
 Vec3 cosine_weighted_hemisphere_sample(const Sample2D& sample)
 {
-  // cosine-weighted sampling
-  scalar theta = 2 * PI * sample[0];
-  scalar radius = sqrt(sample[1]);
+  const scalar theta = 2 * PI * sample[0];
+  const scalar radius = sqrt(sample[1]);
 
-  scalar x = radius * cos(theta), y = radius * sin(theta);
-  scalar z = sqrt(max(scalar(0.0), 1 - x*x - y*y));
+  const scalar x = radius * cos(theta), y = radius * sin(theta);
+  const scalar z = sqrt(max(scalar(0.0), 1 - sample[1]));
   
   return Vec3{x, y, z};
+}
+
+Vec3 uniform_hemisphere_sample(const Sample2D& sample)
+{
+  scalar theta = 2 * PI * sample[0];
+  scalar phi = acos(sample[1]);
+
+  return Vec3::from_euler(theta, phi);
 }
