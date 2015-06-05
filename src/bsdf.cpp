@@ -8,7 +8,7 @@ Vec3 Lambertian::sample(const Vec3& incoming,
 {
   Vec3 wo = cosine_weighted_hemisphere_sample(sample);
 
-  p = wo.z / (2 * PI);
+  p = wo.z / PI;
   reflectance = r;
 
   return wo;
@@ -29,15 +29,15 @@ Vec3 OrenNayar::sample(const Vec3& incoming,
 {
   Vec3 wo = cosine_weighted_hemisphere_sample(sample);
 
-  p = wo.z / (2 * PI);
-  reflectance = rpi;
+  p = wo.z / PI;
+  reflectance = this->reflectance(incoming, wo);
 
   return wo;
 }
 
 scalar OrenNayar::reflectance(const Vec3& incoming, const Vec3& outgoing) const
 {
-  if (incoming.z < 0)
+  if (incoming.z < 0 || outgoing.z < 0)
     return 0.0f;
 
   scalar t1, t2, p1, p2;
