@@ -62,7 +62,7 @@ class DirectionalLight : public Light
 {
 public:
   // direction: direction of
-  DirectionalLight(const Vec3& dir_source, const spectrum& r) : direction(dir_source), emission(r)
+  DirectionalLight(const Vec3& dir_source, const spectrum& r) : direction(dir_source.normal()), emission(r)
   {
   }
 
