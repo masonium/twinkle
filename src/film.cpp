@@ -10,6 +10,7 @@ using std::copy;
 using std::cout;
 using std::ostream_iterator;
 using std::accumulate;
+using std::cerr;
 
 Film::Film(uint w_, uint h_, const ImageSampleFilter* f)
   : width(w_), height(h_), filter(f), plate(w_ * h_)
@@ -63,9 +64,8 @@ void Film::merge(const Film& f)
 
 void Film::render_to_ppm(ostream& out, weak_ptr<ToneMapper> mapper)
 {
-  vector<spectrum> final;
-  vector<spectrum> raw = pixel_list();
-  mapper.lock()->tonemap(raw, final, width, height);
+  vector<spectrum> final = pixel_list();
+  mapper.lock()->tonemap(final, final, width, height);
   out << "P3 " << width << " " << height << " 255\n";
 
   for (int y = height - 1; y >= 0; --y)

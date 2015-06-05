@@ -1,6 +1,8 @@
 obj/
 twinkle
 test_twinkle
+fresnel_test
+tonepmap
 *~
 *.o
 *.ppm

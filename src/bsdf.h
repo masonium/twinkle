@@ -16,9 +16,9 @@ public:
   {
     return false;
   }
-  virtual spectrum emission() const
+  virtual scalar emission() const
   {
-    return spectrum::zero;
+    return 0;
   }
 };
 
@@ -46,7 +46,7 @@ public:
 class EmissiveBRDF : public BRDF
 {
 public:
-  explicit EmissiveBRDF( const spectrum em_ ) : em(em_)
+  explicit EmissiveBRDF( const scalar em_ ) : em(em_)
   {
   }
 
@@ -68,13 +68,13 @@ public:
   {
     return true;
   }
-  spectrum emission() const
+  scalar emission() const override
   {
     return em;
   }
 
 private:
-  spectrum em;
+  scalar em;
 };
 
 

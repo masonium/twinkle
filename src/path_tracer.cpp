@@ -76,7 +76,7 @@ void PathTracerIntegrator::render(const Camera* cam, const Scene* scene, Film& f
   // Merge and join the results.
   for (auto& th: threads)
     th.join();
-  
+
   for (const auto& f: films)
     film.merge(*f.get());
 }
@@ -93,7 +93,7 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
   if (!isect.valid())
     return environmental_lighting(-ray_dir_n);
   if (isect.shape->is_emissive())
-    return isect.shape->emission() * isect.texture_at_point();
+    return isect.shape->emission(isect);
 
   // direct lighting: randomly choose a light or emissive shape, and contribute
   // the light from that shape if appropriate
@@ -197,8 +197,9 @@ void PathTracerIntegrator::render_thread(const Camera* cam, const Scene* scene,
           int py = y + task.rect.y;
           
           PixelSample ps = cam->sample_pixel(*film, px, py, sample);
-          spectrum s = trace_ray(scene, ps.ray, sampler, 1);
           
+          spectrum s = trace_ray(scene, ps.ray, sampler, 1);
+
           film->add_sample(ps, s);
         }
       }

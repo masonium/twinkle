@@ -27,15 +27,7 @@ public:
   }
 };
 
-class PossibleEmissive
-{
-public:
-  virtual spectrum emission() const = 0;
-  virtual Vec3 sample_shadow_ray_dir(const Intersection& isect,
-                                     scalar r1, scalar r2) const = 0;
-};
-
-class Shape : public PossibleEmissive
+class Shape
 {
 public:
   Shape(Geometry* geom, BRDF* ref, Texture2D* tex)
@@ -53,9 +45,9 @@ public:
     return brdf->is_emissive();
   }
 
-  spectrum emission() const override
+  spectrum emission(const Intersection& isect) const
   {
-    return brdf->emission();
+    return texture->at_point(isect) * brdf->emission();
   }
 
   bool is_differential() const

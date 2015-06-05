@@ -13,7 +13,7 @@ using std::cout;
 void smallpt_scene(Scene& scene)
 {
   BRDF* diffuse = new Diffuse{1.0};
-  BRDF* light = new EmissiveBRDF{spectrum{12.0}};
+  BRDF* light = new EmissiveBRDF{12.0};
   scene.add(new Shape(new Sphere{ Vec3{1e5+1, 40.8, 81.6}, 1e5 },
                       diffuse,
                       new SolidColor(spectrum{0.75,0.25,0.25})));
@@ -45,7 +45,7 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
   BRDF* b = new Diffuse{1.0};
 
   BRDF* mirror = new PerfectMirrorBRDF{};
-  BRDF* emit = new EmissiveBRDF{spectrum{5}};
+  BRDF* emit = new EmissiveBRDF{5};
 
   GridTexture2D* check = new GridTexture2D(spectrum::one, spectrum::zero, 10.0, 0.1);
 
@@ -71,7 +71,7 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
                               b,
                               new SolidColor(spectrum{0.6})));
 
-  const int num_lights = 3;
+  const int num_lights = 0;
   for (int i = 0; i < num_lights; ++i)
   {
     const scalar angle = 2 * PI * i / num_lights + PI/12;
