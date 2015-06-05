@@ -1,6 +1,9 @@
 #pragma once
 
 #include "vector.h"
+#include <memory>
+
+class Mat33;
 
 class Vec3 : public VectorT3<Vec3>
 {
@@ -9,6 +12,10 @@ public:
   explicit Vec3(scalar s) : VectorT3<Vec3>(s) { }
   Vec3(scalar x, scalar y, scalar z) : VectorT3<Vec3>(x, y, z) { }
   Vec3(VectorT3<Vec3>& s) : VectorT3<Vec3>(s) { }
+
+  Vec3& operator=(const Vec3& x);
+  Vec3(const Vec3&);
+  Vec3(Vec3&&) = default;
   
   Vec3 normal() const
   {
@@ -43,6 +50,7 @@ public:
 
   Vec3 rotateAxisAngle(const Vec3& axis, scalar angle) const;
 
+  Mat33 tensor_product(const Vec3& a) const;
   
   static Vec3 x_axis;
   static Vec3 y_axis;
@@ -56,12 +64,65 @@ private:
 class Mat33 
 {
 public:
+  Mat33() {};
+
+  template <typename Iter>
+  Mat33(Iter begin, Iter end) {
+    std::copy(begin, end, v);
+  }
+
+  Mat33(std::initializer_list<scalar> list);
+  Mat33(const Vec3& r1, const Vec3& r2, const Vec3& r3);
+  Mat33(const Mat33&);
+  Mat33(Mat33&&);
+  Mat33& operator=(const Mat33&);
+
+  Mat33& operator*= (scalar f)
+  {
+    for (auto& x: v)
+      x *= f;
+    return *this;
+  }
+
+  Mat33& operator+=(const Mat33& rhs);
 
   Vec3 operator *(const Vec3& v) const
   {
-    return (v.x * col[0]) + v.y * col[1] + v.z * col[2];
+    return Vec3{row[0].dot(v), row[1].dot(v), row[2].dot(v)};
   }
-  
+
+  Mat33 operator*(scalar f) const
+  {
+    Mat33 x(*this);
+    return (x *= f);
+  }
+
+  Mat33 transpose() const;
+
+  Mat33 operator+(const Mat33& mat) const;
+
+  /*
+   * input axis must be normalized.
+   */
+  static Mat33 from_axis_angle(const Vec3& axis, scalar angle);
+
+  /*
+   * input axes must be normalized
+   */
+  static Mat33 rotate_match(const Vec3& axis_from, const Vec3& axis_to);
+  static Mat33 rotate_to_z(const Vec3& axis_from);
+
+  static Mat33 cross_product_matrix(const Vec3& axis);
+
+  static Mat33 identity;
+
+  union
+  {
+    scalar v[9];
+    Vec3 row[3];
+  };
+
 private:
-  Vec3 col[3];
+  static Mat33 from_axis_angle(const Vec3& axis, scalar sa, scalar ca);
+
 };

@@ -38,6 +38,15 @@ void PathTracerIntegrator::render(const Camera* cam, const Scene* scene, Film& f
 
   TaskQueue queue;
 
+  if (num_threads == 1)
+  {
+    queue.emplace(Film::Rect{0, 0, film.width, film.height}, opt.samples_per_pixel);
+    auto temp_film = make_shared<Film>(film.width, film.height, film.filter);
+    render_thread(cam, scene, std::ref(queue), temp_film);
+    film.merge( *temp_film.get() );
+    return;
+  }
+
   const uint PER_SIDE = 2;
   const int SAMPLES_PER_TASK = 16;
   
@@ -92,8 +101,8 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
   const Vec3 ray_dir_n = -ray.direction.normal();
   if (!isect.valid())
     return environmental_lighting(-ray_dir_n);
-  if (isect.shape->is_emissive())
-    return isect.shape->emission(isect);
+  if (isect.is_emissive())
+    return isect.emission();
 
   // direct lighting: randomly choose a light or emissive shape, and contribute
   // the light from that shape if appropriate
@@ -126,7 +135,6 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
   scalar p_mult = 1.0;
   if (opt.max_depth > 0 && depth >= opt.max_depth)
     continue_trace = false;
-
   else if (opt.russian_roulette)
   {
     if (sampler->sample_1d() < opt.rr_kill_prob)

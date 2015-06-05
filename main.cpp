@@ -13,45 +13,41 @@ using std::cerr;
 using std::cout;
 using std::make_shared;
 
-// void smallpt_scene(Scene& scene)
-// {
-//   BRDF* diffuse = new Diffuse{1.0};
-//   BRDF* light = new EmissiveBRDF{12.0};
-//   scene.add(new Shape(new Sphere{ Vec3{1e5+1, 40.8, 81.6}, 1e5 },
-//                       diffuse,
-//                       new SolidColor(spectrum{0.75,0.25,0.25})));
-//   scene.add(new Shape(new Sphere{ Vec3{-1e5+99, 40.8, 81.6}, 1e5 },
-//                       diffuse,
-//                       new SolidColor(spectrum{0.25, 0.25, 0.75})));
-//   scene.add(new Shape(new Sphere{Vec3{50, 40.8, 1e5}, 1e5},
-//                       diffuse,
-//                       new SolidColor(spectrum{0.75})));
-//   scene.add(new Shape(new Sphere{Vec3{50, 1e5, 81.6}, 1e5},
-//                       diffuse,
-//                       new SolidColor(spectrum{0.75})));
-//   scene.add(new Shape(new Sphere{Vec3{50, -1e5+81.6, 81.6}, 1e5},
-//                       diffuse,
-//                       new SolidColor(spectrum{0.75})));
-
-//   scene.add(new Shape(new Sphere{Vec3{50,681.6-.27,81.6}, 600},
-//                       light,
-//                       new SolidColor(spectrum{1.0})));
-// }
-
 void usage(char** args)
 {
   cerr << args[0] << ": WIDTH HEIGHT SAMPLES-PER-PIXEL\n";
+}
+
+PerspectiveCamera single_sphere(Scene& scene, scalar aspect_ratio)
+{
+  scene.add( new Shape( make_shared<Sphere>(Vec3::zero, 1.0),
+                        make_shared<RoughColorMaterial>(0, spectrum{0.2, 0.2, 1.0})));
+
+  scene.add( new Shape( make_shared<Sphere>(Vec3::y_axis * -1000, 999),
+                        make_shared<RoughColorMaterial>(0, spectrum{0.2, 0.2, 0.2})));
+
+  Vec3 light_dir = Vec3::z_axis;
+  scene.add( new DirectionalLight( light_dir, spectrum{1.0}));
+
+  Vec3 light_pos = Vec3::z_axis * 6;
+  scene.add( new DirectionalLight( light_pos, spectrum{1.0}));
+
+  return PerspectiveCamera(Vec3(0, 0, 2), Vec3::zero, Vec3::y_axis, PI / 2.0,
+                           aspect_ratio);
 }
 
 PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
 {
   auto check = make_shared<GridTexture2D>(spectrum::one, spectrum::zero, 10.0, 0.1);
 
+  // scene.add( new Shape( make_shared<Sphere>(Vec3{0.0, -1.0, 0.0}, 1.0),
+  //                       make_shared<RoughMaterial>(0.0, check)));
+
   scene.add( new Shape( make_shared<Sphere>(Vec3{0.0, -1.0, 0.0}, 1.0),
-                        make_shared<RoughMaterial>(0.0, check)));
+                        make_shared<MirrorMaterial>()));
 
   scalar distance_from_center = 3.0;
-  scalar sphere_radius = 0.75;
+  scalar sphere_radius = 1.0;
 
   const int num_sides = PI / atan(sphere_radius / (distance_from_center));
   for (int i = 0; i < num_sides; ++i)
@@ -72,7 +68,7 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
   {
     const scalar angle = 2 * PI * i / num_lights + PI/12;
     const scalar pr = 4.0;
-    scene.add( new PointLight{ Vec3(pr*cos(angle), 2.0, pr*sin(angle)), spectrum{5.0} });
+    scene.add( new PointLight{ Vec3(pr*cos(angle), 2.0, pr*sin(angle)), spectrum{1.0} });
   }
 
   auto cam_pos = Vec3{0, 2, 7.5}*0.8;
@@ -127,7 +123,7 @@ int main(int argc, char** args)
 
   cerr << "Rendered " << igr.num_primary_rays_traced() << " rays.\n";
 
-  f.render_to_twi(cout);
+  f.render_to_ppm(cout, make_shared<LinearToneMapper>());
   
   return 0;
 }

@@ -19,10 +19,18 @@ public:
   spectrum texture_at_point() const;
   Vec3 sample_bsdf(const Vec3& incoming, const Sample2D& sample,
                    scalar& p, scalar& reflectance) const;
-  
-  const Shape* shape;
-  scalar t;
+
+  bool is_emissive() const;
+
+  spectrum emission() const;
+
+  const scalar t;
   Vec3 position, normal;
   scalar u, v;
   Vec3 dpdu, dpdv;
+
+private:
+  const Shape* shape;
+  Mat33 to_z;
+  Mat33 from_z;
 };

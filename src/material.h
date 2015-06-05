@@ -55,3 +55,22 @@ class RoughColorMaterial : public RoughMaterial
 public:
   RoughColorMaterial(scalar roughness, const spectrum& color);
 };
+
+
+class MirrorMaterial : public Material
+{
+public:
+  MirrorMaterial() : brdf(unique_ptr<BRDF>(new PerfectMirrorBRDF))
+  {
+  }
+  scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const override;
+  
+  Vec3 sample_bsdf(const Vec3& incoming, const Sample2D& sample,
+                   scalar& p, scalar& reflectance) const override;
+
+  spectrum texture_at_point(const Intersection& isect) const override;
+
+private:
+  unique_ptr<BRDF> brdf;
+};
+

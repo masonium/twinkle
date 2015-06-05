@@ -39,6 +39,15 @@ public:
       scalar v[3];
     };
   };
+  
+  scalar operator[](int idx) const
+  {
+    return v[idx];
+  }
+  scalar& operator[](int idx)
+  {
+    return v[idx];
+  }
 
   vec_type& operator+= (const vec_type& r)
   {
