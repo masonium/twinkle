@@ -22,13 +22,18 @@ bool Intersection::valid() const
   return shape != nullptr;
 }
 
-spectrum Intersection::texture_at_point() const
+scalar Intersection::reflectance(const Vec3& incoming, const Vec3& outgoing) const
 {
-  return shape->texture->at_point(*this);
+  return 0;
 }
 
-Vec3 Intersection::sample_brdf(const Vec3& incoming, scalar r1, scalar r2, 
-                 scalar& p, scalar& reflectance) const
+spectrum Intersection::texture_at_point() const
 {
-  return shape->brdf->sample(incoming, normal, r1, r2, p, reflectance);
+  return shape->material->texture_at_point(*this);
+}
+
+Vec3 Intersection::sample_bsdf(const Vec3& incoming, const Sample2D& sample,
+                               scalar& p, scalar& reflectance) const
+{
+  return shape->material->sample_bsdf(incoming, sample, p, reflectance);
 }

@@ -1,10 +1,12 @@
 #pragma once
 
+#include <memory>
 #include "math_util.h"
-#include "bsdf.h"
 #include "spectrum.h"
-#include "texture.h"
 #include "ray.h"
+#include "material.h"
+
+using std::shared_ptr;
 
 class Intersection;
 
@@ -30,8 +32,8 @@ public:
 class Shape
 {
 public:
-  Shape(Geometry* geom, BRDF* ref, Texture2D* tex)
-    : geometry(geom), brdf(ref), texture(tex)
+  Shape(shared_ptr<Geometry> geom, shared_ptr<Material> mat)
+    : geometry(geom), material(mat)
   {
   }
   
@@ -42,12 +44,12 @@ public:
 
   bool is_emissive() const
   {
-    return brdf->is_emissive();
+    return material->is_emissive();
   }
 
   spectrum emission(const Intersection& isect) const
   {
-    return texture->at_point(isect) * brdf->emission();
+    return material->emission(isect);
   }
 
   bool is_differential() const
@@ -60,7 +62,6 @@ public:
     return geometry->sample_shadow_ray_dir(isect, r1, r2);
   }
   
-  const Geometry* geometry;
-  BRDF* brdf;
-  Texture2D* texture;
+  shared_ptr<Geometry> geometry;
+  shared_ptr<Material> material;
 };

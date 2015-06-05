@@ -4,13 +4,13 @@
 #include "vec3.h"
 #include "intersection.h"
 
-class Texture2D
+class Texture
 {
 public:
   virtual spectrum at_point(const Intersection& isect) const = 0;
 };
 
-class SolidColor : public Texture2D
+class SolidColor : public Texture
 {
 public:
   SolidColor(spectrum x = spectrum::zero) : color(x) {}
@@ -24,7 +24,7 @@ private:
   spectrum color;
 };
 
-class GridTexture2D : public Texture2D
+class GridTexture2D : public Texture
 {
 public:
   GridTexture2D(spectrum solid_, spectrum border_,

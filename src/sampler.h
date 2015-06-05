@@ -98,3 +98,5 @@ private:
   const int bases[4];
   const scalar inv_bases[4];
 };
+
+Vec3 cosine_weighted_hemisphere_sample(const Sample2D& sample);

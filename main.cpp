@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 
 #include "camera.h"
 #include "scene.h"
@@ -6,34 +7,36 @@
 #include "bsdf.h"
 #include "path_tracer.h"
 #include "util.h"
+#include "material.h"
 
 using std::cerr;
 using std::cout;
+using std::make_shared;
 
-void smallpt_scene(Scene& scene)
-{
-  BRDF* diffuse = new Diffuse{1.0};
-  BRDF* light = new EmissiveBRDF{12.0};
-  scene.add(new Shape(new Sphere{ Vec3{1e5+1, 40.8, 81.6}, 1e5 },
-                      diffuse,
-                      new SolidColor(spectrum{0.75,0.25,0.25})));
-  scene.add(new Shape(new Sphere{ Vec3{-1e5+99, 40.8, 81.6}, 1e5 },
-                      diffuse,
-                      new SolidColor(spectrum{0.25, 0.25, 0.75})));
-  scene.add(new Shape(new Sphere{Vec3{50, 40.8, 1e5}, 1e5},
-                      diffuse,
-                      new SolidColor(spectrum{0.75})));
-  scene.add(new Shape(new Sphere{Vec3{50, 1e5, 81.6}, 1e5},
-                      diffuse,
-                      new SolidColor(spectrum{0.75})));
-  scene.add(new Shape(new Sphere{Vec3{50, -1e5+81.6, 81.6}, 1e5},
-                      diffuse,
-                      new SolidColor(spectrum{0.75})));
+// void smallpt_scene(Scene& scene)
+// {
+//   BRDF* diffuse = new Diffuse{1.0};
+//   BRDF* light = new EmissiveBRDF{12.0};
+//   scene.add(new Shape(new Sphere{ Vec3{1e5+1, 40.8, 81.6}, 1e5 },
+//                       diffuse,
+//                       new SolidColor(spectrum{0.75,0.25,0.25})));
+//   scene.add(new Shape(new Sphere{ Vec3{-1e5+99, 40.8, 81.6}, 1e5 },
+//                       diffuse,
+//                       new SolidColor(spectrum{0.25, 0.25, 0.75})));
+//   scene.add(new Shape(new Sphere{Vec3{50, 40.8, 1e5}, 1e5},
+//                       diffuse,
+//                       new SolidColor(spectrum{0.75})));
+//   scene.add(new Shape(new Sphere{Vec3{50, 1e5, 81.6}, 1e5},
+//                       diffuse,
+//                       new SolidColor(spectrum{0.75})));
+//   scene.add(new Shape(new Sphere{Vec3{50, -1e5+81.6, 81.6}, 1e5},
+//                       diffuse,
+//                       new SolidColor(spectrum{0.75})));
 
-  scene.add(new Shape(new Sphere{Vec3{50,681.6-.27,81.6}, 600},
-                      light,
-                      new SolidColor(spectrum{1.0})));
-}
+//   scene.add(new Shape(new Sphere{Vec3{50,681.6-.27,81.6}, 600},
+//                       light,
+//                       new SolidColor(spectrum{1.0})));
+// }
 
 void usage(char** args)
 {
@@ -42,16 +45,10 @@ void usage(char** args)
 
 PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
 {
-  BRDF* b = new Diffuse{1.0};
+  auto check = make_shared<GridTexture2D>(spectrum::one, spectrum::zero, 10.0, 0.1);
 
-  BRDF* mirror = new PerfectMirrorBRDF{};
-  BRDF* emit = new EmissiveBRDF{5};
-
-  GridTexture2D* check = new GridTexture2D(spectrum::one, spectrum::zero, 10.0, 0.1);
-
-  scene.add( new Shape( new Sphere{ Vec3{0.0, -1.0, 0.0}, 1.0},
-                              b,
-                              check) );
+  scene.add( new Shape( make_shared<Sphere>(Vec3{0.0, -1.0, 0.0}, 1.0),
+                        make_shared<RoughMaterial>(0.0, check)));
 
   scalar distance_from_center = 3.0;
   scalar sphere_radius = 0.75;
@@ -62,16 +59,15 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
     const scalar angle = 2 * PI * i / num_sides;
     const scalar pr = 4.0;
     const Vec3 sp(pr*cos(angle), -2.0+sphere_radius, pr*sin(angle));
-    scene.add( new Shape( new Sphere{ sp, sphere_radius},
-                          i % 5 == 0 ? emit : b,
-                          new SolidColor(spectrum::from_hsv(i*360/num_sides, 1.0, 1.0))));
+    auto sc = spectrum::from_hsv(i*360/num_sides, 1.0, 1.0);
+      scene.add( new Shape( make_shared<Sphere>(sp, sphere_radius),
+                            make_shared<RoughColorMaterial>(0.0, sc)));
   }
 
-  scene.add( new Shape( new Sphere{ Vec3{0.0, -1000.0, 0.0}, 998.0},
-                              b,
-                              new SolidColor(spectrum{0.6})));
+  scene.add( new Shape( make_shared<Sphere>(Vec3{0.0, -1000.0, 0.0}, 998.0),
+                        make_shared<RoughColorMaterial>(0.0, spectrum{0.6})));
 
-  const int num_lights = 0;
+  const int num_lights = 3;
   for (int i = 0; i < num_lights; ++i)
   {
     const scalar angle = 2 * PI * i / num_lights + PI/12;
@@ -85,28 +81,6 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
                            aspect_ratio);
 }
 
-PerspectiveCamera dof_scene(Scene& scene, scalar ar)
-{
-  BRDF* mirr = new PerfectMirrorBRDF();
-  BRDF* diff = new Diffuse(1.0);
-
-  scene.add( new Shape( new Sphere( Vec3{0, 0, -2}, 1.0 ),
-                        mirr,
-                        new SolidColor(spectrum::one)));
-
-  scene.add( new Shape(new Sphere( Vec3{0, 0, 2}, 1.0 ),
-                       diff,
-                       new SolidColor(spectrum{1.0, 0.2, 0.3})));
-
-  scene.add( new Shape(new Sphere( Vec3{0.5, 0, -0.5}, 0.2),
-                       diff,
-                       new SolidColor(spectrum{0.3, 0.1, 1.0})));
-
-  scene.add( new DirectionalLight( Vec3(-1, 1, -1), spectrum{5.0}));
-
-  return PerspectiveCamera(Vec3::zero, -Vec3::z_axis, Vec3::y_axis,
-                           PI/2, ar, 0.02, 1.0);
-}
 
 int main(int argc, char** args)
 {

@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "sphere.h"
 #include "scene.h"
 #include "bsdf.h"
@@ -6,12 +8,16 @@
 #include "sampler.h"
 #include "spectrum.h"
 
+
 #include "unittest++/UnitTest++.h"
 
 #define EPS 0.0001
 #define PRECISE_EPS 0.00001
 
 #define CHECK_VEC(x, y) CHECK_ARRAY_CLOSE((x).v, (y).v, 3, EPS)
+
+using std::shared_ptr;
+using std::make_shared;
 
 scalar rf()
 {
@@ -172,15 +178,14 @@ TEST(quad)
 class SingleSphereFixture
 {
 public:
-  SingleSphereFixture() : d{1.0}, sphere{Vec3{0.0, 0.0, 0.0}, 1.0},
+  SingleSphereFixture() : sphere(make_shared<Sphere>(Vec3{0.0, 0.0, 0.0}, 1.0)),
                           ray{Vec3{5.0, 0.0, 0.0}, Vec3{-2.0, 0.0, 0.0}},
-                          shape{&sphere, &d, new SolidColor(spectrum{1.0})}
+    shape(sphere, make_shared<RoughColorMaterial>(0, spectrum{1.0}))
   {
     scene.add(&shape);
   }
-  Diffuse d;
   Scene scene;
-  Sphere sphere;
+  shared_ptr<Sphere> sphere;
   Ray ray;
   Shape shape;
 };
@@ -199,7 +204,7 @@ TEST_FIXTURE(SingleSphereFixture, sphere)
   Intersection isect = scene.intersect(ray);
 
   CHECK_CLOSE(isect.t, 2.0, EPS);
-  CHECK_CLOSE(sphere.intersect(ray), 2.0, EPS);
+  CHECK_CLOSE(sphere->intersect(ray), 2.0, EPS);
 }
 
 TEST(cross_product)

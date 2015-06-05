@@ -1,4 +1,8 @@
 #include "sampler.h"
+#include "vec3.h"
+#include <cmath>
+
+using std::max;
 
 UniformSampler::UniformSampler() : randr(0.0, 1.0)
 {
@@ -77,4 +81,18 @@ void HaltonSampler::sample_4d(scalar& r0, scalar& r1, scalar& r2, scalar& r3)
   r2 = sample_base(index, bases[2], inv_bases[2]);
   r3 = sample_base(index, bases[3], inv_bases[3]);
   index += 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+Vec3 cosine_weighted_hemisphere_sample(const Sample2D& sample)
+{
+  // cosine-weighted sampling
+  scalar theta = 2 * PI * sample[0];
+  scalar radius = sqrt(sample[1]);
+
+  scalar x = radius * cos(theta), y = radius * sin(theta);
+  scalar z = sqrt(max(scalar(0.0), 1 - x*x - y*y));
+  
+  return Vec3{x, y, z};
 }

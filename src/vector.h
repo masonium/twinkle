@@ -122,6 +122,12 @@ public:
   }
 };
 
+template<typename vec_type>
+vec_type operator *(scalar f, const vec_type& vec)
+{
+  return vec * f;
+}
+
 template <typename vec_type>
 vec_type VectorT3<vec_type>::deserialize(istream& in)
 {

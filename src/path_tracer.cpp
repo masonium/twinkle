@@ -112,8 +112,7 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
       if (!ls.is_occluded(scene))
       {
         scalar NL = max<scalar>(ls.direction().dot(isect.normal), 0.0);
-        scalar ca = isect.shape->brdf->reflectance( ls.direction(),
-                                                    ray_dir_n, isect.normal );
+        scalar ca = isect.reflectance(ls.direction(), ray_dir_n);
 
         auto light_contrib = ls.emission() * spectrum{NL * ca / light_prob};
         total += light_contrib;
@@ -145,7 +144,7 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
     scalar brdf_p = 0;
     auto brdf_u = sampler->sample_2d();
     scalar brdf_reflectance;
-    Vec3 brdf_dir = isect.sample_brdf(ray_dir_n, brdf_u.u[0], brdf_u.u[1],
+    Vec3 brdf_dir = isect.sample_bsdf(ray_dir_n, brdf_u,
                                       brdf_p, brdf_reflectance);
 
     scalar nl = max<scalar>(brdf_dir.dot(isect.normal), 0.0);

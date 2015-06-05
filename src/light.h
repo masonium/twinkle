@@ -47,7 +47,7 @@ public:
 class EnvironmentLight
 {
 public:
-  EnvironmentLight(Texture2D* tex, bool spherical=true);
+  EnvironmentLight(Texture* tex, bool spherical=true);
 
   EnvironmentLight(const EnvironmentLight& rhs) = delete;
 
@@ -55,7 +55,7 @@ public:
 
 private:
   bool spherical_coords;
-  Texture2D* texture;
+  Texture* texture;
 };
 
 class DirectionalLight : public Light

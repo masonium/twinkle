@@ -2,6 +2,7 @@
 
 #include "ray.h"
 #include "spectrum.h"
+#include "sampler.h"
 
 class Shape;
 
@@ -13,8 +14,10 @@ public:
   
   bool valid() const;
 
+  scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const;
+  
   spectrum texture_at_point() const;
-  Vec3 sample_brdf(const Vec3& incoming, scalar r1, scalar r2, 
+  Vec3 sample_bsdf(const Vec3& incoming, const Sample2D& sample,
                    scalar& p, scalar& reflectance) const;
   
   const Shape* shape;
