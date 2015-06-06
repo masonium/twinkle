@@ -41,9 +41,15 @@ public:
    */
   void to_euler(scalar& theta, scalar& phi) const;
   
-  Vec3 projectOnto(Vec3 res) const
+  Vec3 project_onto(const Vec3& res) const
   {
     return res * (this->dot(res) / (res.dot(res)));
+  }
+
+  Vec3 reflect_over(const Vec3& n) const
+  {
+    Vec3 proj = project_onto(n);
+    return 2.0 * proj - *this;
   }
   
   Vec3 rotateMatch(const Vec3& from, const Vec3& to) const;

@@ -25,7 +25,6 @@ public:
   {
     return Ray{position, direction.normal()};
   }
-
   
   Ray nudge(scalar eps = SURFACE_EPSILON) const;
   

@@ -98,9 +98,9 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
     ++primary_rays_traced;
   
   Intersection isect = scene->intersect(ray);
-  const Vec3 ray_dir_n = -ray.direction.normal();
+  const Vec3 ray_dir_origin = -ray.direction.normal();
   if (!isect.valid())
-    return environmental_lighting(-ray_dir_n);
+    return environmental_lighting(-ray_dir_origin);
   if (isect.is_emissive())
     return isect.emission();
 
@@ -121,7 +121,7 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
       if (!ls.is_occluded(scene))
       {
         scalar NL = max<scalar>(ls.direction().dot(isect.normal), 0.0);
-        scalar ca = isect.reflectance(ls.direction(), ray_dir_n);
+        scalar ca = isect.reflectance(ls.direction(), ray_dir_origin);
 
         auto light_contrib = ls.emission() * spectrum{NL * ca / light_prob};
         total += light_contrib;
@@ -152,10 +152,10 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
     scalar brdf_p = 0;
     auto brdf_u = sampler->sample_2d();
     scalar brdf_reflectance;
-    Vec3 brdf_dir = isect.sample_bsdf(ray_dir_n, brdf_u,
+    Vec3 brdf_dir = isect.sample_bsdf(ray_dir_origin, brdf_u,
                                       brdf_p, brdf_reflectance);
 
-    scalar nl = max<scalar>(brdf_dir.dot(isect.normal), 0.0);
+    scalar nl = fabs(brdf_dir.dot(isect.normal));
     if (brdf_p > 0)
     {
       total += trace_ray(scene, Ray{isect.position, brdf_dir}.nudge(),
@@ -169,7 +169,7 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
 
 spectrum PathTracerIntegrator::environmental_lighting(const Vec3& ray_dir) const
 {
-  return spectrum{0.0};
+  return spectrum{5.0};
 }
 
 void PathTracerIntegrator::render_thread(const Camera* cam, const Scene* scene,

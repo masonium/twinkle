@@ -43,8 +43,10 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
   // scene.add( new Shape( make_shared<Sphere>(Vec3{0.0, -1.0, 0.0}, 1.0),
   //                       make_shared<RoughMaterial>(0.0, check)));
 
-  scene.add( new Shape( make_shared<Sphere>(Vec3{0.0, -1.0, 0.0}, 1.0),
-                        make_shared<MirrorMaterial>()));
+  auto mat  = make_shared<GlassMaterial>();
+  //auto mat  = make_shared<MirrorMaterial>();
+
+  scene.add(new Shape(make_shared<Sphere>(Vec3{0.0, -1.0, 0.0}, 1.0), mat));
 
   scalar distance_from_center = 3.0;
   scalar sphere_radius = 1.0;
@@ -124,6 +126,7 @@ int main(int argc, char** args)
   cerr << "Rendered " << igr.num_primary_rays_traced() << " rays.\n";
 
   f.render_to_ppm(cout, make_shared<LinearToneMapper>());
+  //f.render_to_ppm(cout, make_shared<RSSFToneMapper>());
   
   return 0;
 }

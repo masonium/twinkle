@@ -32,3 +32,6 @@ scalar fresnel_reflectance(const Vec3& incoming, const Vec3& normal,
 
 scalar fresnel_transmittance(const Vec3& incoming, const Vec3& normal,
                              scalar n1, scalar n2);
+
+Vec3 refraction_direction(const Vec3& incoming, const Vec3& normal,
+                          scalar n1, scalar n2);

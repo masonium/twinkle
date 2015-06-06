@@ -5,6 +5,7 @@
 using std::make_shared;
 
 ////////////////////////////////////////////////////////////////////////////////
+
 RoughMaterial::RoughMaterial(scalar roughness_, shared_ptr<Texture> tex_) :
   texture(tex_)
 {
@@ -31,6 +32,7 @@ spectrum RoughMaterial::texture_at_point(const Intersection& isect) const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 RoughColorMaterial::RoughColorMaterial(scalar roughness, const spectrum& color) :
   RoughMaterial(roughness, make_shared<SolidColor>(color))
 {
@@ -51,6 +53,52 @@ Vec3 MirrorMaterial::sample_bsdf(const Vec3& incoming, const Sample2D& sample,
 }
 
 spectrum MirrorMaterial::texture_at_point(const Intersection& isect) const
+{
+  return spectrum{1.0};
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+GlassMaterial::GlassMaterial(scalar refraction_index) : 
+  nr(refraction_index)
+{
+  
+}
+
+scalar GlassMaterial::reflectance(const Vec3& incoming, const Vec3& outgoing) const
+{
+  return 0.0;
+}
+
+Vec3 GlassMaterial::sample_bsdf(const Vec3& incoming, const Sample2D& sample,
+                                scalar& p, scalar& reflectance) const
+{
+  scalar n1 = refraction_index::AIR;
+  scalar n2 = nr;
+  auto normal = Vec3::z_axis;
+  if (incoming.z < 0)
+  {
+    std::swap<scalar>(n1, n2);
+    normal *= -1;
+  }
+  scalar frpdf = fresnel_reflectance(incoming, normal, n1, n2);
+  if (sample[0] < frpdf)
+  {
+    // reflect
+    p = frpdf;
+    reflectance = frpdf * fabs(1 / incoming.z);
+    return incoming.reflect_over(normal);
+  }
+  else
+  {
+    // transmit
+    p = 1 - frpdf;
+    reflectance = (1 - frpdf) * fabs(1 / incoming.z);
+    return refraction_direction(incoming, normal, n1, n2);
+  }
+}
+
+spectrum GlassMaterial::texture_at_point(const Intersection& isect) const
 {
   return spectrum{1.0};
 }

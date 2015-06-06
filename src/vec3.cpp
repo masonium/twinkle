@@ -60,7 +60,7 @@ Vec3 Vec3::rotateAxisAngle(const Vec3& axis, scalar angle) const
 
 Vec3 Vec3::_rotateAxisAngle(const Vec3& axis, scalar c, scalar s) const
 {
-  Vec3 invariant = this->projectOnto(axis);
+  Vec3 invariant = this->project_onto(axis);
   Vec3 x = *this - invariant;
   Vec3 y = axis.cross(x);
 

@@ -74,3 +74,19 @@ private:
   unique_ptr<BRDF> brdf;
 };
 
+class GlassMaterial : public Material
+{
+public:
+  GlassMaterial( scalar refr = refraction_index::CROWN_GLASS );
+
+  scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const override;
+
+  Vec3 sample_bsdf(const Vec3& incoming, const Sample2D& sample,
+                   scalar& p, scalar& reflectance) const override;
+
+  spectrum texture_at_point(const Intersection& isect) const override;
+
+private:
+  scalar nr;
+};
+
