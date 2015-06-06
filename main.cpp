@@ -47,6 +47,7 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
   //auto mat  = make_shared<MirrorMaterial>();
 
   scene.add(new Shape(make_shared<Sphere>(Vec3{0.0, -1.0, 0.0}, 1.0), mat));
+//  scene.add(new Shape(make_shared<ReversedGeometry>(make_shared<Sphere>(Vec3{0.0, -1.0, 0.0}, 0.75)), mat));
 
   scalar distance_from_center = 3.0;
   scalar sphere_radius = 1.0;
@@ -57,9 +58,11 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
     const scalar angle = 2 * PI * i / num_sides;
     const scalar pr = 4.0;
     const Vec3 sp(pr*cos(angle), -2.0+sphere_radius, pr*sin(angle));
-    auto sc = spectrum::from_hsv(i*360/num_sides, 1.0, 1.0);
-      scene.add( new Shape( make_shared<Sphere>(sp, sphere_radius),
-                            make_shared<RoughColorMaterial>(0.0, sc)));
+    auto sc = spectrum::from_hsv(i*360.0/num_sides, 1.0, 1.0);
+    auto sc2 = spectrum::from_hsv(i*360.0/num_sides + 180, 0.75, 0.75);
+    
+    scene.add( new Shape( make_shared<Sphere>(sp, sphere_radius),
+                          make_shared<RoughMaterial>(0.0, make_shared<GridTexture2D>(sc, sc2, 10.0, 0.2))));
   }
 
   scene.add( new Shape( make_shared<Sphere>(Vec3{0.0, -1000.0, 0.0}, 998.0),
