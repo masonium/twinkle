@@ -3,6 +3,7 @@ twinkle
 test_twinkle
 fresnel_test
 tonemap
+model_check
 *~
 *.o
 *.ppm
