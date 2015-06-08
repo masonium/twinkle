@@ -12,12 +12,23 @@ using std::unique_ptr;
 class Material
 {
 public:
-  virtual scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const = 0;
+  virtual scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const
+  {
+    return 0;
+  };
   
   virtual Vec3 sample_bsdf(const Vec3& incoming, const Sample2D& sample,
-                           scalar& p, scalar& reflectance) const = 0;
+                           scalar& p, scalar& reflectance) const
+  {
+    p = 0;
+    reflectance = 0;
+    return Vec3::zero;
+  }
   
-  virtual spectrum texture_at_point(const Intersection& isect) const = 0;
+  virtual spectrum texture_at_point(const Intersection& isect) const
+  {
+    return spectrum::zero;
+  }
 
   virtual bool is_emissive() const
   {
@@ -90,3 +101,18 @@ private:
   scalar nr;
 };
 
+class EmissiveMaterial : public Material
+{
+public:
+  EmissiveMaterial(spectrum e) : emit(e) {}
+
+  bool is_emissive() const override { return true; }
+
+  spectrum emission(const Intersection& isect) const  override
+  {
+    return emit;
+  }
+  
+private:
+  spectrum emit;
+};
