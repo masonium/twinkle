@@ -35,3 +35,9 @@ scalar fresnel_transmittance(const Vec3& incoming, const Vec3& normal,
 
 Vec3 refraction_direction(const Vec3& incoming, const Vec3& normal,
                           scalar n1, scalar n2);
+
+template <typename T>
+T lerp(const T& a, const T& b, scalar x)
+{
+  return a + (b-a) * x;
+}

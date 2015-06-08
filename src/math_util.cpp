@@ -24,6 +24,7 @@ scalar norm(const scalar& s)
   return fabs(s);
 }
 
+
 scalar fresnel_reflectance(const Vec3& incoming, const Vec3& normal,
                            scalar n1, scalar n2)
 {
