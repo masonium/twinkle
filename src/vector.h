@@ -144,3 +144,10 @@ vec_type VectorT3<vec_type>::deserialize(istream& in)
   in.read(reinterpret_cast<char*>(x.v), sizeof(x.v));
   return x;
 }
+
+template <typename vec_type>
+istream& operator >>(istream& in, VectorT3<vec_type>& v)
+{
+  in >> v.x >> v.y >> v.z;
+  return in;
+}
