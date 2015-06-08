@@ -32,6 +32,7 @@ public:
     
     bool russian_roulette;
     scalar rr_kill_prob;
+    int min_rr_depth;
     int max_depth;
     uint samples_per_pixel;
     uint num_threads;

@@ -16,7 +16,7 @@ using std::thread;
 
 
 PathTracerIntegrator::Options::Options()
-  : russian_roulette(false), rr_kill_prob(0.1),
+  : russian_roulette(true), rr_kill_prob(0.1), min_rr_depth(4),
     max_depth(10), samples_per_pixel(16), num_threads(1)
 {
   assert( 0.0 <= rr_kill_prob && rr_kill_prob <= 1.0 );
@@ -135,7 +135,7 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
   scalar p_mult = 1.0;
   if (opt.max_depth > 0 && depth >= opt.max_depth)
     continue_trace = false;
-  else if (opt.russian_roulette)
+  else if (opt.russian_roulette && depth >= opt.min_rr_depth)
   {
     if (sampler->sample_1d() < opt.rr_kill_prob)
     {
