@@ -18,7 +18,7 @@ scalar Sphere::intersect(const Ray& r) const
     return res;
 }
 
-Vec3 Sphere::normal(Vec3 point) const
+Vec3 Sphere::normal(const Vec3& point) const
 {
   return (point - position).normal();
 }

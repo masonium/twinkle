@@ -11,7 +11,7 @@ class Geometry
 {
 public:
   virtual scalar intersect(const Ray& r) const = 0;
-  virtual Vec3 normal(Vec3 point) const = 0;
+  virtual Vec3 normal(const Vec3& point) const = 0;
   virtual Vec3 sample_shadow_ray_dir(const Intersection& isect,
                                      scalar r1, scalar r2) const = 0;
 
@@ -26,6 +26,28 @@ public:
   }
 };
 
+class Plane : public Geometry
+{
+public:
+  // N*p + d = 0;
+  Plane(const Vec3& normal, scalar offset);
+  
+  scalar intersect(const Ray& r) const override;
+  Vec3 normal(const Vec3& point) const override;
+  Vec3 sample_shadow_ray_dir(const Intersection& isect,
+                                     scalar r1, scalar r2) const override;
+
+  bool is_differential() const override { return true; }
+    
+  void texture_coord(const Vec3& pos, const Vec3& normal,
+                     scalar& u, scalar& v, Vec3& dpdu, Vec3& dpdv) const override;
+
+private:
+  Vec3 N;
+  Vec3 U, V;
+  scalar d;
+};
+
 class ReversedGeometry : public Geometry
 {
 public:
@@ -36,7 +58,7 @@ public:
     return geometry->intersect(r);
   }
 
-  Vec3 normal(Vec3 point) const override
+  Vec3 normal(const Vec3& point) const override
   {
     return -geometry->normal(point);
   }
@@ -58,3 +80,4 @@ public:
 private:
   shared_ptr<Geometry> geometry;
 };
+
