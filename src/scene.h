@@ -18,7 +18,6 @@ public:
   Light const* sample_light(scalar r1, scalar&) const;
   
   Intersection intersect(const Ray& ray) const;
-  Intersection shadow_intersect(const Ray& ray) const;
   
 private:
   vector<Shape const*> shapes;

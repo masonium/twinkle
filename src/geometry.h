@@ -10,7 +10,7 @@ using std::shared_ptr;
 class Geometry
 {
 public:
-  virtual scalar intersect(const Ray& r) const = 0;
+  virtual scalar intersect(const Ray& r, const Geometry*& geom) const = 0;
   virtual Vec3 normal(const Vec3& point) const = 0;
   virtual Vec3 sample_shadow_ray_dir(const Intersection& isect,
                                      scalar r1, scalar r2) const = 0;
@@ -24,60 +24,22 @@ public:
                              scalar& u, scalar& v, Vec3& dpdu, Vec3& dpdv) const
   {
   }
+
+  virtual ~Geometry() {}
 };
 
-class Plane : public Geometry
+class SimpleGeometry : public Geometry
 {
 public:
-  // N*p + d = 0;
-  Plane(const Vec3& normal, scalar offset);
+  virtual scalar intersect(const Ray& r) const = 0;
+
+  scalar intersect(const Ray& r, const Geometry*& geom) const override
+  {
+    geom = this;
+    return intersect(r);
+  }
+
+  virtual ~SimpleGeometry() { }
+};
+
   
-  scalar intersect(const Ray& r) const override;
-  Vec3 normal(const Vec3& point) const override;
-  Vec3 sample_shadow_ray_dir(const Intersection& isect,
-                                     scalar r1, scalar r2) const override;
-
-  bool is_differential() const override { return true; }
-    
-  void texture_coord(const Vec3& pos, const Vec3& normal,
-                     scalar& u, scalar& v, Vec3& dpdu, Vec3& dpdv) const override;
-
-private:
-  Vec3 N;
-  Vec3 U, V;
-  scalar d;
-};
-
-class ReversedGeometry : public Geometry
-{
-public:
-  ReversedGeometry(shared_ptr<Geometry> geom) : geometry(geom) {}
-
-  scalar intersect(const Ray& r) const override
-  {
-    return geometry->intersect(r);
-  }
-
-  Vec3 normal(const Vec3& point) const override
-  {
-    return -geometry->normal(point);
-  }
-
-  Vec3 sample_shadow_ray_dir(const Intersection& isect,
-                             scalar r1, scalar r2) const override
-  {
-    return sample_shadow_ray_dir(isect, r1, r2);
-  }
-
-  bool is_differential() const override { return geometry->is_differential(); }
-
-  void texture_coord(const Vec3& pos, const Vec3& normal,
-                     scalar& u, scalar& v, Vec3& dpdu, Vec3& dpdv) const override
-  {
-    return geometry->texture_coord(pos, -normal, u, v, dpdu, dpdv);
-  }
-
-private:
-  shared_ptr<Geometry> geometry;
-};
-

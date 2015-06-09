@@ -1,14 +1,15 @@
 #include "intersection.h"
 #include "shape.h"
+#include "geometry.h"
 
-Intersection::Intersection(const Shape* s, const Ray& r, scalar t_) :
-  t(t_), position(r.evaluate(t)), shape(s)
+Intersection::Intersection(const Shape* s, const Geometry* geom, const Ray& r, scalar t_) :
+  t(t_), position(r.evaluate(t)), geometry(geom), shape(s)
 {
   if (s != nullptr)
   {
-    normal = s->geometry->normal(position);
-    if (s->is_differential())
-      s->geometry->texture_coord(position, normal, u, v, dpdu, dpdv);
+    normal = geometry->normal(position);
+    if (geometry->is_differential())
+      geometry->texture_coord(position, normal, u, v, dpdu, dpdv);
     to_z = Mat33::rotate_to_z(normal);
     from_z = to_z.transpose();
   }

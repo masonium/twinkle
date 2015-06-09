@@ -5,11 +5,12 @@
 #include "sampler.h"
 
 class Shape;
+class Geometry;
 
 class Intersection
 {
 public:
-  Intersection(const Shape* s, const Ray& r, scalar t_);
+  Intersection(const Shape* s, const Geometry* geom, const Ray& r, scalar t_);
   operator bool() const;
   
   bool valid() const;
@@ -30,6 +31,7 @@ public:
   Vec3 dpdu, dpdv;
 
 private:
+  const Geometry* geometry;
   const Shape* shape;
   Mat33 to_z;
   Mat33 from_z;

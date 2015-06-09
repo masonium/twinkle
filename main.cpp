@@ -4,6 +4,7 @@
 #include "camera.h"
 #include "scene.h"
 #include "sphere.h"
+#include "plane.h"
 #include "bsdf.h"
 #include "path_tracer.h"
 #include "util.h"

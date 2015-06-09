@@ -51,8 +51,8 @@ public:
 private:
 
   RawModelLoadStatus load_from_parts(const vector<Vec3>& vertex_list, const vector<Vec3>& normal_list,
-				  const vector<RawModelLoad::tex_coord>& tc_list,
-				  const vector<RawModelLoad::vertex_ref>& vertex_ref_list,
-				  const vector<RawModelLoad::tri_ref>& tri_list);
+                                     const vector<RawModelLoad::tex_coord>& tc_list,
+                                     const vector<RawModelLoad::vertex_ref>& vertex_ref_list,
+                                     const vector<RawModelLoad::tri_ref>& tri_list);
 
 };

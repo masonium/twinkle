@@ -37,18 +37,21 @@ Light const* Scene::sample_light(scalar r1, scalar& light_prob) const
 Intersection Scene::intersect(const Ray& ray) const
 {
   Shape const* best_shape = nullptr;
+  Geometry const* best_geom = nullptr;
   scalar best_t = numeric_limits<double>::max();
 
   for (auto s: shapes)
   {
-    scalar t = s->intersect(ray);
+    Geometry const* g = nullptr;
+    scalar t = s->intersect(ray, g);
     if (t > 0 && t < best_t)
     {
       best_t = t;
       best_shape = s;
+      best_geom = g;
     }
   }
   if (best_shape != nullptr)
-    return Intersection(best_shape, ray, best_t);
-  return Intersection(nullptr, ray, -1);
+    return Intersection(best_shape, best_geom, ray, best_t);
+  return Intersection(nullptr, nullptr, ray, -1);
 }
