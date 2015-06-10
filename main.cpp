@@ -8,6 +8,8 @@
 #include "bsdf.h"
 #include "path_tracer.h"
 #include "util.h"
+#include "model.h"
+#include "mesh.h"
 #include "material.h"
 
 using std::cerr;
@@ -71,18 +73,29 @@ PerspectiveCamera many_sphere_scene(Scene& scene, scalar ar)
   return PerspectiveCamera(Vec3{0,0,-7}, Vec3::zero, Vec3::y_axis, PI/2, ar);
 }
 
+PerspectiveCamera model_scene(Scene& scene, scalar aspect_ratio)
+{
+  RawModel m;
+  m.load_obj_model("tri.obj");
+  auto mesh = make_shared<Mesh>(m);
+
+  //scene.add(new Shape(mesh, make_shared<RoughColorMaterial>(0.0, spectrum{1.0, 0.5, 0.0})));
+  scene.add(new Shape(make_shared<Plane>(Vec3::y_axis, 0.0), 
+                      make_shared<RoughColorMaterial>(0.0, spectrum{0.5, 1.0, 0.0})));
+
+  scene.add(new DirectionalLight(Vec3(1.0, 1.0, 1.0), spectrum{1.0, 1.0, 1.0}*3.0));
+
+  return PerspectiveCamera(Vec3{5.0, 2.0, 0.0}, Vec3::zero, Vec3::y_axis,
+                           PI/2.0, aspect_ratio);
+}
+
 PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
 {
   auto check = make_shared<GridTexture2D>(spectrum::one, spectrum::zero, 10.0, 0.1);
 
-  // scene.add( new Shape( make_shared<Sphere>(Vec3{0.0, -1.0, 0.0}, 1.0),
-  //                       make_shared<RoughMaterial>(0.0, check)));
-
   auto mat  = make_shared<GlassMaterial>();
-  //auto mat  = make_shared<MirrorMaterial>();
 
   scene.add(new Shape(make_shared<Sphere>(Vec3{0.0, -1.0, 0.0}, 1.0), mat));
-//  scene.add(new Shape(make_shared<ReversedGeometry>(make_shared<Sphere>(Vec3{0.0, -1.0, 0.0}, 0.75)), mat));
 
   scalar distance_from_center = 3.0;
   scalar sphere_radius = 1.0;
@@ -139,7 +152,7 @@ int main(int argc, char** args)
   }
 
   Scene scene;
-  PerspectiveCamera cam = many_sphere_scene(scene, scalar(WIDTH)/scalar(HEIGHT));
+  PerspectiveCamera cam = model_scene(scene, scalar(WIDTH)/scalar(HEIGHT));
 
   Film f(WIDTH, HEIGHT, new BoxFilter);
 
