@@ -7,10 +7,15 @@
 
 using std::shared_ptr;
 
-class Geometry
+class Primitive
 {
 public:
   virtual scalar intersect(const Ray& r, const Geometry*& geom) const = 0;
+};
+
+class Geometry
+{
+public:
   virtual Vec3 normal(const Vec3& point) const = 0;
   virtual Vec3 sample_shadow_ray_dir(const Intersection& isect,
                                      scalar r1, scalar r2) const = 0;
@@ -28,7 +33,7 @@ public:
   virtual ~Geometry() {}
 };
 
-class SimpleGeometry : public Geometry
+class SimpleGeometry : public Geometry, public Primitive
 {
 public:
   virtual scalar intersect(const Ray& r) const = 0;

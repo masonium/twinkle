@@ -14,9 +14,6 @@ using std::cerr;
 using std::unordered_map;
 using std::make_pair;
 
-RawModel::RawModel()
-{
-}
 
 namespace RawModelLoad
 {
@@ -39,6 +36,10 @@ namespace RawModelLoad
     }
   };
 
+}
+
+RawModel::RawModel() : has_tex(false)
+{
 }
 
 namespace std
@@ -155,7 +156,7 @@ RawModelLoadStatus RawModel::load_obj_model(string filename)
     compute_normals();
     mls.has_normals = true;
   }
-
+  has_tex = mls.has_tex;
   return mls;
 }
 
@@ -163,8 +164,7 @@ RawModelLoadStatus RawModel::load_from_parts(const vector<Vec3>& vertex_list, co
 					     const vector<tex_coord>& tc_list, const vector<vertex_ref>& vertex_ref_list,
 					     const vector<tri_ref>& tri_list)
 {
-  verts.clear();
-  tris.clear();
+  clear();
 
   unordered_map<vertex_ref, int> ref_map;
 
@@ -206,6 +206,13 @@ RawModelLoadStatus RawModel::load_from_parts(const vector<Vec3>& vertex_list, co
   }
 
   return mls;
+}
+
+void RawModel::clear()
+{
+  verts.clear();
+  tris.clear();
+  has_tex = false;
 }
 
 void RawModel::compute_normals()

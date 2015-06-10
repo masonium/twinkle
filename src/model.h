@@ -42,13 +42,16 @@ public:
 
   RawModelLoadStatus load_obj_model(string filename);
 
-  // equal-weighted normals
-  void compute_normals();
-
   vector<Vertex> verts;
   vector<Triangle> tris;
 
+  bool has_tex;
+
 private:
+  // equal-weighted normals
+  void compute_normals();
+
+  void clear();
 
   RawModelLoadStatus load_from_parts(const vector<Vec3>& vertex_list, const vector<Vec3>& normal_list,
                                      const vector<RawModelLoad::tex_coord>& tc_list,
