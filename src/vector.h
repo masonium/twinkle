@@ -95,7 +95,7 @@ public:
     auto x = *this;
     return static_cast<vec_type>(x *= a); 
   }
-  
+
   vec_type& operator/= (scalar a)
   {
     this->x /= a;
@@ -130,6 +130,16 @@ public:
     out.write(reinterpret_cast<char*>(v), sizeof(v));
   }
 };
+
+template <typename vec_type>
+bool lexographic_compare(const VectorT3<vec_type>& a, const VectorT3<vec_type>& b)
+{
+  if (a.x < b.x) return true;
+  if (a.x > b.x) return false;
+  if (a.y < b.y) return true;
+  if (a.y > b.y) return false;
+  return a.z < b.z;
+}
 
 template<typename vec_type>
 vec_type operator *(scalar f, const vec_type& vec)

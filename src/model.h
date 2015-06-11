@@ -41,16 +41,20 @@ public:
   RawModel();
 
   RawModelLoadStatus load_obj_model(string filename);
+  RawModelLoadStatus load_stl_model(string filename);
 
   vector<Vertex> verts;
   vector<Triangle> tris;
 
   bool has_tex;
 
+  RawModel merge_vertices(scalar eps = EPSILON) const;
+
 private:
   // equal-weighted normals
   void compute_normals();
 
+  // normalize
   void clear();
 
   RawModelLoadStatus load_from_parts(const vector<Vec3>& vertex_list, const vector<Vec3>& normal_list,

@@ -5,15 +5,17 @@
 #include <sstream>
 #include <unordered_map>
 #include <functional>
+#include <algorithm>
 #include "util.h"
 
+using std::transform;
 using std::ifstream;
 using std::istringstream;
 using std::vector;
 using std::cerr;
 using std::unordered_map;
 using std::make_pair;
-
+using std::pair;
 
 namespace RawModelLoad
 {
@@ -128,9 +130,11 @@ RawModelLoadStatus RawModel::load_obj_model(string filename)
       string part;
       int sidx = ref_list.size();
       int num_verts = 0;
-      while (ss)
+      while (true)
       {
 	ss >> part;
+        if (!ss)
+          break;
 	ref_list.push_back(parse_obj_vertex_ref(part));
 	++num_verts;
       }
@@ -140,6 +144,88 @@ RawModelLoadStatus RawModel::load_obj_model(string filename)
 	tri_list.emplace_back(tri);
       }
     }
+    else
+    {
+      cerr << "unknown line type: " << line_type << "\n";
+      return mls;
+    }
+  }
+
+  mls = load_from_parts(vertex_list, normal_list,
+			tc_list, ref_list,
+			tri_list);
+
+  if (mls.success && !mls.has_normals)
+  {
+    compute_normals();
+    mls.has_normals = true;
+  }
+  has_tex = mls.has_tex;
+  return mls;
+}
+
+RawModelLoadStatus RawModel::load_stl_model(string filename)
+{
+  RawModelLoadStatus mls;
+  mls.success = false;
+
+  ifstream fin(filename);
+  if (!fin)
+  {
+    cerr << "Could not open model file (" << filename << ").\n";
+    return mls;
+  }
+
+  vector<Vec3> vertex_list;
+  vector<Vec3> normal_list;
+  vector<tex_coord> tc_list;
+  vector<vertex_ref> ref_list;
+  vector<tri_ref> tri_list;
+
+#define BUF_SIZE 1024
+  char linebuf[BUF_SIZE];
+
+  int line_count = 0;
+  while (!fin.eof())
+  {
+    ++line_count;
+    fin.getline(linebuf, BUF_SIZE);
+    if (fin.fail())
+    {
+      if (fin.eof())
+	break;
+
+      cerr << "Line " << line_count << " in obj too long.";
+      return mls;
+    }
+    string str(linebuf);
+
+    if (str.empty())
+      continue;
+
+    istringstream ss(str);
+
+    string line_type;
+    ss >> line_type;
+    if (line_type == "vertex")
+    {
+      Vec3 v;
+      ss >> v;
+      vertex_list.push_back(v);
+      ref_list.emplace_back(vertex_ref{(int)ref_list.size(), -1, -1});
+    }
+    else if (line_type == "endloop")
+    {
+      int num_tris = tri_list.size();
+      tri_ref tri{num_tris*3, num_tris*3+1, num_tris*3+2};
+      tri_list.emplace_back(tri);
+    }
+    else if (line_type == "facet" || line_type == "outer" || 
+             line_type == "endfacet" || line_type == "solid")
+    {
+    }
+    else if (line_type == "endsolid")
+      break;
     else
     {
       cerr << "unknown line type: " << line_type << "\n";

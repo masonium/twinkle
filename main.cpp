@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "camera.h"
+#include "integrator.h"
 #include "scene.h"
 #include "sphere.h"
 #include "plane.h"
@@ -13,6 +14,7 @@
 #include "material.h"
 
 using std::cerr;
+using std::endl;
 using std::cout;
 using std::make_shared;
 
@@ -76,16 +78,18 @@ PerspectiveCamera many_sphere_scene(Scene& scene, scalar ar)
 PerspectiveCamera model_scene(Scene& scene, scalar aspect_ratio)
 {
   RawModel m;
-  m.load_obj_model("tri.obj");
-  auto mesh = make_shared<Mesh>(m);
+  m.load_stl_model("cube.stl");
+  cerr << "Loaded model with " << m.verts.size() << " verts and " << m.tris.size() << " tris." << endl;
+  auto raw_mesh = new Mesh(m);
+  auto mesh = shared_ptr<Mesh>(raw_mesh);
 
-  //scene.add(new Shape(mesh, make_shared<RoughColorMaterial>(0.0, spectrum{1.0, 0.5, 0.0})));
+  scene.add(new Shape(mesh, make_shared<RoughColorMaterial>(0.0, spectrum{1.0, 0.5, 0.0})));
   scene.add(new Shape(make_shared<Plane>(Vec3::y_axis, 0.0), 
                       make_shared<RoughColorMaterial>(0.0, spectrum{0.5, 1.0, 0.0})));
 
   scene.add(new DirectionalLight(Vec3(1.0, 1.0, 1.0), spectrum{1.0, 1.0, 1.0}*3.0));
 
-  return PerspectiveCamera(Vec3{5.0, 2.0, 0.0}, Vec3::zero, Vec3::y_axis,
+  return PerspectiveCamera(Vec3{-2.0, 3.0, 6.0}, Vec3::zero, Vec3::y_axis,
                            PI/2.0, aspect_ratio);
 }
 
@@ -170,8 +174,11 @@ int main(int argc, char** args)
     opt.num_threads = atoi(args[4]);
   else
     opt.num_threads = 1;
+  opt.max_depth = 16;
 
   PathTracerIntegrator igr(opt);
+
+  //BWIntegrator igr;
 
   cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, "
        << per_pixel << " samples per pixel\n";
@@ -183,6 +190,7 @@ int main(int argc, char** args)
   auto mapper = make_shared<LinearToneMapper>();
   //auto mapper = shared_ptr<CompositeToneMapper>(new CompositeToneMapper{make_shared<RSSFToneMapper>(), make_shared<LinearToneMapper>()});
   f.render_to_ppm(cout, mapper);
+  //f.render_to_console(cout);
 
   return 0;
 }
