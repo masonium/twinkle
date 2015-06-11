@@ -12,7 +12,7 @@ public:
 
   scalar intersect(const Ray& r, const Geometry*& geom) const override;
 
-  Vec3 pos(int i) const
+  const Vec3& pos(int i) const
   {
     return verts[i].position;
   }
@@ -47,7 +47,7 @@ public:
 
 private:
   const Vertex& _v(int i) { return mesh->verts[vi[i]]; }
-  Vec3 _p(int i) { return mesh->pos(vi[i]); }
+  const Vec3& _p(int i) const { return mesh->pos(vi[i]); }
 
   const Mesh* mesh;
   int vi[3];

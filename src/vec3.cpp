@@ -126,6 +126,9 @@ Mat33 Mat33::rotate_match(const Vec3& axis_from, const Vec3& axis_to)
 {
   const scalar c = axis_from.dot(axis_to);
 
+  if (c > 1 - EPSILON)
+    return Mat33::identity;
+
   const auto raxis = axis_from.cross(axis_to);
   const scalar s = raxis.norm();
 
@@ -137,6 +140,9 @@ Mat33 Mat33::rotate_to_z(const Vec3& axis_from)
   const scalar c = axis_from.z;
 
   const scalar s = sqrt(axis_from.x * axis_from.x + axis_from.y * axis_from.y);
+  if (s < EPSILON)
+    return Mat33::identity;
+
   const auto raxis = Vec3{axis_from.y, -axis_from.x, 0};
 
   return from_axis_angle(raxis / s, s, c);

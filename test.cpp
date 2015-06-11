@@ -8,7 +8,6 @@
 #include "sampler.h"
 #include "spectrum.h"
 
-
 #include "unittest++/UnitTest++.h"
 
 #define EPS 0.0001
@@ -195,7 +194,7 @@ class SingleSphereFixture
 public:
   SingleSphereFixture() : sphere(make_shared<Sphere>(Vec3{0.0, 0.0, 0.0}, 1.0)),
                           ray{Vec3{5.0, 0.0, 0.0}, Vec3{-2.0, 0.0, 0.0}},
-    shape(sphere, make_shared<RoughColorMaterial>(0, spectrum{1.0}))
+                          shape(sphere, make_shared<RoughColorMaterial>(0, spectrum{1.0}))
   {
     scene.add(&shape);
   }
@@ -323,13 +322,39 @@ SUITE(Mat)
 
     {
       Vec3 target(sqrt(0.5), sqrt(0.5), 0);
-        Mat33 r1 = Mat33::rotate_match( Vec3::x_axis, target );
-        Mat33 r2 = Mat33::from_axis_angle( Vec3::z_axis, PI/4.0 );
-        CHECK_MAT(r1, r2);
-        CHECK_VEC(target, r1 * Vec3::x_axis);
+      Mat33 r1 = Mat33::rotate_match( Vec3::x_axis, target );
+      Mat33 r2 = Mat33::from_axis_angle( Vec3::z_axis, PI/4.0 );
+      CHECK_MAT(r1, r2);
+      CHECK_VEC(target, r1 * Vec3::x_axis);
     }
   }
 
+  TEST(rotate_z_to_z)
+  {
+    Mat33 eye = Mat33::identity;
+    Mat33 m = Mat33::rotate_match(Vec3::z_axis, Vec3::z_axis);
+    CHECK_MAT(eye, m);
+  }
+}
+
+SUITE(Triangle)
+{
+  TEST (isect)
+  {
+    {
+      scalar t = ray_triangle_intersection(Vec3(0, 0, 0), Vec3(1, 0, 0), Vec3(0, 1, 0),
+                                           Ray(Vec3(0.25, 0.25, 1), Vec3(0, 0, -1)));
+
+      CHECK_CLOSE(1.0, t, PRECISE_EPS);
+    }
+    {
+      Vec3 target_dir = Vec3(-2.25, -0.25, 0);
+      scalar t = ray_triangle_intersection(Vec3(0, 0, 1.0), Vec3(0, 0, -1.0), Vec3(-0.5, 0.5, 0),
+                                           Ray(Vec3(2, 0.5, 0), target_dir.normal()));
+
+      CHECK_CLOSE(target_dir.norm(), t, PRECISE_EPS);
+    }
+  }
 }
 
 SUITE(ToneMap)

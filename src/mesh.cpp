@@ -14,29 +14,7 @@ MeshTri::MeshTri(const Mesh* m, const int v[3]) :
 
 scalar MeshTri::intersect(const Ray& ray) const
 {
-  Vec3 p = ray.direction.cross(e2);
-  scalar det = e1.dot(p);
-  if (fabs(det) < SURFACE_EPSILON)
-    return -1;
-
-  const scalar inv_det = 1 / det;
-
-  Vec3 corner_to_ray = ray.position - mesh->verts[vi[0]].position;
-
-  scalar u = corner_to_ray.dot(p) * inv_det;
-  if (u < 0 || u > 1)
-    return -1;
-
-  Vec3 q = corner_to_ray.cross(e1);
-  scalar v = q.dot(ray.direction) * inv_det;
-  if (v < 0 || v > 1)
-    return -1;
-
-  scalar t = q.dot(e2) * inv_det;
-  if (t > EPSILON)
-    return t;
-
-  return -1;
+  return ray_triangle_intersection(_p(0), _p(1), _p(2), ray);
 }
 
 Vec3 MeshTri::normal(const Vec3& point) const

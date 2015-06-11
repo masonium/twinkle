@@ -10,6 +10,7 @@ const scalar PI = 4.0 * atan(1.0);
 
 #define SCALAR_EPSILON 0.00001
 class Vec3;
+class Ray;
 
 scalar approx_gt(scalar x, scalar y);
 
@@ -41,3 +42,9 @@ T lerp(const T& a, const T& b, scalar x)
 {
   return a + (b-a) * x;
 }
+
+/***
+ * Intersection of a triangle with a ray
+ */
+scalar ray_triangle_intersection(const Vec3& v1, const Vec3& v2, const Vec3& v3,
+                                 const Ray& ray);

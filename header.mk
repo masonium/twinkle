@@ -1,3 +1,4 @@
-SFLAGS = -Wall -fsyntax-only -std=c++0x
+CXX_VERSION = -std=c++11
+SFLAGS = -Wall -fsyntax-only $(CXX_VERSION)
 LFLAGS =  -pthread -lm  -lUnitTest++
-CXXFLAGS = -Wall -std=c++0x -g -O3 -Isrc/ -Iextlib/
+CXXFLAGS = -Wall $(CXX_VERSION) -g -O0 -Isrc/ -Iextlib/

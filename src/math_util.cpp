@@ -1,5 +1,6 @@
 #include "math_util.h"
 #include "vec3.h"
+#include "ray.h"
 
 scalar approx_gt(scalar x, scalar y)
 {
@@ -55,4 +56,34 @@ Vec3 refraction_direction(const Vec3& incoming, const Vec3& normal,
   scalar cosi = -incoming.dot(normal);
   scalar sin2t = nr*nr*(1 - cosi*cosi);
   return (-incoming * nr - (nr * cosi + sqrt(1 - sin2t))*normal).normal();
+}
+
+scalar ray_triangle_intersection(const Vec3& v1, const Vec3& v2, const Vec3& v3,
+                                 const Ray& ray)
+{
+  Vec3 e1 = v2 - v1, e2 = v3 - v1;
+  Vec3 p = ray.direction.cross(e2);
+  scalar det = e1.dot(p);
+  if (fabs(det) < EPSILON)
+    return -1;
+
+  const scalar inv_det = 1 / det;
+
+  Vec3 corner_to_ray = ray.position - v1;
+
+  scalar u = corner_to_ray.dot(p) * inv_det;
+  if (u < 0 || u > 1)
+    return -1;
+
+  Vec3 q = corner_to_ray.cross(e1);
+  scalar v = q.dot(ray.direction) * inv_det;
+  if (v < 0 || u + v > 1)
+    return -1;
+
+  scalar t = q.dot(e2) * inv_det;
+  if (t > EPSILON)
+    return t;
+
+  return -1;
+
 }
