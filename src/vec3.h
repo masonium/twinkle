@@ -24,7 +24,17 @@ public:
   }
 
   using VectorT3<Vec3>::operator+;
-  
+  using VectorT3<Vec3>::operator/;
+
+  Vec3 elem_div(const Vec3& rhs) const
+  {
+    return Vec3{x / rhs.x, y / rhs.y, z / rhs.z};
+  }
+  Vec3 elem_mult(const Vec3& rhs) const
+  {
+    return Vec3{x * rhs.x, y * rhs.y, z * rhs.z};
+  }
+
   Vec3 cross(const Vec3& other) const
   {
     return Vec3(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x);
@@ -66,6 +76,12 @@ public:
 private:
   Vec3 _rotateAxisAngle(const Vec3& axis, scalar cos_angle, scalar sin_angle) const;
 };
+
+
+ostream& operator <<(ostream& out, const Vec3& v);
+
+Vec3 min(const Vec3& a, const Vec3& b);
+Vec3 max(const Vec3& a, const Vec3& b);
 
 class Mat33 
 {
@@ -118,6 +134,10 @@ public:
   static Mat33 rotate_match(const Vec3& axis_from, const Vec3& axis_to);
   static Mat33 rotate_to_z(const Vec3& axis_from);
 
+  /*
+   * Construct a matrix such that left-multiplying a vector by that matrix is
+   * equivalent to taking the cross product of the axis and that vector.
+   */
   static Mat33 cross_product_matrix(const Vec3& axis);
 
   static Mat33 identity;

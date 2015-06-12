@@ -81,6 +81,29 @@ Mat33 Vec3::tensor_product(const Vec3& a) const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+
+Vec3 min(const Vec3& a, const Vec3& b)
+{
+  return Vec3{std::min(a.x, b.x), std::min(a.y, b.y), std::min(a.z, b.z)};
+}
+Vec3 max(const Vec3& a, const Vec3& b)
+{
+  return Vec3{std::max(a.x, b.x), std::max(a.y, b.y), std::max(a.z, b.z)};
+}
+ostream& operator <<(ostream& out, const Vec3& v)
+{
+  out << v.x << ' ' << v.y << ' ' << v.z;
+  return out;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+Mat33& Mat33::operator=(const Mat33& mat)
+{
+  copy(mat.v, mat.v+9, v);
+  return *this;
+}
 Mat33 Mat33::identity{1, 0, 0, 0, 1, 0, 0, 0, 1};
 
 Mat33::Mat33(std::initializer_list<scalar> lst)
@@ -163,10 +186,4 @@ Mat33 Mat33::from_axis_angle(const Vec3& axis, scalar sa, scalar ca)
 Mat33 Mat33::cross_product_matrix(const Vec3& a)
 {
   return Mat33{0, -a.z, a.y, a.z, 0, -a.x, -a.y, a.x, 0};
-}
-
-Mat33& Mat33::operator=(const Mat33& mat)
-{
-  copy(mat.v, mat.v+9, v);
-  return *this;
 }

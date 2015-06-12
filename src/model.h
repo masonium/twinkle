@@ -4,6 +4,7 @@
 #include "vec3.h"
 #include <string>
 #include <vector>
+#include "bounds.h"
 
 using std::string;
 using std::vector;
@@ -49,6 +50,13 @@ public:
   bool has_tex;
 
   RawModel merge_vertices(scalar eps = EPSILON) const;
+  
+  void rescale(const bounds::AABB& new_bb);
+  void rescale(const bounds::Sphere& new_bs);
+
+  bounds::AABB bounding_box( ) const;
+  bounds::Sphere bounding_sphere( ) const;
+
 
 private:
   // equal-weighted normals
@@ -61,5 +69,4 @@ private:
                                      const vector<RawModelLoad::tex_coord>& tc_list,
                                      const vector<RawModelLoad::vertex_ref>& vertex_ref_list,
                                      const vector<RawModelLoad::tri_ref>& tri_list);
-
 };

@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <functional>
 #include <algorithm>
+#include <limits>
 #include "util.h"
 
 using std::transform;
@@ -301,6 +302,56 @@ void RawModel::clear()
   has_tex = false;
 }
 
+bounds::AABB RawModel::bounding_box() const
+{
+  Vec3 min{std::numeric_limits<scalar>::max()};
+  Vec3 max{std::numeric_limits<scalar>::min()};
+  min = accumulate(verts.begin(), verts.end(), min,
+                   [] (const Vec3& v, const Vertex& w) { return ::min(v, w.position); });
+  max = accumulate(verts.begin(), verts.end(), max,
+                   [] (const Vec3& v, const Vertex& w) { return ::max(v, w.position); });
+
+  return bounds::AABB{min, max};
+}
+
+bounds::Sphere RawModel::bounding_sphere() const
+{
+  Vec3 p1 = verts[0].position;
+
+  Vec3 p2;
+  scalar max_dist2 = 0;
+  for (const auto& v: verts)
+  {
+    scalar dist2 = (v.position - p1).norm2();
+    if (max_dist2 < dist2)
+    {
+      max_dist2 = dist2;
+      p2 = v.position;
+    }
+  }
+
+  Vec3 p3;
+  max_dist2 = 0;
+  for (const auto& v: verts)
+  {
+    scalar dist2 = (v.position - p2).norm2();
+    if (max_dist2 < dist2)
+    {
+      max_dist2 = dist2;
+      p3 = v.position;
+    }
+  }
+      
+  // Take the midpoint as the center, and find the best radius
+  Vec3 mid = (p2 + p3) * 0.5;
+  scalar radius = sqrt(accumulate(verts.begin(), verts.end(), (mid - p2).norm2(),
+                                  [&mid](auto r2, auto&& v) { 
+                                    return max(r2, (mid - v.position).norm2()); 
+                                  }));
+
+  return bounds::Sphere(mid, radius);
+}
+
 void RawModel::compute_normals()
 {
   vector<Vec3> normal_sum( verts.size() );
@@ -317,6 +368,34 @@ void RawModel::compute_normals()
   }
   for (size_t i = 0; i < verts.size(); ++i)
     verts[i].normal = normal_sum[i].normal();
+}
+
+void RawModel::rescale(const bounds::AABB& new_bb)
+{
+  auto bb = bounding_box();
+  auto w = bb.max - bb.min;
+  for (auto& f: w.v)
+    if (f < EPSILON)
+      f = 1;
+
+  auto scale = (new_bb.max - new_bb.min).elem_div(w);
+  
+  for (auto& v: verts)
+  {
+    v.position = (v.position - bb.min).elem_mult(scale) + new_bb.min;
+    v.normal = v.normal.elem_div(scale).normal();
+  }
+}
+
+void RawModel::rescale(const bounds::Sphere& new_bs)
+{
+  const auto bs = bounding_sphere();
+  
+  auto scale = new_bs.radius / bs.radius;
+  for (auto& v: verts)
+  {
+    v.position = (v.position - bs.center) * scale + new_bs.center;
+  }
 }
 
 /*
