@@ -344,8 +344,11 @@ bounds::Sphere RawModel::bounding_sphere() const
       
   // Take the midpoint as the center, and find the best radius
   Vec3 mid = (p2 + p3) * 0.5;
+
   scalar radius = sqrt(accumulate(verts.begin(), verts.end(), (mid - p2).norm2(),
-                                  [&mid](auto r2, auto&& v) { 
+                                  /* This could be generic/polymorphic, but only
+                                     in c++1y. */
+                                  [&mid](scalar r2, const Vertex& v) { 
                                     return max(r2, (mid - v.position).norm2()); 
                                   }));
 
