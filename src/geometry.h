@@ -11,6 +11,8 @@ class Primitive
 {
 public:
   virtual scalar intersect(const Ray& r, const Geometry*& geom) const = 0;
+
+  virtual ~Primitive() { }
 };
 
 class Geometry

@@ -41,7 +41,7 @@ namespace RawModelLoad
 
 }
 
-RawModel::RawModel() : has_tex(false)
+RawModel::RawModel() : verts(), tris(), has_tex(false)
 {
 }
 

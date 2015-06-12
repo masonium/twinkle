@@ -12,6 +12,8 @@ class ToneMapper
 public:
   virtual void tonemap(const vector<spectrum>& input, vector<spectrum>& output,
                        uint w, uint h) const = 0;
+
+  virtual ~ToneMapper() { }
 };
 
 class CutoffToneMapper : public ToneMapper

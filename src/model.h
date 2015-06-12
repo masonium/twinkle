@@ -18,6 +18,8 @@ namespace RawModelLoad
 
 struct Vertex
 {
+  Vertex() = default;
+
   Vec3 position;
   Vec3 normal;
   Vec3 dpdu, dpdv;

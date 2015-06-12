@@ -4,12 +4,12 @@
 using std::copy;
 
 MeshTri::MeshTri(const Mesh* m, const int v[3]) :
-  mesh(m)
+  mesh(m),
+  e1(mesh->pos(vi[1]) - mesh->pos(vi[0])),
+  e2(mesh->pos(vi[2]) - mesh->pos(vi[0])),
+  n(e1.cross(e2))
 {
   copy(v, v+3, vi);
-  e1 = mesh->pos(vi[1]) - mesh->pos(vi[0]);
-  e2 = mesh->pos(vi[2]) - mesh->pos(vi[0]);
-  n = e1.cross(e2);
 }
 
 scalar MeshTri::intersect(const Ray& ray) const

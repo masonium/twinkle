@@ -40,7 +40,7 @@ public:
   
   PathTracerIntegrator(const Options& opt);
   
-  virtual void render(const Camera* cam, const Scene* scene, Film& film) override;
+  void render(const Camera* cam, const Scene* scene, Film& film) override;
   spectrum trace_ray(const Scene* scene, const Ray& r, shared_ptr<UniformSampler> sampler, int depth) const;
 
   long num_rays_traced() const { return rays_traced; }

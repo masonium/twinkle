@@ -35,6 +35,8 @@ class ImageSampleFilter
 {
 public:
   virtual void add_sample(Film* film, const PixelSample& p, const spectrum& s) const = 0;
+
+  virtual ~ImageSampleFilter() { }
 };
 
 /**

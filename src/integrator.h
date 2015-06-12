@@ -13,13 +13,15 @@ class Integrator
 {
 public:
   virtual void render(const Camera* cam, const Scene* scene, Film& film) = 0;
+
+  virtual ~Integrator() { }
 };
 
 
 class BWIntegrator : public Integrator
 {
 public:
-  virtual void render(const Camera* cam, const Scene* scene, Film& film) override;
+  void render(const Camera* cam, const Scene* scene, Film& film) override;
 };
 
 

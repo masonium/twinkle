@@ -20,6 +20,8 @@ public:
   {
     return 0;
   }
+
+  virtual ~BRDF() { }
 };
 
 class Lambertian : public BRDF

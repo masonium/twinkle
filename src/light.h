@@ -42,6 +42,8 @@ class Light
 {
 public:
   virtual LightSample sample_emission(const Intersection& isect, scalar r1, scalar r2) const = 0;
+
+  virtual ~Light() { }
 };
 
 class EnvironmentLight

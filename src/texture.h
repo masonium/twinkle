@@ -8,6 +8,7 @@ class Texture
 {
 public:
   virtual spectrum at_point(const Intersection& isect) const = 0;
+  virtual ~Texture() { }
 };
 
 class SolidColor : public Texture

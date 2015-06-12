@@ -51,5 +51,5 @@ private:
 
   const Mesh* mesh;
   int vi[3];
-  Vec3 n, e1, e2;
+  Vec3 e1, e2, n;
 };

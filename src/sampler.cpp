@@ -42,8 +42,8 @@ void UniformSampler::sample_5d(scalar& r1, scalar& r2, scalar& r3, scalar& r4, s
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-HaltonSampler::HaltonSampler() : index(1), bases{2, 3, 5, 7},
-                                 inv_bases{1/2.0, 1/3.0, 1/5.0, 1/7.0}
+HaltonSampler::HaltonSampler() : index(1), bases{2, 3, 5, 7, 11},
+                                 inv_bases{1/2.0, 1/3.0, 1/5.0, 1/7.0, 1/11.0}
 {
 
 }
@@ -80,6 +80,15 @@ void HaltonSampler::sample_4d(scalar& r0, scalar& r1, scalar& r2, scalar& r3)
   r1 = sample_base(index, bases[1], inv_bases[1]);
   r2 = sample_base(index, bases[2], inv_bases[2]);
   r3 = sample_base(index, bases[3], inv_bases[3]);
+  index += 1;
+}
+void HaltonSampler::sample_5d(scalar& r0, scalar& r1, scalar& r2, scalar& r3, scalar& r4)
+{
+  r0 = sample_base(index, bases[0], inv_bases[0]);
+  r1 = sample_base(index, bases[1], inv_bases[1]);
+  r2 = sample_base(index, bases[2], inv_bases[2]);
+  r3 = sample_base(index, bases[3], inv_bases[3]);
+  r4 = sample_base(index, bases[4], inv_bases[4]);
   index += 1;
 }
 
