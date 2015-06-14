@@ -43,8 +43,8 @@ Intersection Scene::intersect(const Ray& ray) const
   for (auto s: shapes)
   {
     Geometry const* g = nullptr;
-    scalar t = s->intersect(ray, g);
-    if (t > 0 && t < best_t)
+    scalar t = s->intersect(ray, best_t, g);
+    if (t > 0)
     {
       best_t = t;
       best_shape = s;

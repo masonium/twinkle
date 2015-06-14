@@ -19,9 +19,9 @@ public:
   {
   }
   
-  scalar intersect(const Ray& r, const Geometry*& geom) const
+  scalar intersect(const Ray& r, scalar max_t, const Geometry*& geom) const
   {
-    return primitive->intersect(r, geom);
+    return primitive->intersect(r, max_t, geom);
   }
 
   bool is_emissive() const
