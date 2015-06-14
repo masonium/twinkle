@@ -78,15 +78,18 @@ PerspectiveCamera many_sphere_scene(Scene& scene, scalar ar)
 PerspectiveCamera model_scene(Scene& scene, scalar aspect_ratio)
 {
   RawModel m;
-  m.load_stl_model("cube.stl");
+  if (!m.load_stl_model("cube.stl").success)
+    exit(1);
   cerr << "Loaded model with " << m.verts.size() << " verts and " << m.tris.size() << " tris." << endl;
+  //m.rescale(bounds::AABB(Vec3(-2, 0, -2), Vec3(2, 2, 2)));
   auto raw_mesh = new Mesh(m);
   auto mesh = shared_ptr<Mesh>(raw_mesh);
 
   scene.add(new Shape(mesh, make_shared<RoughColorMaterial>(0.0, spectrum{1.0, 0.5, 0.0})));
-  scene.add(new Shape(make_shared<Plane>(Vec3::y_axis, 0.0), 
+  scene.add(new Shape(make_shared<Plane>(Vec3::y_axis, 1.01), 
                       make_shared<RoughColorMaterial>(0.0, spectrum{0.5, 1.0, 0.0})));
 
+  
   scene.add(new DirectionalLight(Vec3(1.0, 1.0, 1.0), spectrum{1.0, 1.0, 1.0}*3.0));
 
   return PerspectiveCamera(Vec3{-2.0, 3.0, 6.0}, Vec3::zero, Vec3::y_axis,
