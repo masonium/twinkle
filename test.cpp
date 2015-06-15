@@ -194,14 +194,15 @@ class SingleSphereFixture
 public:
   SingleSphereFixture() : sphere(make_shared<Sphere>(Vec3{0.0, 0.0, 0.0}, 1.0)),
                           ray{Vec3{5.0, 0.0, 0.0}, Vec3{-2.0, 0.0, 0.0}},
-                          shape(sphere, make_shared<RoughColorMaterial>(0, spectrum{1.0}))
+                          shape(make_shared<Shape>(sphere,
+                                                   make_shared<RoughColorMaterial>(0, spectrum{1.0})))
   {
-    scene.add(&shape);
+    scene.add(shape);
   }
   Scene scene;
   shared_ptr<Sphere> sphere;
   Ray ray;
-  Shape shape;
+  shared_ptr<Shape> shape;
 };
 
 TEST_FIXTURE(SingleSphereFixture, scene_test)

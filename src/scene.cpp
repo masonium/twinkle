@@ -9,12 +9,12 @@ Scene::Scene()
 {
 }
 
-void Scene::add(Shape* shape)
+void Scene::add(shared_ptr<const Shape> shape)
 {
   shapes.push_back(shape);
 }
 
-void Scene::add(Light* light)
+void Scene::add(shared_ptr<const Light> light)
 {
   lights.push_back(light);
 }
@@ -31,12 +31,12 @@ Light const* Scene::sample_light(scalar r1, scalar& light_prob) const
   light_prob = scalar{1.0} / lights.size();
 
   auto max_light_idx = lights.size() - 1;
-  return lights[min(max_light_idx, decltype(max_light_idx)(r1 * lights.size()))];
+  return lights[min(max_light_idx, decltype(max_light_idx)(r1 * lights.size()))].get();
 }
 
 Intersection Scene::intersect(const Ray& ray) const
 {
-  Shape const* best_shape = nullptr;
+  shared_ptr<const Shape> best_shape;
   Geometry const* best_geom = nullptr;
   scalar best_t = numeric_limits<double>::max();
 
@@ -52,6 +52,6 @@ Intersection Scene::intersect(const Ray& ray) const
     }
   }
   if (best_shape != nullptr)
-    return Intersection(best_shape, best_geom, ray, best_t);
+    return Intersection(best_shape.get(), best_geom, ray, best_t);
   return Intersection(nullptr, nullptr, ray, -1);
 }

@@ -46,20 +46,6 @@ public:
   virtual ~Light() { }
 };
 
-class EnvironmentLight
-{
-public:
-  EnvironmentLight(Texture* tex, bool spherical=true);
-
-  EnvironmentLight(const EnvironmentLight& rhs) = delete;
-
-  spectrum emission(const Vec3& dir) const;
-
-private:
-  bool spherical_coords;
-  Texture* texture;
-};
-
 class DirectionalLight : public Light
 {
 public:
