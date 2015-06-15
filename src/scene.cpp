@@ -18,7 +18,10 @@ void Scene::add(shared_ptr<const Light> light)
 {
   lights.push_back(light);
 }
-
+void Scene::add(shared_ptr<const EnvironmentalLight> env_light)
+{
+  env_lights.push_back(env_light);
+}
 
 Light const* Scene::sample_light(scalar r1, scalar& light_prob) const
 {
@@ -54,4 +57,13 @@ Intersection Scene::intersect(const Ray& ray) const
   if (best_shape != nullptr)
     return Intersection(best_shape.get(), best_geom, ray, best_t);
   return Intersection(nullptr, nullptr, ray, -1);
+}
+
+spectrum Scene::environment_light_emission(const Vec3& dir) const
+{
+  return accumulate(env_lights.begin(), env_lights.end(),
+                    spectrum::zero, [&dir](spectrum ret, auto env_light)
+                    {
+                      return ret + env_light->emission(dir);
+                    });
 }

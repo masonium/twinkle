@@ -100,7 +100,7 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
   Intersection isect = scene->intersect(ray);
   const Vec3 ray_dir_origin = -ray.direction.normal();
   if (!isect.valid())
-    return environmental_lighting(-ray_dir_origin);
+    return scene->environment_light_emission(-ray_dir_origin);
   if (isect.is_emissive())
     return isect.emission();
 
