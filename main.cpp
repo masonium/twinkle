@@ -114,20 +114,20 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
     const scalar pr = 4.0;
     const Vec3 sp(pr*cos(angle), -2.0+sphere_radius, pr*sin(angle));
     auto sc = spectrum::from_hsv(i*360.0/num_sides, 1.0, 1.0);
-    auto sc2 = spectrum::from_hsv(i*360.0/num_sides + 180, 0.75, 0.75);
+    auto sc2 = spectrum::from_hsv(i*360.0/num_sides, 0.75, 0.75);
 
     scene.add( new Shape( make_shared<Sphere>(sp, sphere_radius),
-			  make_shared<RoughMaterial>(0.0, make_shared<GridTexture2D>(sc, sc2, 10.0, 0.2))));
+			  make_shared<RoughMaterial>(0.0, make_shared<GridTexture2D>(sc, sc2, 30.0, 0.1))));
   }
 
-  scene.add( new Shape( make_shared<Sphere>(Vec3{0.0, -1000.0, 0.0}, 998.0),
+  scene.add( new Shape( make_shared<Plane>(Vec3{0.0, 1.0, 0.0}, 2.0),
 			make_shared<RoughColorMaterial>(0.0, spectrum{0.6})));
 
-  //scene.add(new PointLight(Vec3(3.0, 3.0, -1.0), spectrum{5.0}));
-  scene.add( new Shape( make_shared<Sphere>(Vec3{5.0, 3.0, -1.0}, 0.25),
-			make_shared<EmissiveMaterial>(spectrum{3.0, 0.0, 0.0})));
+  scene.add(new PointLight(Vec3(3.0, 3.0, -1.0), spectrum{5.0}));
+  // scene.add( new Shape( make_shared<Sphere>(Vec3{5.0, 3.0, -1.0}, 0.25),
+  //       		make_shared<EmissiveMaterial>(spectrum{5.0})));
 
-  const int num_lights = 1;
+  const int num_lights = 0;
   for (int i = 0; i < num_lights; ++i)
   {
     const scalar angle = 2 * PI * i / num_lights + PI/12;
@@ -159,7 +159,7 @@ int main(int argc, char** args)
   }
 
   Scene scene;
-  PerspectiveCamera cam = model_scene(scene, scalar(WIDTH)/scalar(HEIGHT));
+  PerspectiveCamera cam = default_scene(scene, scalar(WIDTH)/scalar(HEIGHT));
 
   Film f(WIDTH, HEIGHT, new BoxFilter);
 
@@ -190,8 +190,8 @@ int main(int argc, char** args)
 
   cerr << "Rendered " << igr.num_primary_rays_traced() << " rays.\n";
 
-  auto mapper = make_shared<LinearToneMapper>();
-  //auto mapper = shared_ptr<CompositeToneMapper>(new CompositeToneMapper{make_shared<RSSFToneMapper>(), make_shared<LinearToneMapper>()});
+  //auto mapper = make_shared<LinearToneMapper>();
+  auto mapper = shared_ptr<CompositeToneMapper>(new CompositeToneMapper{make_shared<RSSFToneMapper>(), make_shared<LinearToneMapper>()});
   f.render_to_ppm(cout, mapper);
   //f.render_to_console(cout);
 

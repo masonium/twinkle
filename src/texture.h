@@ -11,21 +11,30 @@ public:
   virtual ~Texture() { }
 };
 
-class SolidColor : public Texture
+class Texture2D : public Texture
+{
+public:
+  virtual spectrum at_point(const Intersection& isect) const override
+  {
+    return at_coord(isect.u, isect.v);
+  }
+  
+  virtual spectrum at_coord(scalar u, scalar v) const = 0;
+};
+
+class SolidColor : public Texture2D
 {
 public:
   SolidColor(spectrum x = spectrum::zero) : color(x) {}
 
-  spectrum at_point(const Intersection& isect) const override
-  {
-    return color;
-  }
-  
+  spectrum at_point(const Intersection& isect) const override;
+  spectrum at_coord(scalar u, scalar v) const override;
+
 private:
   spectrum color;
 };
 
-class GridTexture2D : public Texture
+class GridTexture2D : public Texture2D
 {
 public:
   GridTexture2D(spectrum solid_, spectrum border_,
@@ -33,7 +42,7 @@ public:
     : solid(solid_), border(border_), grid_size(grid_size_),
       border_pct(border_pct_) {}
 
-  spectrum at_point(const Intersection& isect) const override;
+  spectrum at_coord(scalar x, scalar y) const override;
   
 private:
   const spectrum solid, border;

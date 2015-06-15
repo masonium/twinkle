@@ -46,7 +46,7 @@ public:
   virtual ~MeshTri() {}
 
 private:
-  const Vertex& _v(int i) { return mesh->verts[vi[i]]; }
+  const Vertex& _v(int i) const { return mesh->verts[vi[i]]; }
   const Vec3& _p(int i) const { return mesh->pos(vi[i]); }
 
   const Mesh* mesh;

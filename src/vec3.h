@@ -3,6 +3,8 @@
 #include "vector.h"
 #include <memory>
 
+using std::pair;
+
 class Mat33;
 
 class Vec3 : public VectorT3<Vec3>
@@ -50,6 +52,7 @@ public:
    * Assumes that the calling vector is normal.
    */
   void to_euler(scalar& theta, scalar& phi) const;
+  pair<scalar, scalar> to_euler() const;
   
   Vec3 project_onto(const Vec3& res) const
   {
