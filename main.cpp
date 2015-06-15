@@ -98,11 +98,9 @@ PerspectiveCamera model_scene(Scene& scene, scalar aspect_ratio)
 
 PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
 {
-  auto check = make_shared<GridTexture2D>(spectrum::one, spectrum::zero, 10.0, 0.1);
-
   auto mat  = make_shared<GlassMaterial>();
 
-  scene.add(make_shared<Shape>(make_shared<Sphere>(Vec3{0.0, -1.0, 0.0}, 1.0), mat));
+  scene.add(make_shared<Shape>(make_shared<Sphere>(Vec3{0.0, -0.5, 0.0}, 1.0), mat));
 
   scalar distance_from_center = 3.0;
   scalar sphere_radius = 1.0;
@@ -117,15 +115,18 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
     auto sc2 = spectrum::from_hsv(i*360.0/num_sides, 0.75, 0.75);
 
     scene.add( make_shared<Shape>( make_shared<Sphere>(sp, sphere_radius),
-			  make_shared<RoughMaterial>(0.0, make_shared<GridTexture2D>(sc, sc2, 30.0, 0.1))));
+                                   make_shared<RoughMaterial>(0.0, make_shared<GridTexture2D>(sc, sc2, 30.0, 0.1))));
   }
 
-  scene.add( make_shared<Shape>( make_shared<Plane>(Vec3{0.0, 1.0, 0.0}, 2.0),
-			make_shared<RoughColorMaterial>(0.0, spectrum{0.6})));
+  scene.add(make_shared<Shape>(make_shared<Plane>(Vec3{0.0, 1.0, 0.0}, 2.0),
+                               make_shared<RoughColorMaterial>(0.0, spectrum{0.6})));
 
-  scene.add(make_shared<PointLight>(Vec3(3.0, 3.0, -1.0), spectrum{5.0}));
+  //scene.add(make_shared<PointLight>(Vec3(3.0, 3.0, -1.0), spectrum{5.0}));
+  scene.add(make_shared<EnvironmentalLight>(make_shared<Checkerboard2D>(spectrum{1.0}, spectrum{0.0}, 8, 1)));
 
   const int num_lights = 0;
+
+
   for (int i = 0; i < num_lights; ++i)
   {
     const scalar angle = 2 * PI * i / num_lights + PI/12;
@@ -133,10 +134,10 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
     scene.add( make_shared<PointLight>(Vec3(pr*cos(angle), 2.0, pr*sin(angle)), spectrum{0.1}));
   }
 
-  auto cam_pos = Vec3{0, 2, 7.5}*0.8;
+  auto cam_pos = Vec3{7.5, 2, 0}*0.8;
 
-  return PerspectiveCamera(cam_pos, Vec3{0, -1.0, 0}, Vec3{0, 1, 0}, PI / 2.0,
-			   aspect_ratio);
+  return PerspectiveCamera(cam_pos, Vec3{0, -1.0, 0}, Vec3{0, 1, 0}, PI / 2.0, aspect_ratio);
+  //return PerspectiveCamera(Vec3{0, 4, 0}, Vec3{0, 5.0, 0}, Vec3::x_axis, PI / 2.0, aspect_ratio);
 }
 
 
