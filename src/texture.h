@@ -34,6 +34,18 @@ private:
   spectrum color;
 };
 
+class Checkerboard2D : public Texture2D
+{
+public:
+  Checkerboard2D(spectrum a, spectrum b, int gs, int gsy = 0);
+
+  spectrum at_coord(scalar u, scalar v) const override;
+
+private:
+  spectrum c1, c2;
+  int grid_size_x, grid_size_y;
+};
+
 class GridTexture2D : public Texture2D
 {
 public:

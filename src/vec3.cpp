@@ -11,6 +11,9 @@ Vec3 Vec3::y_axis{0.0, 1.0, 0.0};
 Vec3 Vec3::z_axis{0.0, 0.0, 1.0};
 Vec3 Vec3::zero{0.0, 0.0, 0.0};
 
+Mat33 Mat33::z_to_y = Mat33::rotate_match(Vec3::z_axis, Vec3::y_axis);
+Mat33 Mat33::y_to_z = Mat33::rotate_match(Vec3::y_axis, Vec3::z_axis);
+
 Vec3::Vec3(const Vec3& rhs)
 {
   x = rhs.x;

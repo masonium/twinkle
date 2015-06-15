@@ -151,7 +151,9 @@ public:
     Vec3 row[3];
   };
 
+  static Mat33 z_to_y;
+  static Mat33 y_to_z;
+
 private:
   static Mat33 from_axis_angle(const Vec3& axis, scalar sa, scalar ca);
-
 };
