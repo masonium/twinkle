@@ -19,6 +19,14 @@ namespace bounds
   public:
     AABB(const Vec3& min_, const Vec3& max_) : min(min_), max(max_) { }
 
+    Vec3 size() const { return max - min; }
+
+    scalar surface_area() const;
+    bool hits_plane(int axis, scalar val) const
+    {
+      return min[axis] <= val && val <= max[axis];
+    };
+
     Vec3 min, max;
   };
 
@@ -33,3 +41,9 @@ namespace bounds
     scalar radius;
   };
 }
+
+class Bounded
+{
+public:
+  virtual bounds::AABB get_bounding_box() const = 0;
+};

@@ -2,8 +2,9 @@
 
 #include "math_util.h"
 #include "shape.h"
+#include "bounds.h"
 
-class Sphere : public SimpleGeometry
+class Sphere : public SimpleGeometry, public Bounded
 {
 public:
   Sphere(Vec3 pos, scalar r) : position(pos), radius(r), radius2(r*r)
@@ -22,6 +23,9 @@ public:
   void texture_coord(const Vec3& pos, const Vec3& normal,
                      scalar& u, scalar& v, Vec3& dpdu, Vec3& dpdv) const override;
 
+  bounds::AABB get_bounding_box() const override;
+
   Vec3 position;
   scalar radius, radius2;
 };
+

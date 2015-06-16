@@ -43,3 +43,9 @@ void Sphere::texture_coord(const Vec3& pos, const Vec3& normal,
   dpdu = Vec3(-sin(theta), cos(theta), 0);
   dpdv = normal.cross(dpdu);
 }
+
+bounds::AABB Sphere::get_bounding_box() const
+{
+  auto vr = Vec3(radius * 0.5);
+  return bounds::AABB(position - vr, position + vr);
+}
