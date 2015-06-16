@@ -11,7 +11,7 @@ endif
 SRCS = $(wildcard src/*.cpp)
 OBJSTMP = $(SRCS:.cpp=.o)
 OBJS = $(OBJSTMP:src/%=obj/%)
-DEPS = $(OBJS:.o=.d)
+DEPS = $(OBJS:.o=.dep)
 
 EXES = twinkle test_twinkle fresnel_test tonemap model_check
 
@@ -25,12 +25,12 @@ all: $(EXES)
 
 obj/%.o: src/%.cpp
 	$(CXX) -c -o $@ $< $(CXXFLAGS) $(LFLAGS)
-	$(CXX) -MM $(CXXFLAGS) $(LFLAGS) $< > obj/$*.d
-	@mv -f obj/$*.d obj/$*.d.tmp
-	@sed -e 's|.*:|obj/$*.o:|' < obj/$*.d.tmp > obj/$*.d
-	@sed -e 's/.*://' -e 's/\\$$//' < obj/$*.d.tmp | fmt -1 | \
-	  sed -e 's/^ *//' -e 's/$$/:/' >> obj/$*.d
-	@rm -f obj/$*.d.tmp
+	$(CXX) -MM $(CXXFLAGS) $(LFLAGS) $< > obj/$*.dep
+	@mv -f obj/$*.dep obj/$*.dep.tmp
+	@sed -e 's|.*:|obj/$*.o:|' < obj/$*.dep.tmp > obj/$*.dep
+	@sed -e 's/.*://' -e 's/\\$$//' < obj/$*.dep.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> obj/$*.dep
+	@rm -f obj/$*.dep.tmp
 
 twinkle: $(OBJS) main.cpp
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
