@@ -5,16 +5,16 @@ using std::copy;
 
 MeshTri::MeshTri(const Mesh* m, const int v[3]) :
   mesh(m),
-  e1(mesh->pos(vi[1]) - mesh->pos(vi[0])),
-  e2(mesh->pos(vi[2]) - mesh->pos(vi[0])),
+  e1(mesh->pos(v[1]) - mesh->pos(v[0])),
+  e2(mesh->pos(v[2]) - mesh->pos(v[0])),
   n(e1.cross(e2))
 {
   copy(v, v+3, vi);
 }
 
-scalar MeshTri::intersect(const Ray& ray) const
+scalar MeshTri::intersect(const Ray& ray, scalar max_t) const
 {
-  return ray_triangle_intersection(_p(0), _p(1), _p(2), ray);
+  return ray_triangle_intersection(_p(0), _p(1), _p(2), ray, max_t);
 }
 
 Vec3 MeshTri::normal(const Vec3& point) const
@@ -53,21 +53,18 @@ Mesh::Mesh(const RawModel& model) : is_differential(model.has_tex)
   }
 }
 
-scalar Mesh::intersect(const Ray& r, const Geometry*& geom) const
+scalar Mesh::intersect(const Ray& r, scalar max_t, const Geometry*& geom) const
 {
-  scalar best_t = -1;
+  scalar best_t = numeric_limits<scalar>::max();
   geom = nullptr;
   for (const auto& tri: tris)
   {
-    scalar t = tri.intersect(r);
+    scalar t = tri.intersect(r, best_t);
     if (t > 0)
     {
-      if (best_t < 0 || t < best_t)
-      {
-        best_t = t;
-        geom = &tri;
-      }
+      best_t = t;
+      geom = &tri;
     }
   }
-  return best_t;
+  return geom == nullptr ? -1 : best_t;
 }

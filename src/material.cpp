@@ -59,8 +59,8 @@ spectrum MirrorMaterial::texture_at_point(const Intersection& isect) const
 
 ////////////////////////////////////////////////////////////////////////////////
 
-GlassMaterial::GlassMaterial(scalar refraction_index) : 
-  nr(refraction_index)
+GlassMaterial::GlassMaterial(scalar refr_in, scalar refr_out) : 
+  nr_in(refr_in), nr_out(refr_out)
 {
   
 }
@@ -73,8 +73,8 @@ scalar GlassMaterial::reflectance(const Vec3& incoming, const Vec3& outgoing) co
 Vec3 GlassMaterial::sample_bsdf(const Vec3& incoming, const Sample2D& sample,
                                 scalar& p, scalar& reflectance) const
 {
-  scalar n1 = refraction_index::AIR;
-  scalar n2 = nr;
+  scalar n1 = nr_out;
+  scalar n2 = nr_in;
   auto normal = Vec3::z_axis;
   if (incoming.z < 0)
   {

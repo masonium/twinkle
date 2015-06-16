@@ -10,7 +10,7 @@ class Mesh : public Primitive
 public:
   Mesh(const RawModel& model);
 
-  scalar intersect(const Ray& r, const Geometry*& geom) const override;
+  scalar intersect(const Ray& r, scalar max_t, const Geometry*& geom) const override;
 
   const Vec3& pos(int i) const
   {
@@ -29,7 +29,7 @@ class MeshTri : public Geometry
 {
 public:
   MeshTri(const Mesh* m, const int v[3]);
-  scalar intersect(const Ray& r) const;
+  scalar intersect(const Ray& r, scalar max_t) const;
 
   Vec3 normal(const Vec3& point) const override;
   Vec3 sample_shadow_ray_dir(const Intersection& isect,
@@ -46,7 +46,7 @@ public:
   virtual ~MeshTri() {}
 
 private:
-  const Vertex& _v(int i) { return mesh->verts[vi[i]]; }
+  const Vertex& _v(int i) const { return mesh->verts[vi[i]]; }
   const Vec3& _p(int i) const { return mesh->pos(vi[i]); }
 
   const Mesh* mesh;

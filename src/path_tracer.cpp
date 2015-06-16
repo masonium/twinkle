@@ -42,7 +42,7 @@ void PathTracerIntegrator::render(const Camera* cam, const Scene* scene, Film& f
   {
     queue.emplace(Film::Rect{0, 0, film.width, film.height}, opt.samples_per_pixel);
     auto temp_film = make_shared<Film>(film.width, film.height, film.filter);
-    render_thread(cam, scene, std::ref(queue), temp_film);
+    render_thread(queue, cam, scene, temp_film);
     film.merge( *temp_film.get() );
     return;
   }
@@ -79,7 +79,7 @@ void PathTracerIntegrator::render(const Camera* cam, const Scene* scene, Film& f
   {
     films.push_back(make_shared<Film>(film.width, film.height, film.filter));
     threads.push_back(thread(&PathTracerIntegrator::render_thread,
-                             this, cam, scene, std::ref(queue), films[i]));
+                             this, std::ref(queue), cam, scene, films[i]));
   }
 
   // Merge and join the results.
@@ -100,7 +100,7 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
   Intersection isect = scene->intersect(ray);
   const Vec3 ray_dir_origin = -ray.direction.normal();
   if (!isect.valid())
-    return environmental_lighting(-ray_dir_origin);
+    return scene->environment_light_emission(-ray_dir_origin);
   if (isect.is_emissive())
     return isect.emission();
 
@@ -167,13 +167,8 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
   return total * isect.texture_at_point();
 }
 
-spectrum PathTracerIntegrator::environmental_lighting(const Vec3& ray_dir) const
-{
-  return spectrum{5.0};
-}
-
-void PathTracerIntegrator::render_thread(const Camera* cam, const Scene* scene,
-                                         TaskQueue& queue, shared_ptr<Film> film) const
+void PathTracerIntegrator::render_thread(TaskQueue& queue, const Camera* cam,
+                                         const Scene* scene, shared_ptr<Film> film) const
 {
   auto sampler = make_shared<UniformSampler>();
   
