@@ -49,3 +49,5 @@ T lerp(const T& a, const T& b, scalar x)
  */
 scalar ray_triangle_intersection(const Vec3& v1, const Vec3& v2, const Vec3& v3,
                                  const Ray& ray, scalar max_t = SCALAR_MAX);
+
+Vec3 interpolate_quadratic(scalar x1, scalar y1, scalar x2, scalar y2, scalar x3, scalar y3);

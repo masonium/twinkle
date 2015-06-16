@@ -123,6 +123,9 @@ public:
   }
 
   Mat33 transpose() const;
+  Mat33 inverse() const;
+
+  scalar det() const;
 
   Mat33 operator+(const Mat33& mat) const;
 

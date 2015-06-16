@@ -29,6 +29,8 @@ namespace kd
     scalar self_traversal_cost = 1.0;
 
     uint hybrid_one_axis_limit = 1024;
+
+    uint max_elements_per_leaf = 4;
   };
 
   enum NodeAxis
@@ -45,10 +47,6 @@ namespace kd
          const bounds::AABB& total_bound,
          const TreeOptions& opt);
 
-    vector<shared_ptr<Bounded>> shapes;
-    Node* left, *right;
-    bounds::AABB bound;
-
     struct split_eval
     {
       scalar split, cost, count_diff;
@@ -59,16 +57,44 @@ namespace kd
       split_plane() = default;
       split_plane(scalar split_, NodeAxis axis_);
 
+      bool operator <(const split_plane& rhs) const;
+
       scalar split;
       NodeAxis axis;
     };
 
     split_eval evaluate_split(const split_plane& sp, const vector<bounds::AABB>& boxes,
-                                const TreeOptions& opt, scalar surface_area) const;
+                              const TreeOptions& opt, scalar surface_area) const;
 
-    pair<scalar, scalar> child_areas(const bounds::AABB& bound, const split_plane& sp) const;
+    static pair<scalar, scalar> quadratic_interpolate_best_split(
+      const split_eval& x, const split_eval& y, const split_eval& z);
+
+    pair<scalar, split_plane> best_plane_adaptive(
+      int axis, const vector<bounds::AABB>& boxes,
+      const TreeOptions& opt, scalar surface_area) const;
+
+    pair<scalar, split_plane> best_plane_exhaustive(
+      int axis, const vector<bounds::AABB>& boxes,
+      const TreeOptions& opt, scalar surface_area) const;
+
+    static pair<scalar, scalar> child_areas(const bounds::AABB& bound, const split_plane& sp);
+
+    void make_leaf(const vector<shared_ptr<Bounded>>& objects);
+    void make_split(const vector<shared_ptr<Bounded>>& objects,
+                    const vector<bounds::AABB>& boxes,
+                    const TreeOptions& opt,
+                    const split_plane& plane);
 
     ~Node();
+
+    /*
+     * member fields
+     */
+
+    vector<shared_ptr<Bounded>> shapes;
+    bounds::AABB bound;
+    Node* left, *right;
+    split_plane plane;
   };
 
   class Tree
