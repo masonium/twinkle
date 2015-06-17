@@ -22,6 +22,7 @@ struct Sample
 };
 
 typedef Sample<2> Sample2D;
+typedef Sample<3> Sample3D;
 typedef Sample<4> Sample4D;
 typedef Sample<5> Sample5D;
 
@@ -29,6 +30,7 @@ class Sampler
 {
 public:
   virtual scalar sample_1d() = 0;
+  scalar ruf() { return sample_1d(); }
   virtual void sample_2d(scalar& r1, scalar& r2) = 0;
   virtual void sample_4d(scalar& r1, scalar& r2, scalar& r3, scalar& r4) = 0;
   virtual void sample_5d(scalar& r1, scalar& r2, scalar& r3, scalar& r4, scalar& r5) = 0;
