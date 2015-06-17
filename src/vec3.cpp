@@ -141,7 +141,7 @@ Mat33::Mat33(const Vec3& r1, const Vec3& r2, const Vec3&r3) :
 
 }
 
-Mat33& Mat33::operator+=(const Mat33& rhs)
+Mat33& Mat33::operator +=(const Mat33& rhs)
 {
   for (int i = 0; i < 9; ++i)
     v[i] += rhs.v[i];
@@ -153,6 +153,33 @@ Mat33 Mat33::operator+(const Mat33& v) const
   Mat33 x(*this);
   return x += v;
 }
+
+Mat33& Mat33::operator -=(const Mat33& rhs)
+{
+  for (int i = 0; i < 9; ++i)
+    v[i] -= rhs.v[i];
+  return *this;
+}
+
+Mat33 Mat33::operator-(const Mat33& v) const
+{
+  Mat33 x(*this);
+  return x -= v;
+}
+
+Mat33& Mat33::operator/=(scalar f)
+{
+  for (auto& x: v)
+    x /= f;
+  return *this;
+}
+
+Mat33 Mat33::operator/(scalar f) const
+{
+  Mat33 x(*this);
+  return x /= f;
+}
+
 
 Mat33 Mat33::transpose() const
 {

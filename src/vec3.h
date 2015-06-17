@@ -108,13 +108,19 @@ public:
       x *= f;
     return *this;
   }
+  Mat33& operator/= (scalar f);
 
-  Mat33& operator+=(const Mat33& rhs);
+  Mat33& operator +=(const Mat33& rhs);
+
+  Mat33& operator -=(const Mat33& rhs);
+  Mat33 operator -(const Mat33& rhs) const;
 
   Vec3 operator *(const Vec3& v) const
   {
     return Vec3{row[0].dot(v), row[1].dot(v), row[2].dot(v)};
   }
+
+  Mat33 operator *(const Mat33& m) const;
 
   Mat33 operator*(scalar f) const
   {
@@ -122,11 +128,14 @@ public:
     return (x *= f);
   }
 
+  Mat33 operator /(scalar f) const;
+
   Mat33 transpose() const;
   Mat33 inverse() const;
 
   scalar det() const;
-
+  scalar trace() const;
+  
   Mat33 operator+(const Mat33& mat) const;
 
   /*
