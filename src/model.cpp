@@ -221,7 +221,7 @@ RawModelLoadStatus RawModel::load_stl_model(string filename)
       tri_ref tri{num_tris*3, num_tris*3+1, num_tris*3+2};
       tri_list.emplace_back(tri);
     }
-    else if (line_type == "facet" || line_type == "outer" || 
+    else if (line_type == "facet" || line_type == "outer" ||
              line_type == "endfacet" || line_type == "solid")
     {
     }
@@ -341,15 +341,16 @@ bounds::Sphere RawModel::bounding_sphere() const
       p3 = v.position;
     }
   }
-      
+
   // Take the midpoint as the center, and find the best radius
   Vec3 mid = (p2 + p3) * 0.5;
 
   scalar radius = sqrt(accumulate(verts.begin(), verts.end(), (mid - p2).norm2(),
                                   /* This could be generic/polymorphic, but only
                                      in c++1y. */
-                                  [&mid](scalar r2, const Vertex& v) { 
-                                    return max(r2, (mid - v.position).norm2()); 
+//                                  [&mid](scalar r2, const Vertex& v) {
+                                  [&mid](auto r2, auto&& v) {
+                                    return max(r2, (mid - v.position).norm2());
                                   }));
 
   return bounds::Sphere(mid, radius);
@@ -382,7 +383,7 @@ void RawModel::rescale(const bounds::AABB& new_bb)
       f = 1;
 
   auto scale = (new_bb.max - new_bb.min).elem_div(w);
-  
+
   for (auto& v: verts)
   {
     v.position = (v.position - bb.min).elem_mult(scale) + new_bb.min;
@@ -393,7 +394,7 @@ void RawModel::rescale(const bounds::AABB& new_bb)
 void RawModel::rescale(const bounds::Sphere& new_bs)
 {
   const auto bs = bounding_sphere();
-  
+
   auto scale = new_bs.radius / bs.radius;
   for (auto& v: verts)
   {
