@@ -17,13 +17,13 @@ void kdtree_test()
 
   for (int i = 0; i < 1000; ++i)
   {
-    auto sp = make_shared<Sphere>(Vec3{s.ruf(), s.ruf(), s.ruf()}, s.ruf() * 0.3f);
+    auto sp = make_shared<Sphere>(Vec3{s.ruf(), s.ruf(), s.ruf()}, s.ruf() * 0.1f);
     shapes.push_back(sp);
   }
 
   kd::TreeOptions opt;
-  opt.self_traversal_cost = 20.0;
-  auto tree = make_shared<kd::Tree>(shapes, opt);
+  opt.self_traversal_cost = 1.0;
+  auto tree = make_shared<kd::Tree<shared_ptr<Bounded>>>(shapes, opt);
   cout << "built tree with " << tree->count_leaves() << " leaves and " << tree->count_objs() << " obj refs.\n";
 }
 

@@ -377,16 +377,16 @@ void RawModel::compute_normals()
 void RawModel::rescale(const bounds::AABB& new_bb)
 {
   auto bb = bounding_box();
-  auto w = bb.max - bb.min;
+  auto w = bb.size();
   for (auto& f: w.v)
     if (f < EPSILON)
       f = 1;
 
-  auto scale = (new_bb.max - new_bb.min).elem_div(w);
+  auto scale = new_bb.size().elem_div(w);
 
   for (auto& v: verts)
   {
-    v.position = (v.position - bb.min).elem_mult(scale) + new_bb.min;
+    v.position = (v.position - bb.min()).elem_mult(scale) + new_bb.min();
     v.normal = v.normal.elem_div(scale).normal();
   }
 }

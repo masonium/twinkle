@@ -318,15 +318,15 @@ namespace
     TEST (isect)
     {
       {
-        scalar t = ray_triangle_intersection(Vec3(0, 0, 0), Vec3(1, 0, 0), Vec3(0, 1, 0),
-                                             Ray(Vec3(0.25, 0.25, 1), Vec3(0, 0, -1)));
+        scalar t = ray_triangle_intersection(Ray(Vec3(0.25, 0.25, 1), Vec3(0, 0, -1)),
+                                             Vec3(0, 0, 0), Vec3(1, 0, 0), Vec3(0, 1, 0));
 
         CHECK_CLOSE(1.0, t, PRECISE_EPS);
       }
       {
         Vec3 target_dir = Vec3(-2.25, -0.25, 0);
-        scalar t = ray_triangle_intersection(Vec3(0, 0, 1.0), Vec3(0, 0, -1.0), Vec3(-0.5, 0.5, 0),
-                                             Ray(Vec3(2, 0.5, 0), target_dir.normal()));
+        scalar t = ray_triangle_intersection(Ray(Vec3(2, 0.5, 0), target_dir.normal()),
+                                             Vec3(0, 0, 1.0), Vec3(0, 0, -1.0), Vec3(-0.5, 0.5, 0));
 
         CHECK_CLOSE(target_dir.norm(), t, PRECISE_EPS);
       }

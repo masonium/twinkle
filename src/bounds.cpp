@@ -1,4 +1,5 @@
 #include "bounds.h"
+#include "math_util.h"
 
 namespace bounds
 {
@@ -10,13 +11,18 @@ namespace bounds
 
   AABB AABB::box_union(const AABB& a, const AABB& b)
   {
-    return AABB(::min(a.min, b.min), ::max(a.max, b.max));
+    return AABB(::min(a.min(), b.min()), ::max(a.max(), b.max()));
+  }
+
+  scalar AABB::intersect(const Ray& r, scalar max_t)
+  {
+    return ray_box_intersection(r, bounds, max_t);
   }
 
   using std::ostream;
   ostream& operator<<(ostream& out, const bounds::AABB& b)
   {
-    out << "{" << b.min << "} - {" << b.max << "}";
+    out << "{" << b.min() << "} - {" << b.max() << "}";
     return out;
   }
 }

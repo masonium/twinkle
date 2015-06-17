@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vec3.h"
+#include "ray.h"
 #include <iostream>
 
 namespace bounds
@@ -18,19 +19,45 @@ namespace bounds
   {
   public:
     AABB() { }
-    AABB(const Vec3& min_, const Vec3& max_) : min(min_), max(max_) { }
+    AABB(const Vec3& min_, const Vec3& max_) : bounds{min_, max_} { }
 
-    Vec3 size() const { return max - min; }
+    /**
+     * size of the bounding box
+     */
+    Vec3 size() const { return bounds[1] - bounds[0]; }
 
+    /**
+     * Return the smallest boudning box containing both boxes.
+     */
     static AABB box_union(const AABB& a, const AABB& b);
 
+    const Vec3& min() const { return bounds[0]; }
+    Vec3& min() { return bounds[0]; }
+
+    const Vec3& max() const { return bounds[1]; }
+    Vec3& max() { return bounds[1]; }
+
+
+    /**
+     * Return the surface area of this box.
+     */
     scalar surface_area() const;
+
+    /**
+     * Return true if this (closed) box intersects with the axis-aligned plane
+     * specified by axis and val.
+     */
     bool hits_plane(int axis, scalar val) const
     {
-      return min[axis] <= val && val <= max[axis];
+      return bounds[0][axis] <= val && val <= bounds[1][axis];
     };
 
-    Vec3 min, max;
+    /**
+     * Intersection of this box with a ray.
+     */
+    scalar intersect(const Ray& r, scalar max_t = SCALAR_MAX);
+
+    Vec3 bounds[2];
   };
 
   ostream& operator<<(ostream& out, const bounds::AABB& b);

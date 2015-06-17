@@ -58,8 +58,8 @@ Vec3 refraction_direction(const Vec3& incoming, const Vec3& normal,
   return (-incoming * nr - (nr * cosi + sqrt(1 - sin2t))*normal).normal();
 }
 
-scalar ray_triangle_intersection(const Vec3& v1, const Vec3& v2, const Vec3& v3,
-                                 const Ray& ray, scalar max_t)
+scalar ray_triangle_intersection(const Ray& ray, const Vec3& v1, const Vec3& v2, const Vec3& v3,
+                                 scalar max_t)
 {
   Vec3 e1 = v2 - v1, e2 = v3 - v1;
   Vec3 p = ray.direction.cross(e2);
@@ -87,6 +87,41 @@ scalar ray_triangle_intersection(const Vec3& v1, const Vec3& v2, const Vec3& v3,
 
   return t;
 
+}
+
+scalar ray_box_intersection(const Ray& ray, const Vec3 bounds[2],
+                            scalar max_t)
+{
+  scalar tmin, tmax, tymin, tymax, tzmin, tzmax;
+
+  tmin = (bounds[ray.sign[0]].x - ray.position.x) * ray.inv_direction.x;
+  tmax = (bounds[1-ray.sign[0]].x - ray.position.x) * ray.inv_direction.x;
+  
+  tymin = (bounds[ray.sign[0]].y - ray.position.y) * ray.inv_direction.y;
+  tymax = (bounds[1-ray.sign[0]].y - ray.position.y) * ray.inv_direction.y;
+
+  if (tmin > tymax || tymin > tmax)
+    return -1;
+
+  tmin = std::max(tmin, tymin);
+  tmax = std::min(tmax, tymax);
+
+  tzmin = (bounds[ray.sign[0]].z - ray.position.z) * ray.inv_direction.z;
+  tzmax = (bounds[1-ray.sign[0]].z - ray.position.z) * ray.inv_direction.z;
+
+  if (tmin > tzmax || tzmin > tmax)
+    return -1;
+
+  tmin = std::max(tmin, tzmin);
+  tmax = std::min(tmax, tzmax);
+
+  if (tmin < tmax)
+  {
+    scalar t = tmin > 0 ? tmin : tmax;
+    return t < max_t ? t : -1;
+  }
+  else
+    return -1;
 }
 
 Vec3 interpolate_quadratic(scalar x1, scalar y1, scalar x2, scalar y2, scalar x3, scalar y3)

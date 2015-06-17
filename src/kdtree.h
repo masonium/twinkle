@@ -40,33 +40,39 @@ namespace kd
     Z
   };
 
+  template <typename T>
   class Tree;
 
+  struct split_eval
+  {
+    scalar split, cost, count_diff;
+  };
+
+  struct split_plane
+  {
+    split_plane() = default;
+    split_plane(scalar split_, NodeAxis axis_);
+
+    bool operator <(const split_plane& rhs) const;
+
+    scalar split;
+    NodeAxis axis;
+  };
+
+  template <typename T>
   class Node
   {
   public:
     ~Node();
 
+    using object_type = T;
+
+    scalar intersect(const Ray& r, scalar max_t, T& hit);
+
   private:
-    Node(const vector<shared_ptr<Bounded>>& objects, const vector<bounds::AABB>& boxes,
+    Node(const vector<T>& objects, const vector<bounds::AABB>& boxes,
          const bounds::AABB& total_bound,
          const TreeOptions& opt);
-
-    struct split_eval
-    {
-      scalar split, cost, count_diff;
-    };
-
-    struct split_plane
-    {
-      split_plane() = default;
-      split_plane(scalar split_, NodeAxis axis_);
-
-      bool operator <(const split_plane& rhs) const;
-
-      scalar split;
-      NodeAxis axis;
-    };
 
     split_eval evaluate_split(const split_plane& sp, const vector<bounds::AABB>& boxes,
                               const TreeOptions& opt, scalar surface_area) const;
@@ -84,8 +90,8 @@ namespace kd
 
     static pair<scalar, scalar> child_areas(const bounds::AABB& bound, const split_plane& sp);
 
-    void make_leaf(const vector<shared_ptr<Bounded>>& objects);
-    void make_split(const vector<shared_ptr<Bounded>>& objects,
+    void make_leaf(const vector<T>& objects);
+    void make_split(const vector<T>& objects,
                     const vector<bounds::AABB>& boxes,
                     const TreeOptions& opt,
                     const split_plane& plane);
@@ -104,23 +110,28 @@ namespace kd
       return (left ? left->count_objs() : 0) + (right ? right->count_objs() : 0);
     }
 
-    friend class Tree;
-
+    friend class Tree<T>;
+    friend class shared_ptr<Node<T>>;
 
     /*
      * member fields
      */
 
-    vector<shared_ptr<Bounded>> shapes;
+    vector<T> shapes;
     bounds::AABB bound;
     Node* left, *right;
     split_plane plane;
   };
 
+  template <typename T>
   class Tree
   {
   public:
-    Tree(const vector<shared_ptr<Bounded>>& objects, const TreeOptions& opt);
+    using node_type = Node<T>;
+
+    Tree(const vector<T>& objects, const TreeOptions& opt);
+
+    scalar intersect(const Ray& ray, Geometry*& geom);
 
     int count_leaves() const
     {
@@ -133,6 +144,8 @@ namespace kd
 
   private:
 
-    shared_ptr<Node> root;
+    shared_ptr<Node<T>> root;
   };
 }
+
+#include "kdtree.hpp"

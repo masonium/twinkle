@@ -17,10 +17,10 @@ using std::endl;
 
 namespace kd
 {
-
-  Node::Node(const vector<shared_ptr<Bounded>>& objects,
-             const vector<bounds::AABB>& boxes,
-             const bounds::AABB& total_bound, const TreeOptions& opt)
+  template <typename T>
+  Node<T>::Node(const vector<T>& objects,
+                const vector<bounds::AABB>& boxes,
+                const bounds::AABB& total_bound, const TreeOptions& opt)
     : bound(total_bound), left(nullptr), right(nullptr)
   {
     const auto num_boxes = boxes.size();
@@ -66,8 +66,9 @@ namespace kd
    * fit the split cost along the interval to a quadratic function, and return
    * the global minimum on the interval.
    */
-  pair<scalar, scalar> Node::quadratic_interpolate_best_split(
-    const Node::split_eval& x, const Node::split_eval& y, const Node::split_eval& z)
+  template <typename T>
+  pair<scalar, scalar> Node<T>::quadratic_interpolate_best_split(
+    const split_eval& x, const split_eval& y, const split_eval& z)
   {
     Vec3 coef = interpolate_quadratic(x.split, x.cost, y.split, y.cost, z.split, z.cost);
 
@@ -91,13 +92,14 @@ namespace kd
   /**
    *
    */
-  pair<scalar, Node::split_plane> Node::best_plane_adaptive(int axis, const vector<bounds::AABB>& boxes,
-                                             const TreeOptions& opt, scalar surface_area) const
+  template <typename T>
+  pair<scalar, split_plane> Node<T>::best_plane_adaptive(int axis, const vector<bounds::AABB>& boxes,
+                                                         const TreeOptions& opt, scalar surface_area) const
   {
     auto naxis = static_cast<NodeAxis>(axis);
 
     auto num_samples = opt.num_uniform_samples + opt.num_adaptive_samples;
-    auto split_evals = vector<Node::split_eval>(num_samples);
+    auto split_evals = vector<split_eval>(num_samples);
 
     /*
      * 1. Uniform sampling.
@@ -107,7 +109,7 @@ namespace kd
     auto bb_size = bound.size();
     for (auto i = 0u; i < opt.num_uniform_samples; ++i)
     {
-      auto sp = split_plane{bound.min[axis] + bb_size[axis] * i / (opt.num_uniform_samples - 1), naxis};
+      auto sp = split_plane{bound.min()[axis] + bb_size[axis] * i / (opt.num_uniform_samples - 1), naxis};
 
       split_evals[i] = evaluate_split(sp, boxes, opt, surface_area);
     }
@@ -190,8 +192,9 @@ namespace kd
     return make_pair(axis_best_split.first, split_plane{axis_best_split.second, naxis});
   }
 
-  pair<scalar, scalar> Node::child_areas(const bounds::AABB& bound,
-                                         const Node::split_plane& sp)
+  template <typename T>
+  pair<scalar, scalar> Node<T>::child_areas(const bounds::AABB& bound,
+                                            const split_plane& sp)
   {
     auto bb_size = bound.size();
     const auto s1 = bb_size[(sp.axis+1) % 3];
@@ -199,7 +202,7 @@ namespace kd
     const auto perp_area = 2 * (s1 + s2);
     const auto split_area = 2 * s1 * s2;
 
-    const auto left_p = (sp.split - bound.min[sp.axis]) / bb_size[sp.axis];
+    const auto left_p = (sp.split - bound.min()[sp.axis]) / bb_size[sp.axis];
     return make_pair(split_area + left_p * perp_area, split_area + (1 - left_p) * perp_area);
   }
 
@@ -207,8 +210,9 @@ namespace kd
    * Return the total cost associated with spliting this node at the supplied
    * split_plane.
    */
-  Node::split_eval Node::evaluate_split(const split_plane& sp, const vector<bounds::AABB>& boxes,
-                                        const TreeOptions& opt, scalar surface_area) const
+  template <typename T>
+  split_eval Node<T>::evaluate_split(const split_plane& sp, const vector<bounds::AABB>& boxes,
+                                     const TreeOptions& opt, scalar surface_area) const
   {
     int num_middle = count_if(boxes.begin(), boxes.end(),
                               [&sp](const auto& bb)
@@ -219,7 +223,7 @@ namespace kd
     int num_left = count_if(boxes.begin(), boxes.end(),
                             [&sp](const auto& bb)
                             {
-                              return bb.max[sp.axis] < sp.split;
+                              return bb.max()[sp.axis] < sp.split;
                             });
     int num_right = boxes.size() - num_left;
     num_left += num_middle;
@@ -235,41 +239,49 @@ namespace kd
     return split_eval{sp.split, cost, static_cast<scalar>(num_left - num_right)};
   }
 
+  template <typename T>
+  scalar Node<T>::intersect(const Ray& ray, scalar max_t, T& hit)
+  {
+    return bound.intersect(ray, max_t);
+  }
+
   /*
    * copy the object references into the leaf.
    */
-  void Node::make_leaf(const vector<shared_ptr<Bounded>>& objects)
+  template <typename T>
+  void Node<T>::make_leaf(const vector<T>& objects)
   {
     shapes.resize(objects.size());
     std::copy(objects.begin(), objects.end(), shapes.begin());
   }
 
-  void Node::make_split(const vector<shared_ptr<Bounded>>& objects,
-                        const vector<bounds::AABB>& boxes,
-                        const TreeOptions& opt, const split_plane& sp)
+  template <typename T>
+  void Node<T>::make_split(const vector<T>& objects,
+                           const vector<bounds::AABB>& boxes,
+                           const TreeOptions& opt, const split_plane& sp)
   {
-    vector<shared_ptr<Bounded>> left_objects, right_objects;
+    vector<T> left_objects, right_objects;
     vector<bounds::AABB> left_boxes, right_boxes;
 
     this->plane = sp;
 
     auto left_bound = bound, right_bound = bound;
-    left_bound.max[sp.axis] = sp.split;
-    right_bound.min[sp.axis] = sp.split;
+    left_bound.max()[sp.axis] = sp.split;
+    right_bound.min()[sp.axis] = sp.split;
 
     for (auto i = 0u; i < objects.size(); ++i)
     {
       bool add_left = true, add_right = true;
-      if (boxes[i].max[sp.axis] < sp.split)
+      if (boxes[i].max()[sp.axis] < sp.split)
         add_right = false;
-      if (boxes[i].min[sp.axis] > sp.split)
+      if (boxes[i].min()[sp.axis] > sp.split)
         add_left = false;
 
       if (add_left)
       {
         left_objects.push_back(objects[i]);
         auto left = boxes[i];
-        left.max[sp.axis] = std::min(left.max[sp.axis], sp.split);
+        left.max()[sp.axis] = std::min(left.max()[sp.axis], sp.split);
         left_boxes.push_back(left);
       }
 
@@ -277,7 +289,7 @@ namespace kd
       {
         right_objects.push_back(objects[i]);
         auto right = boxes[i];
-        right.min[sp.axis] = std::max(right.min[sp.axis], sp.split);
+        right.min()[sp.axis] = std::max(right.min()[sp.axis], sp.split);
         right_boxes.push_back(right);
       }
     }
@@ -289,7 +301,8 @@ namespace kd
       right = new Node(right_objects, right_boxes, right_bound, opt);
   }
 
-  Node::~Node()
+  template <typename T>
+  Node<T>::~Node()
   {
     if (left)
       delete left;
@@ -300,25 +313,29 @@ namespace kd
 ////////////////////////////////////////////////////////////////////////////////
 
 
-  Node::split_plane::split_plane(scalar s, NodeAxis a) : split(s), axis(a)
+  split_plane::split_plane(scalar s, NodeAxis a) : split(s), axis(a)
   {
   }
 
-  bool Node::split_plane::operator <(const Node::split_plane& rhs) const
+  bool split_plane::operator <(const split_plane& rhs) const
   {
     return split < rhs.split;
   }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-  Tree::Tree(const vector<shared_ptr<Bounded>>& objects, const TreeOptions& opt)
+  template<typename T>
+  Tree<T>::Tree(const vector<T>& objects, const TreeOptions& opt) : root(nullptr)
   {
-    auto boxes = vector<bounds::AABB>(objects.size());
-    transform(objects.begin(), objects.end(), boxes.begin(),
-              [](const auto& a) { return a->get_bounding_box(); });
+    if (!objects.empty())
+    {
+      auto boxes = vector<bounds::AABB>(objects.size());
+      transform(objects.begin(), objects.end(), boxes.begin(),
+                [](const auto& a) { return a->get_bounding_box(); });
 
-    auto full_bound = accumulate(boxes.begin() + 1, boxes.end(), boxes[0], bounds::AABB::box_union);
+      auto full_bound = accumulate(boxes.begin() + 1, boxes.end(), boxes[0], bounds::AABB::box_union);
 
-    root = shared_ptr<Node>(new Node(objects, boxes, full_bound, opt));
+      root = shared_ptr<node_type>(new node_type(objects, boxes, full_bound, opt));
+    }
   }
 }
