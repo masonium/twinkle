@@ -90,7 +90,22 @@ namespace kd
                     const TreeOptions& opt,
                     const split_plane& plane);
 
+    int count_leaves() const
+    {
+      if (!(left || right))
+        return 1;
+      return (left ? left->count_leaves() : 0) + (right ? right->count_leaves() : 0);
+    }
+
+    int count_objs() const
+    {
+      if (!(left || right))
+        return shapes.size();
+      return (left ? left->count_objs() : 0) + (right ? right->count_objs() : 0);
+    }
+
     friend class Tree;
+
 
     /*
      * member fields
@@ -106,6 +121,15 @@ namespace kd
   {
   public:
     Tree(const vector<shared_ptr<Bounded>>& objects, const TreeOptions& opt);
+
+    int count_leaves() const
+    {
+      return root->count_leaves();
+    }
+    int count_objs() const
+    {
+      return root->count_objs();
+    }
 
   private:
 

@@ -282,9 +282,6 @@ namespace kd
       }
     }
 
-    assert(left_objects.size() < objects.size());
-    assert(right_objects.size() < objects.size());
-
     if (!left_objects.empty())
       left = new Node(left_objects, left_boxes, left_bound, opt);
 
