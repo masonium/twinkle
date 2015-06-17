@@ -1,14 +1,19 @@
 #include <algorithm>
 #include <iterator>
+#include <memory>
+#include <cassert>
 #include "kdtree.h"
 #include "math_util.h"
 
 using std::max_element;
+using std::make_shared;
 using std::distance;
 using std::count_if;
 using std::tie;
 using std::move;
 using std::make_pair;
+using std::cout;
+using std::endl;
 
 namespace kd
 {
@@ -41,14 +46,19 @@ namespace kd
       if (num_boxes > opt.hybrid_one_axis_limit && ai != longest_axis)
         continue;
 
-      best_split = min(best_plane_adaptive(ai, boxes, opt, sa), best_split);
+      auto x = best_plane_adaptive(ai, boxes, opt, sa);
+      best_split = min(x, best_split);
     }
 
     // Compare the best split found to not splitting at all
-    if (best_split.first < opt.self_traversal_cost + num_boxes)
+    if (best_split.first < num_boxes)
       make_split(objects, boxes, opt, best_split.second);
     else
+    {
+      // cout << "cost " << best_split.first << " exceeds number of boxes "
+      //      << num_boxes << "\n";
       make_leaf(objects);
+    }
   }
 
   /*
@@ -77,8 +87,6 @@ namespace kd
     else
       return make_pair(x.cost, x.split);
   }
-
-
 
   /**
    *
@@ -131,9 +139,9 @@ namespace kd
      */
     vector<scalar> num_inner_samples(opt.num_adaptive_samples - 1, 0);
     int split_idx = 0;
-    for (auto i = 0u; i < opt.num_adaptive_samples - 1; ++i)
+    for (auto i = 0u; i < opt.num_adaptive_samples; ++i)
     {
-      scalar f = scalar(i+1) / opt.num_adaptive_samples;
+      scalar f = scalar(i+1) / (opt.num_adaptive_samples + 1);
       scalar split_diff = min_count_diff + cd_range * f;
 
       while (split_evals[split_idx+1].count_diff < split_diff)
@@ -153,16 +161,16 @@ namespace kd
      * Since we know precisely the final order of the samples, we can move the
      * existing samples to correct position in the final array as we go.
      */
-    for (int i = num_inner_samples.size() - 1, ei = num_samples - 1; i >= 0; ++i)
+    split_evals[num_samples - 1] = split_evals[opt.num_uniform_samples];
+    for (int i = num_inner_samples.size() - 1, ei = num_samples - 2; i >= 0; --i, --ei)
     {
-      int end_idx = ei--;
       for (int j = num_inner_samples[i] - 1; j >= 0; --j, --ei)
       {
         scalar f = (j+1) / (num_inner_samples[i] + 1);
         scalar split = split_evals[i].split * (1-f) + split_evals[i+1].split * f;
         split_evals[ei] = evaluate_split(split_plane{split, naxis}, boxes, opt, surface_area);
       }
-      split_evals[end_idx] = move(split_evals[i+1]);
+      split_evals[ei] = split_evals[i];
     }
 
     /*
@@ -171,7 +179,7 @@ namespace kd
     pair<scalar, scalar> axis_best_split =
       quadratic_interpolate_best_split(split_evals[0], split_evals[1], split_evals[2]);
 
-    for (uint i = 1; i < split_evals.size() - 2; ++i)
+    for (uint i = 1; i < split_evals.size() - 3; ++i)
     {
       auto split = quadratic_interpolate_best_split(
         split_evals[i], split_evals[i+1], split_evals[i+2]);
@@ -212,17 +220,19 @@ namespace kd
                             [&sp](const auto& bb)
                             {
                               return bb.max[sp.axis] < sp.split;
-                            }) + num_middle;
-    int num_right = boxes.size() - num_left + num_middle;
+                            });
+    int num_right = boxes.size() - num_left;
+    num_left += num_middle;
 
     scalar sa_left = 0, sa_right = 0;
     tie(sa_left, sa_right) = child_areas(bound, sp);
 
     scalar cost = opt.self_traversal_cost + (num_left * sa_left + num_right * sa_right) / surface_area;
+
     if (num_left == 0 || num_right == 0)
       cost *= opt.empty_side_discount;
 
-    return split_eval{sp.split, cost, static_cast<scalar>(num_right - num_left)};
+    return split_eval{sp.split, cost, static_cast<scalar>(num_left - num_right)};
   }
 
   /*
@@ -238,7 +248,6 @@ namespace kd
                         const vector<bounds::AABB>& boxes,
                         const TreeOptions& opt, const split_plane& sp)
   {
-    std::copy(objects.begin(), objects.end(), std::back_inserter(shapes));
     vector<shared_ptr<Bounded>> left_objects, right_objects;
     vector<bounds::AABB> left_boxes, right_boxes;
 
@@ -273,6 +282,9 @@ namespace kd
       }
     }
 
+    assert(left_objects.size() < objects.size());
+    assert(right_objects.size() < objects.size());
+
     if (!left_objects.empty())
       left = new Node(left_objects, left_boxes, left_bound, opt);
 
@@ -298,5 +310,18 @@ namespace kd
   bool Node::split_plane::operator <(const Node::split_plane& rhs) const
   {
     return split < rhs.split;
+  }
+
+////////////////////////////////////////////////////////////////////////////////
+
+  Tree::Tree(const vector<shared_ptr<Bounded>>& objects, const TreeOptions& opt)
+  {
+    auto boxes = vector<bounds::AABB>(objects.size());
+    transform(objects.begin(), objects.end(), boxes.begin(),
+              [](const auto& a) { return a->get_bounding_box(); });
+
+    auto full_bound = accumulate(boxes.begin() + 1, boxes.end(), boxes[0], bounds::AABB::box_union);
+
+    root = shared_ptr<Node>(new Node(objects, boxes, full_bound, opt));
   }
 }

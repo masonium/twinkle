@@ -17,9 +17,12 @@ namespace bounds
   class AABB : public Base
   {
   public:
+    AABB() { }
     AABB(const Vec3& min_, const Vec3& max_) : min(min_), max(max_) { }
 
     Vec3 size() const { return max - min; }
+
+    static AABB box_union(const AABB& a, const AABB& b);
 
     scalar surface_area() const;
     bool hits_plane(int axis, scalar val) const

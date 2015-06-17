@@ -40,8 +40,13 @@ namespace kd
     Z
   };
 
+  class Tree;
+
   class Node
   {
+  public:
+    ~Node();
+
   private:
     Node(const vector<shared_ptr<Bounded>>& objects, const vector<bounds::AABB>& boxes,
          const bounds::AABB& total_bound,
@@ -85,7 +90,7 @@ namespace kd
                     const TreeOptions& opt,
                     const split_plane& plane);
 
-    ~Node();
+    friend class Tree;
 
     /*
      * member fields
@@ -100,10 +105,10 @@ namespace kd
   class Tree
   {
   public:
-    Tree(const vector<shared_ptr<Bounded>>& objects);
+    Tree(const vector<shared_ptr<Bounded>>& objects, const TreeOptions& opt);
 
   private:
 
-    shared_ptr<Node> node;
+    shared_ptr<Node> root;
   };
 }

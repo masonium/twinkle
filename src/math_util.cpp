@@ -92,5 +92,7 @@ scalar ray_triangle_intersection(const Vec3& v1, const Vec3& v2, const Vec3& v3,
 Vec3 interpolate_quadratic(scalar x1, scalar y1, scalar x2, scalar y2, scalar x3, scalar y3)
 {
   Mat33 vandermonde({x1*x1, x1, 1, x2*x2, x2, 1, x3*x3, x3, 1});
-  return vandermonde.inverse() * Vec3{y1, y2, y3};
+  auto inv = vandermonde.inverse();
+  auto y = Vec3{y1, y2, y3};
+  return inv * y;
 }
