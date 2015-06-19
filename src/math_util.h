@@ -51,7 +51,4 @@ scalar ray_triangle_intersection(const Ray& ray,
                                  const Vec3& v1, const Vec3& v2, const Vec3& v3,
                                  scalar max_t = SCALAR_MAX);
 
-scalar ray_box_intersection(const Ray& ray, const Vec3 bounds[2],
-                            scalar max_t = SCALAR_MAX);
-
 Vec3 interpolate_quadratic(scalar x1, scalar y1, scalar x2, scalar y2, scalar x3, scalar y3);

@@ -4,6 +4,9 @@
 #include "ray.h"
 #include <iostream>
 
+bool ray_box_intersection(const Ray& ray, const Vec3 bounds[2],
+                          scalar& t0, scalar& t1);
+
 namespace bounds
 {
   using std::ostream;
