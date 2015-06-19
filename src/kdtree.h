@@ -67,35 +67,41 @@ namespace kd
 
     using object_type = T;
 
-    scalar intersect(const Ray& r, scalar max_t, T& hit);
-
   private:
     Node(const vector<T>& objects, const vector<bounds::AABB>& boxes,
          const bounds::AABB& total_bound,
          const TreeOptions& opt);
 
+    /**
+     * construction methods
+     **/
     split_eval evaluate_split(const split_plane& sp, const vector<bounds::AABB>& boxes,
-                              const TreeOptions& opt, scalar surface_area) const;
+                              const bounds::AABB& bound, scalar surface_area,
+                              const TreeOptions& opt) const;
 
     static pair<scalar, scalar> quadratic_interpolate_best_split(
       const split_eval& x, const split_eval& y, const split_eval& z);
 
     pair<scalar, split_plane> best_plane_adaptive(
       int axis, const vector<bounds::AABB>& boxes,
-      const TreeOptions& opt, scalar surface_area) const;
+      const bounds::AABB& bound, scalar surface_area,
+      const TreeOptions& opt) const;
 
     pair<scalar, split_plane> best_plane_exhaustive(
       int axis, const vector<bounds::AABB>& boxes,
-      const TreeOptions& opt, scalar surface_area) const;
+      const bounds::AABB& bound, scalar surface_area,
+      const TreeOptions& opt) const;
 
     static pair<scalar, scalar> child_areas(const bounds::AABB& bound, const split_plane& sp);
 
     void make_leaf(const vector<T>& objects);
-    void make_split(const vector<T>& objects,
-                    const vector<bounds::AABB>& boxes,
-                    const TreeOptions& opt,
-                    const split_plane& plane);
+    void make_split(const vector<T>& objects, const vector<bounds::AABB>& boxes,
+                    const bounds::AABB& bound, const split_plane& plane,
+                    const TreeOptions& opt);
 
+    /**
+     * statistic methods
+     */
     int count_leaves() const
     {
       if (!(left || right))
@@ -110,6 +116,9 @@ namespace kd
       return (left ? left->count_objs() : 0) + (right ? right->count_objs() : 0);
     }
 
+    /**
+     * friends
+     */
     friend class Tree<T>;
     friend class shared_ptr<Node<T>>;
 
@@ -118,7 +127,6 @@ namespace kd
      */
 
     vector<T> shapes;
-    bounds::AABB bound;
     Node* left, *right;
     split_plane plane;
   };

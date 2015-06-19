@@ -21,7 +21,7 @@ namespace kd
   Node<T>::Node(const vector<T>& objects,
                 const vector<bounds::AABB>& boxes,
                 const bounds::AABB& total_bound, const TreeOptions& opt)
-    : bound(total_bound), left(nullptr), right(nullptr)
+    : left(nullptr), right(nullptr)
   {
     const auto num_boxes = boxes.size();
     if (num_boxes <= opt.max_elements_per_leaf)
@@ -46,13 +46,13 @@ namespace kd
       if (num_boxes > opt.hybrid_one_axis_limit && ai != longest_axis)
         continue;
 
-      auto x = best_plane_adaptive(ai, boxes, opt, sa);
+      auto x = best_plane_adaptive(ai, boxes, total_bound, sa, opt);
       best_split = min(x, best_split);
     }
 
     // Compare the best split found to not splitting at all
     if (best_split.first < num_boxes)
-      make_split(objects, boxes, opt, best_split.second);
+      make_split(objects, boxes, total_bound, best_split.second, opt);
     else
     {
       // cout << "cost " << best_split.first << " exceeds number of boxes "
@@ -94,7 +94,8 @@ namespace kd
    */
   template <typename T>
   pair<scalar, split_plane> Node<T>::best_plane_adaptive(int axis, const vector<bounds::AABB>& boxes,
-                                                         const TreeOptions& opt, scalar surface_area) const
+                                                         const bounds::AABB& bound, scalar surface_area,
+                                                         const TreeOptions& opt) const
   {
     auto naxis = static_cast<NodeAxis>(axis);
 
@@ -111,7 +112,7 @@ namespace kd
     {
       auto sp = split_plane{bound.min()[axis] + bb_size[axis] * i / (opt.num_uniform_samples - 1), naxis};
 
-      split_evals[i] = evaluate_split(sp, boxes, opt, surface_area);
+      split_evals[i] = evaluate_split(sp, boxes, bound, surface_area, opt);
     }
 
     /*
@@ -170,7 +171,7 @@ namespace kd
       {
         scalar f = (j+1) / (num_inner_samples[i] + 1);
         scalar split = split_evals[i].split * (1-f) + split_evals[i+1].split * f;
-        split_evals[ei] = evaluate_split(split_plane{split, naxis}, boxes, opt, surface_area);
+        split_evals[ei] = evaluate_split(split_plane{split, naxis}, boxes, bound, surface_area, opt);
       }
       split_evals[ei] = split_evals[i];
     }
@@ -212,7 +213,8 @@ namespace kd
    */
   template <typename T>
   split_eval Node<T>::evaluate_split(const split_plane& sp, const vector<bounds::AABB>& boxes,
-                                     const TreeOptions& opt, scalar surface_area) const
+                                     const bounds::AABB& bound, scalar surface_area,
+                                     const TreeOptions& opt) const
   {
     int num_middle = count_if(boxes.begin(), boxes.end(),
                               [&sp](const auto& bb)
@@ -239,12 +241,6 @@ namespace kd
     return split_eval{sp.split, cost, static_cast<scalar>(num_left - num_right)};
   }
 
-  template <typename T>
-  scalar Node<T>::intersect(const Ray& ray, scalar max_t, T& hit)
-  {
-    return bound.intersect(ray, max_t);
-  }
-
   /*
    * copy the object references into the leaf.
    */
@@ -256,9 +252,9 @@ namespace kd
   }
 
   template <typename T>
-  void Node<T>::make_split(const vector<T>& objects,
-                           const vector<bounds::AABB>& boxes,
-                           const TreeOptions& opt, const split_plane& sp)
+  void Node<T>::make_split(const vector<T>& objects, const vector<bounds::AABB>& boxes,
+                           const bounds::AABB& bound, const split_plane& sp,
+                           const TreeOptions& opt)
   {
     vector<T> left_objects, right_objects;
     vector<bounds::AABB> left_boxes, right_boxes;
