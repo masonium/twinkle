@@ -13,6 +13,7 @@ using std::count_if;
 using std::tie;
 using std::move;
 using std::make_pair;
+using std::make_tuple;
 using std::cout;
 using std::endl;
 
@@ -326,7 +327,7 @@ namespace kd
   }
 
   template <typename T>
-  scalar Tree<T>::intersect(const Ray& ray, scalar max_t, Bounded const*& geom)
+  scalar Tree<T>::intersect(const Ray& ray, scalar max_t, Geometry const*& geom) const
   {
     scalar t0, t1;
     if (!bound.intersect(ray, t0, t1))
@@ -341,8 +342,15 @@ namespace kd
     std::stack<stack_elem> node_stack;
 
     const Node<T>* active = root.get();
-    do
+    node_stack.emplace(active, t0, t1);
+    while (!node_stack.empty() && t0 < max_t)
     {
+      tie(active, t0, t1) = node_stack.top();
+      node_stack.pop();
+
+      if (active == nullptr)
+        continue;
+
       /**
        * When we hit a leaf, pick the best intersection of objects within the
        * leaf, if any.
@@ -350,7 +358,7 @@ namespace kd
       if (active->is_leaf())
       {
         scalar best_t = SCALAR_MAX, t;
-        Bounded const* best_geom = nullptr, *leaf_geom ;
+        Geometry const* best_geom = nullptr, *leaf_geom ;
         for (const auto& shape: active->shapes)
         {
           t = shape->intersect(ray, best_t, leaf_geom);
@@ -376,28 +384,24 @@ namespace kd
           * ray.inv_direction[active->plane.axis];
         Node<T> *first = active->left, *second = active->right;
         if (ray.direction[active->plane.axis] < 0)
-          swap(first, second);
+          std::swap(first, second);
 
 
         if (t0 < t_split && t_split < t1)
         {
-          node_stack.push(second, t_split, t1);
-          node_stack.push(first, t0, t_split);
+          node_stack.emplace(second, t_split, t1);
+          node_stack.push(make_tuple(first, t0, t_split));
         }
         else if (t_split < t0)
         {
-          node_stack.push(second, t0, t1);
+          node_stack.push(make_tuple(second, t0, t1));
         }
         else
         {
-          node_stack.push(first, t0, t1);
+          node_stack.push(make_tuple(first, t0, t1));
         }
       }
-
-      tie(active, t0, t1) = node_stack.top();
-      node_stack.pop();
     }
-    while (!node_stack.empty());
 
     return -1;
   }

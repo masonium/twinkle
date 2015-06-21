@@ -39,7 +39,10 @@ spectrum Intersection::texture_at_point() const
 Vec3 Intersection::sample_bsdf(const Vec3& incoming, const Sample2D& sample,
                                scalar& p, scalar& reflectance) const
 {
-  return from_z * shape->material->sample_bsdf(to_z * incoming, sample, p, reflectance);
+  auto local_incoming = to_z * incoming;
+  auto local_outgoing = shape->material->sample_bsdf(local_incoming, sample, p, reflectance);
+  auto outgoing = from_z * local_outgoing;
+  return outgoing;
 }
 
 bool Intersection::is_emissive() const

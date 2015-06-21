@@ -29,11 +29,13 @@ protected:
   vector<MeshTri> tris;
 };
 
-class MeshTri : public Geometry, public Bounded
+class MeshTri : public SimpleGeometry, public Bounded
 {
 public:
   MeshTri(const Mesh* m, const int v[3]);
-  scalar intersect(const Ray& r, scalar max_t) const;
+
+  using SimpleGeometry::intersect;
+  scalar intersect(const Ray& r, scalar max_t) const override;
 
   Vec3 normal(const Vec3& point) const override;
   Vec3 sample_shadow_ray_dir(const Intersection& isect,

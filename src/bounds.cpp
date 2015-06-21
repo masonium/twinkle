@@ -13,12 +13,12 @@ namespace bounds
   {
     return AABB(::min(a.min(), b.min()), ::max(a.max(), b.max()));
   }
-  bool AABB::intersect(const Ray& r, scalar& t0, scalar& t1)
+
+  bool AABB::intersect(const Ray& r, scalar& t0, scalar& t1) const
   {
     return ray_box_intersection(r, bounds, t0, t1);
   }
-
-  scalar AABB::intersect(const Ray& r, scalar max_t)
+  scalar AABB::intersect(const Ray& r, scalar max_t) const
   {
     scalar t0, t1;
     if (!ray_box_intersection(r, bounds, t0, t1))
@@ -48,35 +48,30 @@ namespace bounds
 bool ray_box_intersection(const Ray& ray, const Vec3 bounds[2],
                           scalar& t0, scalar& t1)
 {
-  scalar tmin, tmax, tymin, tymax, tzmin, tzmax;
+  scalar tymin, tymax, tzmin, tzmax;
 
-  tmin = (bounds[ray.sign[0]].x - ray.position.x) * ray.inv_direction.x;
-  tmax = (bounds[1-ray.sign[0]].x - ray.position.x) * ray.inv_direction.x;
+  t0 = (bounds[ray.sign[0]].x - ray.position.x) * ray.inv_direction.x;
+  t1 = (bounds[1-ray.sign[0]].x - ray.position.x) * ray.inv_direction.x;
 
-  tymin = (bounds[ray.sign[0]].y - ray.position.y) * ray.inv_direction.y;
-  tymax = (bounds[1-ray.sign[0]].y - ray.position.y) * ray.inv_direction.y;
+  tymin = (bounds[ray.sign[1]].y - ray.position.y) * ray.inv_direction.y;
+  tymax = (bounds[1-ray.sign[1]].y - ray.position.y) * ray.inv_direction.y;
 
-  if (tmin > tymax || tymin > tmax)
-    return false;
-
-  tmin = std::max(tmin, tymin);
-  tmax = std::min(tmax, tymax);
-
-  tzmin = (bounds[ray.sign[0]].z - ray.position.z) * ray.inv_direction.z;
-  tzmax = (bounds[1-ray.sign[0]].z - ray.position.z) * ray.inv_direction.z;
-
-  if (tmin > tzmax || tzmin > tmax)
-    return false;
-
-  tmin = std::max(tmin, tzmin);
-  tmax = std::min(tmax, tzmax);
-
-  if (tmin < tmax)
+  if (t0 > tymax || tymin > t1)
   {
-    t0 = tmin;
-    t1 = tmax;
-    return true;
-  }
-  else
     return false;
+  }
+
+  t0 = std::max(t0, tymin);
+  t1 = std::min(t1, tymax);
+
+  tzmin = (bounds[ray.sign[2]].z - ray.position.z) * ray.inv_direction.z;
+  tzmax = (bounds[1-ray.sign[2]].z - ray.position.z) * ray.inv_direction.z;
+
+  if (t0 > tzmax || tzmin > t1)
+    return false;
+
+  t0 = std::max(t0, tzmin);
+  t1 = std::min(t1, tzmax);
+
+  return t0 < t1;
 }

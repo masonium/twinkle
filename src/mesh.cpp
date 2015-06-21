@@ -86,10 +86,11 @@ KDMesh::KDMesh(const RawModel& model) : Mesh(model)
     tri_addresses[i] = &tris[i];
 
   kd::TreeOptions opt;
-  kd_tree = std::make_shared<kd::Tree<MeshTri const*>>(tri_addresses, opt);
+  opt.max_elements_per_leaf = 10;
+  kd_tree = std::make_shared<tri_tree>(tri_addresses, opt);
 }
 
 scalar KDMesh::intersect(const Ray& r, scalar max_t, const Geometry*& geom) const
 {
-  return -1;
+  return kd_tree->intersect(r, max_t, geom);
 }

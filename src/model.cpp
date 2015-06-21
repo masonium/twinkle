@@ -22,7 +22,7 @@ namespace RawModelLoad
 {
   struct tex_coord
   {
-    float u, v;
+    scalar u, v;
   };
 
   struct tri_ref
@@ -359,7 +359,7 @@ bounds::Sphere RawModel::bounding_sphere() const
 void RawModel::compute_normals()
 {
   vector<Vec3> normal_sum( verts.size() );
-  vector<float> normal_weight( verts.size() );
+  vector<scalar> normal_weight( verts.size() );
 
   for (const auto& tri: tris)
   {

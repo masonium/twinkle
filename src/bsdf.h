@@ -77,8 +77,7 @@ public:
     
     reflectance = 1.0 / incoming.z;
     
-    Vec3 proj{0, 0, incoming.z};
-    return proj * 2.0 - incoming;
+    return incoming.reflect_over(Vec3::z_axis);
   }
 };
 

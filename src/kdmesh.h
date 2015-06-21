@@ -15,8 +15,6 @@ public:
   KDMesh(const KDMesh&) = delete;
   KDMesh& operator=(const KDMesh&) = delete;
 
-private:
-
   friend class MeshTri;
   shared_ptr<tri_tree> kd_tree;
 };

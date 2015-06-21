@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <stack>
+#include <type_traits>
 #include "bounds.h"
 #include "geometry.h"
 #include "kdtree_util.h"
@@ -33,10 +34,12 @@ namespace kd
   {
   public:
     using node_type = Node<T>;
+    using element_type = T;
+    using const_element_type = typename std::remove_const<T>::type;
 
     Tree(const vector<T>& objects, const TreeOptions& opt);
 
-    scalar intersect(const Ray& ray, scalar max_t, Bounded const*& geom);
+    scalar intersect(const Ray& ray, scalar max_t, Geometry const*& geom) const;
 
     int count_leaves() const
     {
@@ -95,7 +98,7 @@ namespace kd
     /**
      * intersection methods
      */
-    bool is_leaf() {
+    bool is_leaf() const {
       return left == nullptr && right == nullptr;
     }
 
@@ -127,7 +130,7 @@ namespace kd
      */
 
     vector<T> shapes;
-    Node* left, *right;
+    Node *left, *right;
     split_plane plane;
   };
 }
