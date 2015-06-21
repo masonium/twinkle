@@ -1,5 +1,6 @@
-#include "mesh.h"
 #include <algorithm>
+#include "kdmesh.h"
+#include "mesh.h"
 
 using std::copy;
 
@@ -74,4 +75,21 @@ scalar Mesh::intersect(const Ray& r, scalar max_t, const Geometry*& geom) const
     }
   }
   return geom == nullptr ? -1 : best_t;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+KDMesh::KDMesh(const RawModel& model) : Mesh(model)
+{
+  auto tri_addresses = vector<const MeshTri*>{tris.size()};
+  for (auto i = 0u; i < tris.size(); ++i)
+    tri_addresses[i] = &tris[i];
+
+  kd::TreeOptions opt;
+  kd_tree = std::make_shared<kd::Tree<MeshTri const*>>(tri_addresses, opt);
+}
+
+scalar KDMesh::intersect(const Ray& r, scalar max_t, const Geometry*& geom) const
+{
+  return -1;
 }

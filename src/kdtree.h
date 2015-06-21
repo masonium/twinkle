@@ -2,11 +2,15 @@
 
 #include <memory>
 #include <vector>
+#include <stack>
 #include "bounds.h"
+#include "geometry.h"
+#include "kdtree_util.h"
 
 using std::shared_ptr;
 using std::vector;
 using std::pair;
+using std::stack;
 
 /**
  * This kd-tree implementation is based on the construction method as described
@@ -21,42 +25,31 @@ using std::pair;
 
 namespace kd
 {
-  struct TreeOptions
-  {
-    uint num_uniform_samples = 8;
-    uint num_adaptive_samples = 8;
-    scalar empty_side_discount = 0.85;
-    scalar self_traversal_cost = 1.0;
-
-    uint hybrid_one_axis_limit = 1024;
-
-    uint max_elements_per_leaf = 4;
-  };
-
-  enum NodeAxis
-  {
-    X = 0,
-    Y,
-    Z
-  };
+  template <typename T>
+  class Node;
 
   template <typename T>
-  class Tree;
-
-  struct split_eval
+  class Tree
   {
-    scalar split, cost, count_diff;
-  };
+  public:
+    using node_type = Node<T>;
 
-  struct split_plane
-  {
-    split_plane() = default;
-    split_plane(scalar split_, NodeAxis axis_);
+    Tree(const vector<T>& objects, const TreeOptions& opt);
 
-    bool operator <(const split_plane& rhs) const;
+    scalar intersect(const Ray& ray, scalar max_t, Bounded const*& geom);
 
-    scalar split;
-    NodeAxis axis;
+    int count_leaves() const
+    {
+      return root->count_leaves();
+    }
+    int count_objs() const
+    {
+      return root->count_objs();
+    }
+
+  private:
+    bounds::AABB bound;
+    shared_ptr<Node<T>> root;
   };
 
   template <typename T>
@@ -100,6 +93,13 @@ namespace kd
                     const TreeOptions& opt);
 
     /**
+     * intersection methods
+     */
+    bool is_leaf() {
+      return left == nullptr && right == nullptr;
+    }
+
+    /**
      * statistic methods
      */
     int count_leaves() const
@@ -129,30 +129,6 @@ namespace kd
     vector<T> shapes;
     Node* left, *right;
     split_plane plane;
-  };
-
-  template <typename T>
-  class Tree
-  {
-  public:
-    using node_type = Node<T>;
-
-    Tree(const vector<T>& objects, const TreeOptions& opt);
-
-    scalar intersect(const Ray& ray, Geometry*& geom);
-
-    int count_leaves() const
-    {
-      return root->count_leaves();
-    }
-    int count_objs() const
-    {
-      return root->count_objs();
-    }
-
-  private:
-
-    shared_ptr<Node<T>> root;
   };
 }
 

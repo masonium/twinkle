@@ -2,6 +2,7 @@
 #include <iterator>
 #include <memory>
 #include <cassert>
+#include <stack>
 #include "kdtree.h"
 #include "math_util.h"
 
@@ -17,6 +18,7 @@ using std::endl;
 
 namespace kd
 {
+
   template <typename T>
   Node<T>::Node(const vector<T>& objects,
                 const vector<bounds::AABB>& boxes,
@@ -307,19 +309,6 @@ namespace kd
   }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-
-  split_plane::split_plane(scalar s, NodeAxis a) : split(s), axis(a)
-  {
-  }
-
-  bool split_plane::operator <(const split_plane& rhs) const
-  {
-    return split < rhs.split;
-  }
-
-////////////////////////////////////////////////////////////////////////////////
-
   template<typename T>
   Tree<T>::Tree(const vector<T>& objects, const TreeOptions& opt) : root(nullptr)
   {
@@ -329,9 +318,87 @@ namespace kd
       transform(objects.begin(), objects.end(), boxes.begin(),
                 [](const auto& a) { return a->get_bounding_box(); });
 
-      auto full_bound = accumulate(boxes.begin() + 1, boxes.end(), boxes[0], bounds::AABB::box_union);
+      bound = accumulate(boxes.begin() + 1, boxes.end(), boxes[0], bounds::AABB::box_union);
 
-      root = shared_ptr<node_type>(new node_type(objects, boxes, full_bound, opt));
+      root = shared_ptr<node_type>(new node_type(objects, boxes, bound, opt));
+      //root = make_shared<node_type>(objects, boxes, bound, opt);
     }
+  }
+
+  template <typename T>
+  scalar Tree<T>::intersect(const Ray& ray, scalar max_t, Bounded const*& geom)
+  {
+    scalar t0, t1;
+    if (!bound.intersect(ray, t0, t1))
+      return -1;
+    if (t1 <= 0 || t0 >= max_t)
+      return -1;
+    t0 = std::max<scalar>(t0, 0);
+    t1 = std::min(t1, max_t);
+
+    using stack_elem = std::tuple<const Node<T>*, scalar, scalar>;
+
+    std::stack<stack_elem> node_stack;
+
+    const Node<T>* active = root.get();
+    do
+    {
+      /**
+       * When we hit a leaf, pick the best intersection of objects within the
+       * leaf, if any.
+       **/
+      if (active->is_leaf())
+      {
+        scalar best_t = SCALAR_MAX, t;
+        Bounded const* best_geom = nullptr, *leaf_geom ;
+        for (const auto& shape: active->shapes)
+        {
+          t = shape->intersect(ray, best_t, leaf_geom);
+          if (t > 0)
+          {
+            best_t = t;
+            best_geom = leaf_geom;
+          }
+        }
+
+        if (best_geom != nullptr)
+        {
+          geom = best_geom;
+          return best_t;
+        }
+      }
+      /**
+       * Otherwise, use the split position to find which children, if any, to
+       * push onto the stack.
+       */
+      else {
+        scalar t_split = (active->plane.split - ray.position[active->plane.axis])
+          * ray.inv_direction[active->plane.axis];
+        Node<T> *first = active->left, *second = active->right;
+        if (ray.direction[active->plane.axis] < 0)
+          swap(first, second);
+
+
+        if (t0 < t_split && t_split < t1)
+        {
+          node_stack.push(second, t_split, t1);
+          node_stack.push(first, t0, t_split);
+        }
+        else if (t_split < t0)
+        {
+          node_stack.push(second, t0, t1);
+        }
+        else
+        {
+          node_stack.push(first, t0, t1);
+        }
+      }
+
+      tie(active, t0, t1) = node_stack.top();
+      node_stack.pop();
+    }
+    while (!node_stack.empty());
+
+    return -1;
   }
 }
