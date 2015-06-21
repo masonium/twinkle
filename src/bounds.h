@@ -59,6 +59,7 @@ namespace bounds
      * Intersection of this box with a ray.
      */
     scalar intersect(const Ray& r, scalar max_t = SCALAR_MAX);
+    bool intersect(const Ray& r, scalar& t0, scalar& t1);
 
     Vec3 bounds[2];
   };

@@ -2,6 +2,8 @@
 
 #include "geometry.h"
 #include "model.h"
+#include "bounds.h"
+#include "kdtree.h"
 
 class MeshTri;
 
@@ -10,7 +12,7 @@ class Mesh : public Primitive
 public:
   Mesh(const RawModel& model);
 
-  scalar intersect(const Ray& r, scalar max_t, const Geometry*& geom) const override;
+  virtual scalar intersect(const Ray& r, scalar max_t, const Geometry*& geom) const override;
 
   const Vec3& pos(int i) const
   {
@@ -19,13 +21,15 @@ public:
 
   const bool is_differential;
 
-private:
+  virtual ~Mesh() { }
+
+protected:
   friend class MeshTri;
   vector<Vertex> verts;
   vector<MeshTri> tris;
 };
 
-class MeshTri : public Geometry
+class MeshTri : public Geometry, public Bounded
 {
 public:
   MeshTri(const Mesh* m, const int v[3]);
@@ -42,6 +46,8 @@ public:
 
   void texture_coord(const Vec3& pos, const Vec3& normal,
                      scalar& u, scalar& v, Vec3& dpdu, Vec3& dpdv) const override;
+
+  bounds::AABB get_bounding_box() const;
 
   virtual ~MeshTri() {}
 

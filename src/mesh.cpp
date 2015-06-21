@@ -36,6 +36,13 @@ Vec3 MeshTri::sample_shadow_ray_dir(const Intersection& isect,
   scalar r3 = 1 - r1 - r2;
   return r1 * mesh->pos(vi[0]) + r2 * mesh->pos(vi[1]) + r3 * mesh->pos(vi[2]);
 }
+
+bounds::AABB MeshTri::get_bounding_box() const
+{
+  return bounds::AABB(min(min(_p(0), _p(1)), _p(2)),
+                      max(max(_p(0), _p(1)), _p(2)));
+}
+
 void MeshTri::texture_coord(const Vec3& pos, const Vec3& normal,
                             scalar& u, scalar& v, Vec3& dpdu, Vec3& dpdv) const
 {

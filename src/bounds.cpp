@@ -13,6 +13,10 @@ namespace bounds
   {
     return AABB(::min(a.min(), b.min()), ::max(a.max(), b.max()));
   }
+  bool AABB::intersect(const Ray& r, scalar& t0, scalar& t1)
+  {
+    return ray_box_intersection(r, bounds, t0, t1);
+  }
 
   scalar AABB::intersect(const Ray& r, scalar max_t)
   {
