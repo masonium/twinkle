@@ -20,6 +20,11 @@ scalar qf(scalar a, scalar b, scalar c)
   return (-b + sd) / (2.0 * a);
 }
 
+scalar clamp(scalar x, scalar m, scalar M)
+{
+  return std::min(M, std::max(x, m));
+}
+
 scalar norm(const scalar& s)
 {
   return fabs(s);
