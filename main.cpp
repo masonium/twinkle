@@ -3,6 +3,7 @@
 
 #include "camera.h"
 #include "integrator.h"
+#include "dintegrator.h"
 #include "scene.h"
 #include "sphere.h"
 #include "plane.h"
@@ -12,6 +13,7 @@
 #include "model.h"
 #include "mesh.h"
 #include "material.h"
+#include "kdmesh.h"
 
 using std::cerr;
 using std::endl;
@@ -28,8 +30,8 @@ PerspectiveCamera single_sphere(Scene& scene, scalar aspect_ratio)
   scene.add( make_shared<Shape>( make_shared<Sphere>(Vec3::zero, 1.0),
 			make_shared<RoughColorMaterial>(0, spectrum{0.2, 0.2, 1.0})));
 
-  scene.add( make_shared<Shape>( make_shared<Sphere>(Vec3::y_axis * -1000, 999),
-			make_shared<RoughColorMaterial>(0, spectrum{0.2, 0.2, 0.2})));
+  scene.add( make_shared<Shape>( make_shared<Plane>(Vec3::y_axis, 1.0),
+                                 make_shared<RoughColorMaterial>(0, spectrum{0.2, 0.2, 0.2})));
 
   Vec3 light_dir = Vec3::z_axis;
   scene.add( make_shared<DirectionalLight>( light_dir, spectrum{1.0}));
@@ -82,25 +84,34 @@ PerspectiveCamera model_scene(Scene& scene, scalar aspect_ratio)
     exit(1);
   cerr << "Loaded model with " << m.verts.size() << " verts and " << m.tris.size() << " tris." << endl;
   //m.rescale(bounds::AABB(Vec3(-2, 0, -2), Vec3(2, 2, 2)));
-  auto raw_mesh = new Mesh(m);
-  auto mesh = shared_ptr<Mesh>(raw_mesh);
 
-  scene.add(make_shared<Shape>(mesh, make_shared<RoughColorMaterial>(0.0, spectrum{1.0, 0.5, 0.0})));
-  scene.add(make_shared<Shape>(make_shared<Plane>(Vec3::y_axis, 1.01), 
-                      make_shared<RoughColorMaterial>(0.0, spectrum{0.5, 1.0, 0.0})));
+  auto kdmesh = make_shared<KDMesh>(m);
+  // cerr << "Created kdmesh with " << kdmesh->kd_tree->count_leaves() << " leaves and "
+  //      << kdmesh->kd_tree->count_objs() << " objects.\n";
 
+  // scene.add(make_shared<Shape>(mesh, make_shared<RoughColorMaterial>(0.0,
+  // spectrum{1.0, 0.5, 0.0})));
+  auto rcm = make_shared<RoughColorMaterial>(0.0, spectrum{1.0, 0.5, 0.0});
+  auto mirror = make_shared<MirrorMaterial>();
+  scene.add(make_shared<Shape>(kdmesh, mirror));
   
-  scene.add(make_shared<DirectionalLight>(Vec3(1.0, 1.0, 1.0), spectrum{1.0, 1.0, 1.0}*3.0));
+  auto green = make_shared<RoughColorMaterial>(0.0, spectrum{0.5, 1.0, 0.0});
+  scene.add(make_shared<Shape>(make_shared<Plane>(Vec3::y_axis, 1.01), green));
+  
+  auto check = make_shared<Checkerboard2D>(spectrum{1.0}, spectrum{0.0}, 2, 1);
+  scene.add(make_shared<EnvironmentalLight>(check));
 
-  return PerspectiveCamera(Vec3{-2.0, 3.0, 6.0}, Vec3::zero, Vec3::y_axis,
+  return PerspectiveCamera(Vec3{6.0, 3.0, 0.0}, Vec3::zero, Vec3::y_axis,
                            PI/2.0, aspect_ratio);
 }
 
 PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
 {
-  auto mat  = make_shared<GlassMaterial>();
+  auto glass = make_shared<GlassMaterial>();
+  auto mirror = make_shared<MirrorMaterial>();
 
-  scene.add(make_shared<Shape>(make_shared<Sphere>(Vec3{0.0, -0.5, 0.0}, 1.0), mat));
+  scene.add(make_shared<Shape>(make_shared<Sphere>(Vec3{0.0, 0.0, 0.0}, 2.0), glass));
+  //scene.add(make_shared<Shape>(make_shared<Sphere>(Vec3{5.0, 0.0, 0.0}, 2.0), glass));
 
   scalar distance_from_center = 3.0;
   scalar sphere_radius = 1.0;
@@ -121,11 +132,11 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
   scene.add(make_shared<Shape>(make_shared<Plane>(Vec3{0.0, 1.0, 0.0}, 2.0),
                                make_shared<RoughColorMaterial>(0.0, spectrum{0.6})));
 
-  //scene.add(make_shared<PointLight>(Vec3(3.0, 3.0, -1.0), spectrum{5.0}));
-  scene.add(make_shared<EnvironmentalLight>(make_shared<Checkerboard2D>(spectrum{1.0}, spectrum{0.0}, 8, 1)));
+  auto env_light_tex = make_shared<Checkerboard2D>(spectrum{1.0}, spectrum{0.0}, 8, 8);
+  //auto env_light_tex = make_shared<SolidColor>(spectrum{1.0});
+  scene.add(make_shared<EnvironmentalLight>(env_light_tex));
 
   const int num_lights = 0;
-
 
   for (int i = 0; i < num_lights; ++i)
   {
@@ -134,10 +145,10 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
     scene.add( make_shared<PointLight>(Vec3(pr*cos(angle), 2.0, pr*sin(angle)), spectrum{0.1}));
   }
 
-  auto cam_pos = Vec3{7.5, 2, 0}*0.8;
+  auto cam_pos = Vec3{0, 1.0, 7.5}*0.8;
+  auto look_at = Vec3{0.0, 0.0, 0.0};
 
-  return PerspectiveCamera(cam_pos, Vec3{0, -1.0, 0}, Vec3{0, 1, 0}, PI / 2.0, aspect_ratio);
-  //return PerspectiveCamera(Vec3{0, 4, 0}, Vec3{0, 5.0, 0}, Vec3::x_axis, PI / 2.0, aspect_ratio);
+  return PerspectiveCamera(cam_pos, look_at, Vec3{0, 1, 0}, PI / 2.0, aspect_ratio);
 }
 
 
@@ -160,7 +171,8 @@ int main(int argc, char** args)
   Scene scene;
   PerspectiveCamera cam = default_scene(scene, scalar(WIDTH)/scalar(HEIGHT));
 
-  Film f(WIDTH, HEIGHT, new BoxFilter);
+  auto bf = make_shared<BoxFilter>();
+  Film f(WIDTH, HEIGHT, bf.get());
 
   PathTracerIntegrator::Options opt;
 
@@ -179,19 +191,20 @@ int main(int argc, char** args)
   opt.max_depth = 16;
 
   PathTracerIntegrator igr(opt);
-
-  //BWIntegrator igr;
+  cerr << "Rendered " << igr.num_primary_rays_traced() << " rays.\n";
+  //DebugIntegrator igr(DebugIntegrator::DI_SPECULAR);
 
   cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, "
        << per_pixel << " samples per pixel\n";
 
   igr.render(&cam, &scene, f);
 
-  cerr << "Rendered " << igr.num_primary_rays_traced() << " rays.\n";
+  auto mapper = make_shared<LinearToneMapper>();
+  //auto mapper = shared_ptr<CompositeToneMapper>(new CompositeToneMapper{make_shared<RSSFToneMapper>(), make_shared<LinearToneMapper>()});
+  //auto mapper = make_shared<CutoffToneMapper>();
 
-  //auto mapper = make_shared<LinearToneMapper>();
-  auto mapper = shared_ptr<CompositeToneMapper>(new CompositeToneMapper{make_shared<RSSFToneMapper>(), make_shared<LinearToneMapper>()});
   f.render_to_ppm(cout, mapper);
+  //f.render_to_twi(cout);
   //f.render_to_console(cout);
 
   return 0;
