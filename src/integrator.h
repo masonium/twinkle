@@ -17,11 +17,3 @@ public:
   virtual ~Integrator() { }
 };
 
-
-class BWIntegrator : public Integrator
-{
-public:
-  void render(const Camera* cam, const Scene* scene, Film& film) override;
-};
-
-

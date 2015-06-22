@@ -2,6 +2,8 @@
 
 #include "vec3.h"
 
+const scalar NUDGE_EPSILON = 0.0001;
+
 class Ray
 {
 public:
@@ -28,7 +30,7 @@ public:
     return Ray{position, direction.normal()};
   }
   
-  Ray nudge(scalar eps = SURFACE_EPSILON) const;
+  Ray nudge(scalar eps = NUDGE_EPSILON) const;
   
   Vec3 position, direction;
   Vec3 inv_direction;
