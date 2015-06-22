@@ -2,9 +2,10 @@
 **Table of Contents**
 
 - [twinkle](#twinkle)
-    - [Building](#building)
-    - [Testing](#testing)
-    - [Current Features](#current-features)
+	- [Building](#building)
+	- [Testing](#testing)
+	- [Current Features](#current-features)
+	- [Planned Features](#planned-features)
 
 <!-- markdown-toc end -->
 
@@ -14,15 +15,17 @@
 Twinkle (tentative name) is path tracer written C++. It will emphasize tracing implicit surfaces using physically realistic BRDFs in a distributed setting.
 
 ## Building
-`make` should create the twinkle executable.
+`make` should create the twinkle executable, `./twinkle`.
 
 ## Testing
-`make test` will run an assorted, disorganized collection of tests.
-
+`make test` will run an assorted, disorganized collection of unit tests.
 
 ## Current Features
 Shapes
 * Sphere
+* Plane
+* Implicit Surface
+* KD-tree-based triangle mesh
 Lights
 * Point
 * Directional
@@ -34,6 +37,8 @@ Surface integrators
 BRDFs
 * Diffuse (Lambertian)
 * Mirror (perfect specular)
+* Oren Nayer
+* Fresenel reflection (glass)
 Output Formats
 * ASCII(Console)
 * PPM
@@ -42,24 +47,22 @@ ToneMaps
 * RSSF
 Textures
 * Grid
+* Checker
+* solid
 
 
 ##  Planned Features
 Shapes
-* Plane
-* Implicit Surface
+* Various built-in shapes based on implicits (torus, cylinder)
+* generic quadrics...?
 
-Scripting system (probably lua)
+Scripting system (probably lua or ECL)
 
 Surface integrators
 * Bidirectional path tracing
 * ERPT
 
-Full material system (incorp
-
 BRDFs
-* Oren-Nayer
-* Fresnel reflection/transmission
 * Cook-Torrance
 * BRDF-blending
 
