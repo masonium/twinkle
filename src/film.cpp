@@ -62,6 +62,7 @@ void Film::merge(const Film& f)
              [](Pixel a, Pixel b) { return Pixel{a.weight + b.weight, a.total + b.total}; });
 }
 
+
 void Film::render_to_ppm(ostream& out, weak_ptr<ToneMapper> mapper)
 {
   vector<spectrum> final = pixel_list();
@@ -72,7 +73,7 @@ void Film::render_to_ppm(ostream& out, weak_ptr<ToneMapper> mapper)
   {
     for(uint x = 0; x < width; ++x)
     {
-      const auto& c = final[index(x, y)];
+      const auto& c = final[index(x, y)].clamp(0, 1);
       out << int(c.x * 255) << " " << int(c.y * 255) << " " << int(c.z * 255) << " ";
     }
     out << "\n";  

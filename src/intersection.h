@@ -25,6 +25,8 @@ public:
 
   spectrum emission() const;
 
+  const Shape* get_shape_for_id() const { return shape; }
+
   const scalar t;
   Vec3 position, normal;
   scalar u, v;
