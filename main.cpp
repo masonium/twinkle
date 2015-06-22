@@ -14,6 +14,7 @@
 #include "mesh.h"
 #include "material.h"
 #include "kdmesh.h"
+#include "implicit.h"
 
 using std::cerr;
 using std::endl;
@@ -105,13 +106,38 @@ PerspectiveCamera model_scene(Scene& scene, scalar aspect_ratio)
                            PI/2.0, aspect_ratio);
 }
 
+scalar sphere_sdf(Vec3 v)
+{
+  return v.norm() - 1.0;
+}
+
+scalar torus_sdf(Vec3 v)
+{
+  scalar xz = sqrt(v.x*v.x + v.y*v.y);
+  scalar x = xz - 0.2;
+  scalar y = v.y;
+  return sqrt(x*x+y*y) - 1.0;
+}
+scalar capsule_sdf(Vec3 v)
+{
+  Vec3 a{0.0, 0.0, -1.0};
+  Vec3 b{0.0, 0.0, 1.0};
+  
+  Vec3 va  = v - a, ba = b - a;
+  scalar s = clamp( va.dot(ba) / ba.norm2(), 0, 1);
+  
+  return ( va - ba * s ).norm() - 0.1;
+}
+
 PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
 {
   auto glass = make_shared<GlassMaterial>();
   auto mirror = make_shared<MirrorMaterial>();
 
-  scene.add(make_shared<Shape>(make_shared<Sphere>(Vec3{0.0, 0.0, 0.0}, 2.0), glass));
-  //scene.add(make_shared<Shape>(make_shared<Sphere>(Vec3{5.0, 0.0, 0.0}, 2.0), glass));
+  auto impf = capsule_sdf;
+  auto implicit = make_shared<ImplicitSurface>(impf, gradient_from_sdf(impf), 1.0);
+  auto sphere = make_shared<Sphere>(Vec3{0.0, 0.0, 0.0}, 1.0);
+  scene.add(make_shared<Shape>(implicit, mirror));
 
   scalar distance_from_center = 3.0;
   scalar sphere_radius = 1.0;
@@ -132,8 +158,8 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
   scene.add(make_shared<Shape>(make_shared<Plane>(Vec3{0.0, 1.0, 0.0}, 2.0),
                                make_shared<RoughColorMaterial>(0.0, spectrum{0.6})));
 
-  auto env_light_tex = make_shared<Checkerboard2D>(spectrum{1.0}, spectrum{0.0}, 8, 8);
-  //auto env_light_tex = make_shared<SolidColor>(spectrum{1.0});
+  //auto env_light_tex = make_shared<Checkerboard2D>(spectrum{1.0}, spectrum{0.0}, 8, 8);
+  auto env_light_tex = make_shared<SolidColor>(spectrum{1.0});
   scene.add(make_shared<EnvironmentalLight>(env_light_tex));
 
   const int num_lights = 0;
@@ -145,7 +171,7 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
     scene.add( make_shared<PointLight>(Vec3(pr*cos(angle), 2.0, pr*sin(angle)), spectrum{0.1}));
   }
 
-  auto cam_pos = Vec3{0, 1.0, 7.5}*0.8;
+  auto cam_pos = Vec3{0, 0.0, 7.5};
   auto look_at = Vec3{0.0, 0.0, 0.0};
 
   return PerspectiveCamera(cam_pos, look_at, Vec3{0, 1, 0}, PI / 2.0, aspect_ratio);
@@ -190,18 +216,18 @@ int main(int argc, char** args)
     opt.num_threads = 1;
   opt.max_depth = 16;
 
-  PathTracerIntegrator igr(opt);
-  cerr << "Rendered " << igr.num_primary_rays_traced() << " rays.\n";
-  //DebugIntegrator igr(DebugIntegrator::DI_SPECULAR);
+  // PathTracerIntegrator igr(opt);
+  // cerr << "Rendered " << igr.num_primary_rays_traced() << " rays.\n";
+  DebugIntegrator igr(DebugIntegrator::DI_NORMAL);
 
   cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, "
        << per_pixel << " samples per pixel\n";
 
   igr.render(&cam, &scene, f);
 
-  auto mapper = make_shared<LinearToneMapper>();
+  //auto mapper = make_shared<LinearToneMapper>();
   //auto mapper = shared_ptr<CompositeToneMapper>(new CompositeToneMapper{make_shared<RSSFToneMapper>(), make_shared<LinearToneMapper>()});
-  //auto mapper = make_shared<CutoffToneMapper>();
+  auto mapper = make_shared<CutoffToneMapper>();
 
   f.render_to_ppm(cout, mapper);
   //f.render_to_twi(cout);
