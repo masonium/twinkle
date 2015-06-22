@@ -88,8 +88,8 @@ private:
 class GlassMaterial : public Material
 {
 public:
-  GlassMaterial(scalar ref_in = refraction_index::CROWN_GLASS, 
-                scalar ref_out = refraction_index::AIR);
+  GlassMaterial(scalar ref_inside = refraction_index::CROWN_GLASS,
+                scalar ref_outside = refraction_index::AIR);
 
   scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const override;
 
@@ -99,7 +99,7 @@ public:
   spectrum texture_at_point(const Intersection& isect) const override;
 
 private:
-  scalar nr_in, nr_out;
+  scalar nr_inside, nr_outside;
 };
 
 class EmissiveMaterial : public Material

@@ -60,7 +60,7 @@ spectrum MirrorMaterial::texture_at_point(const Intersection& isect) const
 ////////////////////////////////////////////////////////////////////////////////
 
 GlassMaterial::GlassMaterial(scalar refr_in, scalar refr_out) : 
-  nr_in(refr_in), nr_out(refr_out)
+  nr_inside(refr_in), nr_outside(refr_out)
 {
   
 }
@@ -73,8 +73,8 @@ scalar GlassMaterial::reflectance(const Vec3& incoming, const Vec3& outgoing) co
 Vec3 GlassMaterial::sample_bsdf(const Vec3& incoming, const Sample2D& sample,
                                 scalar& p, scalar& reflectance) const
 {
-  scalar n1 = nr_out;
-  scalar n2 = nr_in;
+  scalar n1 = nr_outside;
+  scalar n2 = nr_inside;
   auto normal = Vec3::z_axis;
   if (incoming.z < 0)
   {
@@ -82,7 +82,8 @@ Vec3 GlassMaterial::sample_bsdf(const Vec3& incoming, const Sample2D& sample,
     normal *= -1;
   }
   scalar frpdf = fresnel_reflectance(incoming, normal, n1, n2);
-  if (sample[0] < frpdf)
+  scalar samp = sample[0];
+  if (samp < frpdf)
   {
     // reflect
     p = frpdf;
