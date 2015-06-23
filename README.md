@@ -72,3 +72,9 @@ Textures
 * arbitrary function-based
 
 Automatic Differentiation for implicit surface rendering
+
+## Priorities
+Fix / add testing for implicit surface rendering
+Small library of rendering constants
+geometry transformations
+bi-directional path tracing
