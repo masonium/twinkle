@@ -20,7 +20,7 @@ public:
                              scalar r1,
                              scalar r2) const override;
 
-  scalar intersect(const Ray& r, scalar max_t) const override;
+  scalar intersect(const Ray& r, scalar max_t = SCALAR_MAX) const override;
 
   bounds::AABB get_bounding_box() const override
   {

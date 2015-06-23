@@ -2,7 +2,6 @@
 #include <memory>
 
 static const scalar MIN_STEP = 0.0001;
-static const scalar SURFACE_EPSILON = 0.0001;
 
 using std::make_shared;
 
@@ -20,8 +19,7 @@ Vec3 ImplicitSurface::normal(const Vec3& point) const
 }
 
 Vec3 ImplicitSurface::sample_shadow_ray_dir(const Intersection& isect,
-                                            scalar r1,
-                                            scalar r2) const
+                                            scalar r1, scalar r2) const
 {
   return Vec3::zero;
 }
@@ -42,7 +40,7 @@ scalar ImplicitSurface::intersect(const Ray& r, scalar max_t) const
   scalar rdn = r.direction.norm();
   scalar dist = f(r.evaluate(t));
 
-  if (fabs(dist) < SURFACE_EPSILON)
+  if (fabs(dist) < MIN_STEP)
     return t;
 
   do
@@ -50,10 +48,11 @@ scalar ImplicitSurface::intersect(const Ray& r, scalar max_t) const
     scalar t_diff = max(dist, MIN_STEP) / (rdn * L);
     scalar new_t = t + t_diff;
     scalar new_dist = f(r.evaluate(new_t));
-    if (fabs(new_dist) < SURFACE_EPSILON)
+    if (fabs(new_dist) < MIN_STEP)
     {
-      //return t + (dist - 0) / (dist - new_dist) * t_diff;
-      return new_t;
+      // If we find a near-enough surface point, use the secant approximation to
+      // find the zero-point.
+      return t + (dist - 0) / (dist - new_dist) * t_diff;
     }
 
     t = new_t;
