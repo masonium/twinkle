@@ -8,7 +8,7 @@ using std::make_shared;
 
 ImplicitSurface::ImplicitSurface(ImplicitEvalFunc f_, ImplicitGradFunc g_,
                                  scalar lipschitz_const)
-  : f(f_), g(g_), L(lipschitz_const), bbox(Vec3{-2.1}, Vec3{2.1})
+  : f(f_), g(g_), L(lipschitz_const), bbox(Vec3{-1.1}, Vec3{1.1})
 {
 
 }
@@ -32,15 +32,17 @@ scalar ImplicitSurface::intersect(const Ray& r, scalar max_t) const
   scalar t0, t1;
   if (!bbox.intersect(r, t0, t1))
     return -1;
-  if (max_t < t0)
-    return false;
+  if (max_t < t0 || t1 < 0)
+    return -1;
+
   t1 = min(max_t, t1);
 
-  scalar t = t0;
+  scalar t = 0;
 
   scalar rdn = r.direction.norm();
   scalar dist = f(r.evaluate(t));
-  if (abs(dist) < SURFACE_EPSILON)
+
+  if (fabs(dist) < SURFACE_EPSILON)
     return t;
 
   do
@@ -48,8 +50,7 @@ scalar ImplicitSurface::intersect(const Ray& r, scalar max_t) const
     scalar t_diff = max(dist, MIN_STEP) / (rdn * L);
     scalar new_t = t + t_diff;
     scalar new_dist = f(r.evaluate(new_t));
-
-    if (abs(new_dist) < SURFACE_EPSILON)
+    if (fabs(new_dist) < SURFACE_EPSILON)
     {
       //return t + (dist - 0) / (dist - new_dist) * t_diff;
       return new_t;
