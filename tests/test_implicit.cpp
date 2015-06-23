@@ -1,6 +1,7 @@
 #include <iostream>
 #include "implicit.h"
 #include "test_util.h"
+#include "sphere.h"
 
 scalar sphere_sdf(const Vec3& p)
 {
@@ -12,19 +13,38 @@ auto sphere_grad = gradient_from_sdf(sphere_sdf);
 TEST(sphere_implicit)
 {
   ImplicitSurface imp(sphere_sdf, sphere_grad, 1.0);
+  Sphere sp(Vec3::zero, 1.0);
+
   UniformSampler samp;
   for (int i = 0; i < 100; ++i)
   {
-    Vec3 n = cosine_weighted_hemisphere_sample(samp.sample_2d());
-    if (n.z > 0)
-      n = -n;
-    Ray r(Vec3::z_axis * sqrt(3), n);
+    scalar A = rf() * 2 + 0.1;
 
-    scalar t = imp.intersect(r, SCALAR_MAX);
-    scalar angle = acos(n.dot(-Vec3::z_axis));
-    if (angle < PI/6.0-0.1)
-      CHECK(t > 0);
-    else if (angle > PI/6.0+0.1)
-      CHECK(t < 0);
+    Vec3 n = cosine_weighted_hemisphere_sample(samp.sample_2d());
+
+    Ray ray(Vec3::z_axis * -1.0 * (1.0 + A), n);
+
+    scalar crit_angle = asin(1.0 / (1.0 + A));
+
+    scalar angle = acos(n.dot(Vec3::z_axis));
+
+    scalar imp_t = imp.intersect(ray);
+    scalar sp_t = sp.intersect(ray);
+
+    if (angle > crit_angle+0.001)
+    {
+      CHECK(imp_t < 0);
+      CHECK(sp_t < 0);
+    }
+    if (angle < crit_angle - 0.001)
+    {
+      scalar a = 1.0, b = -2 * n.z * (A + 1.0);
+      scalar c = (1.0 + A) * (1.0 + A) - 1;
+
+      scalar t_analytic = qf(a, b, c);
+
+      CHECK_CLOSE(t_analytic, imp_t, EPS);
+      CHECK_CLOSE(t_analytic, sp_t, EPS);
+    }
   }
 }
