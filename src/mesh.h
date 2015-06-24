@@ -7,7 +7,7 @@
 
 class MeshTri;
 
-class Mesh : public Primitive
+class Mesh : public Intersectable
 {
 public:
   Mesh(const RawModel& model);

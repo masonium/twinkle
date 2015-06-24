@@ -9,7 +9,7 @@
 using std::shared_ptr;
 using std::numeric_limits;
 
-class Primitive
+class Intersectable
 {
 public:
   /*
@@ -20,7 +20,7 @@ public:
    */
   virtual scalar intersect(const Ray& r, scalar max_t, const Geometry*& geom) const = 0;
 
-  virtual ~Primitive() { }
+  virtual ~Intersectable() { }
 };
 
 class Geometry
@@ -43,7 +43,7 @@ public:
   virtual ~Geometry() {}
 };
 
-class SimpleGeometry : public Geometry, public Primitive
+class SimpleGeometry : public Geometry, public Intersectable
 {
 public:
   /**
