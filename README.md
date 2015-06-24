@@ -74,7 +74,18 @@ Textures
 Automatic Differentiation for implicit surface rendering
 
 ## Priorities
-Fix / add testing for implicit surface rendering
-Small library of rendering constants
+Small library of rendering
 geometry transformations
 bi-directional path tracing
+
+
+### Transformation options
+TransformedPrimitive as wrapper around primitive
+* (pro) some primitives can "condense" themseleves
+  - Sphere (limited case)
+  - Mesh (cached version)
+* (pro) better bounding box approximations (probably limited usefulness)
+* (pro) isect code (could) remain unchanged
+
+Shape with transformation
+* intersection code

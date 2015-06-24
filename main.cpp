@@ -134,20 +134,22 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
   auto glass = make_shared<GlassMaterial>();
   auto mirror = make_shared<MirrorMaterial>();
 
-  auto impf = capsule_sdf;
+  auto impf = sphere_sdf;
   auto implicit = make_shared<ImplicitSurface>(impf, gradient_from_sdf(impf), 1.0);
   auto sphere = make_shared<Sphere>(Vec3{0.0, 0.0, 0.0}, 1.0);
   scene.add(make_shared<Shape>(implicit, mirror));
 
-  scalar distance_from_center = 3.0;
+  scalar distance_from_center = 5.0;
   scalar sphere_radius = 1.0;
+  scalar fill_rate = 0.75;
 
-  const int num_sides = PI / atan(sphere_radius / (distance_from_center));
+  const int num_sides = fill_rate * PI / atan(sphere_radius / (distance_from_center));
+
   for (int i = 0; i < num_sides; ++i)
   {
     const scalar angle = 2 * PI * i / num_sides;
-    const scalar pr = 4.0;
-    const Vec3 sp(pr*cos(angle), -2.0+sphere_radius, pr*sin(angle));
+    const scalar pr = distance_from_center;
+    const Vec3 sp(pr*cos(angle), 0, pr*sin(angle));
     auto sc = spectrum::from_hsv(i*360.0/num_sides, 1.0, 1.0);
     auto sc2 = spectrum::from_hsv(i*360.0/num_sides, 0.75, 0.75);
 
@@ -155,11 +157,11 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
                                    make_shared<RoughMaterial>(0.0, make_shared<GridTexture2D>(sc, sc2, 30.0, 0.1))));
   }
 
-  scene.add(make_shared<Shape>(make_shared<Plane>(Vec3{0.0, 1.0, 0.0}, 2.0),
+  scene.add(make_shared<Shape>(make_shared<Plane>(Vec3{0.0, 1.0, 0.0}, sphere_radius),
                                make_shared<RoughColorMaterial>(0.0, spectrum{0.6})));
 
-  //auto env_light_tex = make_shared<Checkerboard2D>(spectrum{1.0}, spectrum{0.0}, 8, 8);
-  auto env_light_tex = make_shared<SolidColor>(spectrum{1.0});
+  auto env_light_tex = make_shared<Checkerboard2D>(spectrum{1.0}, spectrum{0.0}, 2, 1);
+  //auto env_light_tex = make_shared<SolidColor>(spectrum{1.0});
   scene.add(make_shared<EnvironmentalLight>(env_light_tex));
 
   const int num_lights = 0;
@@ -171,7 +173,7 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
     scene.add( make_shared<PointLight>(Vec3(pr*cos(angle), 2.0, pr*sin(angle)), spectrum{0.1}));
   }
 
-  auto cam_pos = Vec3{0, 0.0, 7.5};
+  auto cam_pos = Mat33::from_axis_angle(Vec3::y_axis, -PI/1.33) * Vec3{0, 2.0, 7.5};
   auto look_at = Vec3{0.0, 0.0, 0.0};
 
   return PerspectiveCamera(cam_pos, look_at, Vec3{0, 1, 0}, PI / 2.0, aspect_ratio);
@@ -213,12 +215,12 @@ int main(int argc, char** args)
   if (argc >= 5)
     opt.num_threads = atoi(args[4]);
   else
-    opt.num_threads = 1;
+    opt.num_threads = 0;
   opt.max_depth = 16;
 
-  // PathTracerIntegrator igr(opt);
+  PathTracerIntegrator igr(opt);
   // cerr << "Rendered " << igr.num_primary_rays_traced() << " rays.\n";
-  DebugIntegrator igr(DebugIntegrator::DI_NORMAL);
+  //DebugIntegrator igr(DebugIntegrator::DI_NORMAL);
 
   cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, "
        << per_pixel << " samples per pixel\n";
