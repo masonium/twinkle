@@ -16,9 +16,19 @@ Mat33 Mat33::operator*(const Mat33& rhs) const
     v[6] * rhs.row[0] + v[7] * rhs.row[1] + v[8] * rhs.row[2]);
 }
 
+Vec3 operator*(const Vec3& v, const Mat33& mat)
+{
+  return mat.tmul(v);
+}
+
 Vec3 Mat33::operator *(const Vec3& v) const
 {
   return Vec3{row[0].dot(v), row[1].dot(v), row[2].dot(v)};
+}
+
+Vec3 Mat33::tmul(const Vec3& v) const
+{
+  return row[0] * v[0] + row[1] * v[1] + row[2] * v[2];
 }
 
 scalar Mat33::trace() const

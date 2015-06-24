@@ -32,6 +32,7 @@ public:
   Mat33 operator -(const Mat33& rhs) const;
 
   Vec3 operator *(const Vec3& v) const;
+  Vec3 tmul(const Vec3& v) const;
 
   Mat33 operator *(const Mat33& m) const;
 
@@ -82,3 +83,5 @@ public:
 private:
   static Mat33 from_axis_angle(const Vec3& axis, scalar sa, scalar ca);
 };
+
+Vec3 operator*(const Vec3& v, const Mat33& mat);
