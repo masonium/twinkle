@@ -7,6 +7,7 @@
 class Transform
 {
 public:
+  Transform();
   Transform(Mat33 A_, Vec3 b_);
 
   Ray transform_ray(const Ray& r) const;
@@ -19,8 +20,12 @@ public:
   Vec3 inv_transform_direction(const Vec3& d) const;
   Vec3 inv_transform_normal(const Vec3& n) const;
 
+  Transform operator *(const Transform& rhs) const;
 
 private:
+  Transform(Mat33 A_, Vec3 b_, Mat33 Ainv_);
+
+
   Mat33 A, Ainv;
   Vec3 b;
 };

@@ -1,7 +1,16 @@
 #include "transform.h"
 
+Transform::Transform() : Transform(Mat33::identity, Vec3::zero)
+{
+}
+
 Transform::Transform(Mat33 A_, Vec3 b_)
   : A(A_), Ainv(A.inverse()), b(b_)
+{
+}
+
+Transform::Transform(Mat33 A_, Vec3 b_, Mat33 Ainv_)
+  : A(A_), Ainv(Ainv_), b(b_)
 {
 }
 
@@ -45,4 +54,9 @@ Vec3 Transform::inv_transform_direction(const Vec3& d) const
 Vec3 Transform::inv_transform_normal(const Vec3& n) const
 {
   return (n * A).normal();
+}
+
+Transform Transform::operator *(const Transform& rhs) const
+{
+  return Transform(A * rhs.A, A * rhs.b + b, rhs.Ainv * Ainv);
 }
