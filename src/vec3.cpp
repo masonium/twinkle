@@ -1,4 +1,5 @@
 #include "vec3.h"
+#include "mat33.h"
 #include "math_util.h"
 #include <vector>
 

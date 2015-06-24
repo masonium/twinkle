@@ -1,5 +1,6 @@
 #include "test_util.h"
 #include "math_util.h"
+#include "mat33.h"
 
 namespace
 {

@@ -3,6 +3,7 @@
 #include "ray.h"
 #include "spectrum.h"
 #include "sampler.h"
+#include "mat33.h"
 
 class Shape;
 class Geometry;

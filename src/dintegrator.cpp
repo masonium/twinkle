@@ -1,4 +1,5 @@
 #include "dintegrator.h"
+#include "mat33.h"
 #include <unordered_map>
 
 using std::make_pair;

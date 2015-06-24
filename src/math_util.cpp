@@ -1,5 +1,6 @@
 #include "math_util.h"
 #include "vec3.h"
+#include "mat33.h"
 #include "ray.h"
 
 scalar approx_gt(scalar x, scalar y)

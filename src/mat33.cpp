@@ -1,4 +1,5 @@
 #include "vec3.h"
+#include "mat33.h"
 
 scalar Mat33::det() const
 {
@@ -13,7 +14,11 @@ Mat33 Mat33::operator*(const Mat33& rhs) const
     v[0] * rhs.row[0] + v[1] * rhs.row[1] + v[2] * rhs.row[2],
     v[3] * rhs.row[0] + v[4] * rhs.row[1] + v[5] * rhs.row[2],
     v[6] * rhs.row[0] + v[7] * rhs.row[1] + v[8] * rhs.row[2]);
+}
 
+Vec3 Mat33::operator *(const Vec3& v) const
+{
+  return Vec3{row[0].dot(v), row[1].dot(v), row[2].dot(v)};
 }
 
 scalar Mat33::trace() const
