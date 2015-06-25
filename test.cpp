@@ -1,4 +1,4 @@
-#include "sphere.h"
+#include "shapes/sphere.h"
 #include "scene.h"
 #include "bsdf.h"
 #include "math_util.h"

@@ -5,16 +5,16 @@
 #include "integrator.h"
 #include "dintegrator.h"
 #include "scene.h"
-#include "sphere.h"
-#include "plane.h"
 #include "bsdf.h"
 #include "path_tracer.h"
 #include "util.h"
 #include "model.h"
-#include "mesh.h"
 #include "material.h"
-#include "kdmesh.h"
-#include "implicit.h"
+#include "shapes/kdmesh.h"
+#include "shapes/mesh.h"
+#include "shapes/sphere.h"
+#include "shapes/plane.h"
+#include "shapes/implicit.h"
 
 using std::cerr;
 using std::endl;

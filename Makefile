@@ -10,6 +10,7 @@ endif
 
 SRCS := $(wildcard src/*.cpp)
 -include tests/makefile
+-include src/shapes/Makefile
 
 OBJSTMP := $(SRCS:.cpp=.o)
 OBJS := $(OBJSTMP:src/%=obj/%)
@@ -73,7 +74,7 @@ test: test_twinkle
 	./test_twinkle
 
 clean:
-	rm -rf obj/*
+	rm -rf obj/*.dep obj/*.o obj/shapes/*.o obj/shapes/*.dep
 
 check-syntax:
 	$(CXX) $(SFLAGS) $(CHK_SOURCES)

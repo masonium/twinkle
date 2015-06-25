@@ -1,9 +1,10 @@
 #include <iostream>
 #include "model.h"
 #include "material.h"
-#include "sphere.h"
 #include "spectrum.h"
 #include "kdtree.h"
+#include "shapes/sphere.h"
+
 
 using namespace std;
 

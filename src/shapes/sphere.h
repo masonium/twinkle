@@ -16,7 +16,7 @@ public:
   Vec3 normal(const Vec3& point) const override;
 
   Vec3 sample_shadow_ray_dir(const Intersection& isect,
-                               scalar r1, scalar r2) const override;
+                             scalar r1, scalar r2) const override;
 
   bool is_differential() const override { return true; }
   

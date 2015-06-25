@@ -34,11 +34,6 @@ public:
     return material->emission(isect);
   }
   
-  // Vec3 sample_shadow_ray_dir(const Intersection& isect, scalar r1, scalar r2) const
-  // {
-  //   return geometry->sample_shadow_ray_dir(isect, r1, r2);
-  // }
-  
   shared_ptr<Intersectable> intersectable;
   shared_ptr<Material> material;
 };
