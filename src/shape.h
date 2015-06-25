@@ -14,14 +14,14 @@ class Intersection;
 class Shape
 {
 public:
-  Shape(shared_ptr<Intersectable> prim, shared_ptr<Material> mat)
-    : intersectable(prim), material(mat)
+  Shape(shared_ptr<Geometry> prim, shared_ptr<Material> mat)
+    : geometry(prim), material(mat)
   {
   }
   
-  scalar intersect(const Ray& r, scalar max_t, const Geometry*& geom) const
+  scalar intersect(const Ray& r, scalar max_t, SubGeo& subgeo) const
   {
-    return intersectable->intersect(r, max_t, geom);
+    return geometry->intersect(r, max_t, subgeo);
   }
 
   bool is_emissive() const
@@ -34,6 +34,6 @@ public:
     return material->emission(isect);
   }
   
-  shared_ptr<Intersectable> intersectable;
+  shared_ptr<Geometry> geometry;
   shared_ptr<Material> material;
 };

@@ -346,11 +346,8 @@ bounds::Sphere RawModel::bounding_sphere() const
   Vec3 mid = (p2 + p3) * 0.5;
 
   scalar radius = sqrt(accumulate(verts.begin(), verts.end(), (mid - p2).norm2(),
-                                  /* This could be generic/polymorphic, but only
-                                     in c++1y. */
-//                                  [&mid](scalar r2, const Vertex& v) {
-                                  [&mid](auto r2, auto&& v) {
-                                    return max(r2, (mid - v.position).norm2());
+                                  [&mid](scalar r2, const Vertex& v) {
+                                    return std::max(r2, (mid - v.position).norm2());
                                   }));
 
   return bounds::Sphere(mid, radius);

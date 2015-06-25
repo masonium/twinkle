@@ -327,7 +327,7 @@ namespace kd
   }
 
   template <typename T>
-  scalar Tree<T>::intersect(const Ray& ray, scalar max_t, Geometry const*& geom) const
+  scalar Tree<T>::intersect(const Ray& ray, scalar max_t, T& obj, SubGeo& geo) const
   {
     scalar t0, t1;
     if (!bound.intersect(ray, t0, t1))
@@ -358,20 +358,24 @@ namespace kd
       if (active->is_leaf())
       {
         scalar best_t = SCALAR_MAX, t;
-        Geometry const* best_geom = nullptr, *leaf_geom ;
+        T best_obj{nullptr};
+        SubGeo best_geo, leaf_geo;
+
         for (const auto& shape: active->shapes)
         {
-          t = shape->intersect(ray, best_t, leaf_geom);
+          t = shape->intersect(ray, best_t, leaf_geo);
           if (t > 0)
           {
             best_t = t;
-            best_geom = leaf_geom;
+            best_obj = shape;
+            best_geo = leaf_geo;
           }
         }
 
-        if (best_geom != nullptr)
+        if (best_obj != nullptr)
         {
-          geom = best_geom;
+          obj = best_obj;
+          geo = best_geo;
           return best_t;
         }
       }

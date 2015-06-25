@@ -18,11 +18,12 @@ scalar Sphere::intersect(const Ray& r) const
     return res;
 }
 
-Vec3 Sphere::normal(const Vec3& point) const
+Vec3 Sphere::normal(SubGeo geo, const Vec3& point) const
 {
   return (point - position).normal();
 }
 
+/*
 Vec3 Sphere::sample_shadow_ray_dir(const Intersection& isect,
                              scalar r1, scalar r2) const
 {
@@ -31,17 +32,15 @@ Vec3 Sphere::sample_shadow_ray_dir(const Intersection& isect,
   
   return move(Vec3::from_euler(theta, phi) * radius + position - isect.position);
 }
+*/
 
-void Sphere::texture_coord(const Vec3& pos, const Vec3& normal,
-                           scalar& u, scalar& v, Vec3& dpdu, Vec3& dpdv) const
+void Sphere::texture_coord(SubGeo geo, const Vec3& pos, const Vec3& normal,
+                           scalar& u, scalar& v) const
 {
   scalar theta, phi;
   normal.to_euler(theta, phi);
   v = phi / PI;
   u = theta / (2 * PI);
-  
-  dpdu = Vec3(-sin(theta), cos(theta), 0);
-  dpdv = normal.cross(dpdu);
 }
 
 bounds::AABB Sphere::get_bounding_box() const

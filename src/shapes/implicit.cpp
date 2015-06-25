@@ -13,15 +13,9 @@ ImplicitSurface::ImplicitSurface(ImplicitEvalFunc f_, ImplicitGradFunc g_,
 }
 
 
-Vec3 ImplicitSurface::normal(const Vec3& point) const
+Vec3 ImplicitSurface::normal(SubGeo subgeo, const Vec3& point) const
 {
   return g(point).normal();
-}
-
-Vec3 ImplicitSurface::sample_shadow_ray_dir(const Intersection& isect,
-                                            scalar r1, scalar r2) const
-{
-  return Vec3::zero;
 }
 
 
@@ -33,7 +27,7 @@ scalar ImplicitSurface::intersect(const Ray& r, scalar max_t) const
   if (max_t < t0 || t1 < 0)
     return -1;
 
-  t1 = min(max_t, t1);
+  t1 = std::min(max_t, t1);
 
   scalar t = 0;
 
@@ -45,7 +39,7 @@ scalar ImplicitSurface::intersect(const Ray& r, scalar max_t) const
 
   do
   {
-    scalar t_diff = max(dist, MIN_STEP) / (rdn * L);
+    scalar t_diff = std::max(dist, MIN_STEP) / (rdn * L);
     scalar new_t = t + t_diff;
     scalar new_dist = f(r.evaluate(new_t));
     if (fabs(new_dist) < MIN_STEP)

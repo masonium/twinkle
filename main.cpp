@@ -15,6 +15,7 @@
 #include "shapes/sphere.h"
 #include "shapes/plane.h"
 #include "shapes/implicit.h"
+#include "shapes/transformed.h"
 
 using std::cerr;
 using std::endl;
@@ -86,15 +87,15 @@ PerspectiveCamera model_scene(Scene& scene, scalar aspect_ratio)
   cerr << "Loaded model with " << m.verts.size() << " verts and " << m.tris.size() << " tris." << endl;
   //m.rescale(bounds::AABB(Vec3(-2, 0, -2), Vec3(2, 2, 2)));
 
+  //auto kdmesh = make_shared<Transformed>(make_shared<KDMesh>(m), Transform(Mat33::identity, Vec3{2.0, 0.0, 0.0}));
   auto kdmesh = make_shared<KDMesh>(m);
+
   // cerr << "Created kdmesh with " << kdmesh->kd_tree->count_leaves() << " leaves and "
   //      << kdmesh->kd_tree->count_objs() << " objects.\n";
 
-  // scene.add(make_shared<Shape>(mesh, make_shared<RoughColorMaterial>(0.0,
-  // spectrum{1.0, 0.5, 0.0})));
   auto rcm = make_shared<RoughColorMaterial>(0.0, spectrum{1.0, 0.5, 0.0});
   auto mirror = make_shared<MirrorMaterial>();
-  scene.add(make_shared<Shape>(kdmesh, mirror));
+  scene.add(make_shared<Shape>(kdmesh, rcm));
   
   auto green = make_shared<RoughColorMaterial>(0.0, spectrum{0.5, 1.0, 0.0});
   scene.add(make_shared<Shape>(make_shared<Plane>(Vec3::y_axis, 1.01), green));
@@ -102,7 +103,7 @@ PerspectiveCamera model_scene(Scene& scene, scalar aspect_ratio)
   auto check = make_shared<Checkerboard2D>(spectrum{1.0}, spectrum{0.0}, 2, 1);
   scene.add(make_shared<EnvironmentalLight>(check));
 
-  return PerspectiveCamera(Vec3{6.0, 3.0, 0.0}, Vec3::zero, Vec3::y_axis,
+  return PerspectiveCamera(Vec3{0.0, 3.0, 6.0}, Vec3::zero, Vec3::y_axis,
                            PI/2.0, aspect_ratio);
 }
 
@@ -164,15 +165,6 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
   //auto env_light_tex = make_shared<SolidColor>(spectrum{1.0});
   scene.add(make_shared<EnvironmentalLight>(env_light_tex));
 
-  const int num_lights = 0;
-
-  for (int i = 0; i < num_lights; ++i)
-  {
-    const scalar angle = 2 * PI * i / num_lights + PI/12;
-    const scalar pr = 4.0;
-    scene.add( make_shared<PointLight>(Vec3(pr*cos(angle), 2.0, pr*sin(angle)), spectrum{0.1}));
-  }
-
   auto cam_pos = Mat33::from_axis_angle(Vec3::y_axis, -PI/1.33) * Vec3{0, 2.0, 7.5};
   auto look_at = Vec3{0.0, 0.0, 0.0};
 
@@ -197,7 +189,7 @@ int main(int argc, char** args)
   }
 
   Scene scene;
-  PerspectiveCamera cam = default_scene(scene, scalar(WIDTH)/scalar(HEIGHT));
+  PerspectiveCamera cam = model_scene(scene, scalar(WIDTH)/scalar(HEIGHT));
 
   auto bf = make_shared<BoxFilter>();
   Film f(WIDTH, HEIGHT, bf.get());

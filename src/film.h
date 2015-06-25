@@ -100,8 +100,8 @@ private:
 
   uint index(uint x, uint y) const 
   {
-    assert(0 <= y && y < height);
-    assert(0 <= x && x < width);
+    assert(y < height);
+    assert(x < width);
     return y * width + x;
   }
   

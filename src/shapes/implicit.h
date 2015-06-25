@@ -15,9 +15,7 @@ class ImplicitSurface : public SimpleGeometry, public Bounded
 public:
   ImplicitSurface(ImplicitEvalFunc, ImplicitGradFunc, scalar lipschitz_const = 1);
 
-  Vec3 normal(const Vec3& point) const override;
-  Vec3 sample_shadow_ray_dir(const Intersection& isect,
-                             scalar r1, scalar r2) const override;
+  Vec3 normal(SubGeo geo, const Vec3& point) const override;
 
   scalar intersect(const Ray& r, scalar max_t = SCALAR_MAX) const override;
 

@@ -8,7 +8,7 @@ class KDMesh : public Mesh
 public:
   KDMesh(const RawModel& model);
 
-  scalar intersect(const Ray& r, scalar max_t, const Geometry*& geom) const override;
+  scalar intersect(const Ray& r, scalar max_t, SubGeo& geom) const override;
 
   virtual ~KDMesh() {}
 

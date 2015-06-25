@@ -13,29 +13,14 @@ MeshTri::MeshTri(const Mesh* m, const int v[3]) :
   copy(v, v+3, vi);
 }
 
-scalar MeshTri::intersect(const Ray& ray, scalar max_t) const
+scalar MeshTri::intersect(const Ray& ray, scalar max_t, SubGeo& geo) const
 {
   return ray_triangle_intersection(ray, _p(0), _p(1), _p(2), max_t);
 }
 
-Vec3 MeshTri::normal(const Vec3& point) const
+Vec3 MeshTri::normal(SubGeo geo, const Vec3& point) const
 {
   return n.normal();
-}
-
-Vec3 MeshTri::sample_shadow_ray_dir(const Intersection& isect,
-                                    scalar r1, scalar r2) const
-{
-  scalar sum = r1 + r2;
-  if (sum > 1.0)
-  {
-    scalar excess = sum - 1.0;
-    r1 -= excess;
-    r2 -= excess;
-  }
-
-  scalar r3 = 1 - r1 - r2;
-  return r1 * mesh->pos(vi[0]) + r2 * mesh->pos(vi[1]) + r3 * mesh->pos(vi[2]);
 }
 
 bounds::AABB MeshTri::get_bounding_box() const
@@ -44,14 +29,16 @@ bounds::AABB MeshTri::get_bounding_box() const
                       max(max(_p(0), _p(1)), _p(2)));
 }
 
+/*
 void MeshTri::texture_coord(const Vec3& pos, const Vec3& normal,
-                            scalar& u, scalar& v, Vec3& dpdu, Vec3& dpdv) const
+                            scalar& u, scalar& v) const
 {
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Mesh::Mesh(const RawModel& model) : is_differential(model.has_tex)
+Mesh::Mesh(const RawModel& model) : is_diff(model.has_tex)
 {
   verts.resize(model.verts.size());
   copy(model.verts.begin(), model.verts.end(), verts.begin());
@@ -61,21 +48,35 @@ Mesh::Mesh(const RawModel& model) : is_differential(model.has_tex)
   }
 }
 
-scalar Mesh::intersect(const Ray& r, scalar max_t, const Geometry*& geom) const
+scalar Mesh::intersect(const Ray& r, scalar max_t, SubGeo& subgeo) const
 {
   scalar best_t = numeric_limits<scalar>::max();
-  geom = nullptr;
-  for (const auto& tri: tris)
+  bool found_isect = false;
+  for (auto i = 0u; i < tris.size(); ++i)
   {
-    scalar t = tri.intersect(r, best_t);
+    auto& tri = tris[i];
+    scalar t = tri.intersect(r, best_t, subgeo);
     if (t > 0)
     {
+      found_isect = true;
       best_t = t;
-      geom = &tri;
+      subgeo = i;
     }
   }
-  return geom == nullptr ? -1 : best_t;
+  return found_isect ? best_t : -1;
 }
+
+Vec3 Mesh::normal(SubGeo subgeo, const Vec3& point) const
+{
+  return tris[subgeo].normal(subgeo, point);
+}
+
+void Mesh::texture_coord(SubGeo subgeo, const Vec3& pos, const Vec3& normal,
+                         scalar& u, scalar& v) const
+{
+  return tris[subgeo].texture_coord(subgeo, pos, normal, u, v);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -90,7 +91,12 @@ KDMesh::KDMesh(const RawModel& model) : Mesh(model)
   kd_tree = std::make_shared<tri_tree>(tri_addresses, opt);
 }
 
-scalar KDMesh::intersect(const Ray& r, scalar max_t, const Geometry*& geom) const
+scalar KDMesh::intersect(const Ray& r, scalar max_t, SubGeo& geo) const
 {
-  return kd_tree->intersect(r, max_t, geom);
+  MeshTri const* tri;
+  SubGeo dummy;
+  scalar t = kd_tree->intersect(r, max_t, tri, dummy);
+  if (t > 0)
+    geo = tri - &tris[0];
+  return t;
 }

@@ -7,24 +7,34 @@
 
 class MeshTri;
 
-class Mesh : public Intersectable
+class Mesh : public Geometry
 {
 public:
   Mesh(const RawModel& model);
 
-  virtual scalar intersect(const Ray& r, scalar max_t, const Geometry*& geom) const override;
+  virtual scalar intersect(const Ray& r, scalar max_t, SubGeo& geom) const override;
+
+  Vec3 normal(SubGeo, const Vec3& point) const override;
+
+  bool is_differential() const override
+  {
+    return is_diff;
+  }
+
+  void texture_coord(SubGeo, const Vec3& pos, const Vec3& normal,
+                     scalar& u, scalar& v) const override;
 
   const Vec3& pos(int i) const
   {
     return verts[i].position;
   }
 
-  const bool is_differential;
-
   virtual ~Mesh() { }
 
 protected:
   friend class MeshTri;
+  const bool is_diff;
+
   vector<Vertex> verts;
   vector<MeshTri> tris;
 };
@@ -34,20 +44,12 @@ class MeshTri : public SimpleGeometry, public Bounded
 public:
   MeshTri(const Mesh* m, const int v[3]);
 
-  using SimpleGeometry::intersect;
-  scalar intersect(const Ray& r, scalar max_t) const override;
+  scalar intersect(const Ray& r, scalar max_t, SubGeo& geo) const override;
 
-  Vec3 normal(const Vec3& point) const override;
-  Vec3 sample_shadow_ray_dir(const Intersection& isect,
-                             scalar r1, scalar r2) const override;
+  Vec3 normal(SubGeo, const Vec3& point) const override;
 
-  bool is_differential() const override
-  {
-    return mesh->is_differential;
-  }
-
-  void texture_coord(const Vec3& pos, const Vec3& normal,
-                     scalar& u, scalar& v, Vec3& dpdu, Vec3& dpdv) const override;
+  // void texture_coord(SubGeo, const Vec3& pos, const Vec3& normal,
+  //                    scalar& u, scalar& v) const override;
 
   bounds::AABB get_bounding_box() const;
 

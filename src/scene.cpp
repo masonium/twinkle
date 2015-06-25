@@ -39,13 +39,13 @@ Light const* Scene::sample_light(scalar r1, scalar& light_prob) const
 
 Intersection Scene::intersect(const Ray& ray) const
 {
-  shared_ptr<const Shape> best_shape;
-  Geometry const* best_geom = nullptr;
+  shared_ptr<const Shape> best_shape{nullptr};
+  SubGeo best_geom;
   scalar best_t = numeric_limits<double>::max();
 
   for (auto s: shapes)
   {
-    Geometry const* g = nullptr;
+    SubGeo g = -1;
     scalar t = s->intersect(ray, best_t, g);
     if (t > 0)
     {
@@ -56,7 +56,7 @@ Intersection Scene::intersect(const Ray& ray) const
   }
   if (best_shape != nullptr)
     return Intersection(best_shape.get(), best_geom, ray, best_t);
-  return Intersection(nullptr, nullptr, ray, -1);
+  return Intersection(nullptr, 0, ray, -1);
 }
 
 spectrum Scene::environment_light_emission(const Vec3& dir) const

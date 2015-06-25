@@ -39,7 +39,7 @@ namespace kd
 
     Tree(const vector<T>& objects, const TreeOptions& opt);
 
-    scalar intersect(const Ray& ray, scalar max_t, Geometry const*& geom) const;
+    scalar intersect(const Ray& ray, scalar max_t, T& geom, SubGeo& subgeo) const;
 
     int count_leaves() const
     {

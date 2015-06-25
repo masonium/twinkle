@@ -4,14 +4,14 @@
 #include "spectrum.h"
 #include "sampler.h"
 #include "mat33.h"
+#include "geometry.h"
 
 class Shape;
-class Geometry;
 
 class Intersection
 {
 public:
-  Intersection(const Shape* s, const Geometry* geom, const Ray& r, scalar t_);
+  Intersection(const Shape* s, const SubGeo subgeo, const Ray& r, scalar t_);
   operator bool() const;
   
   bool valid() const;
@@ -34,7 +34,7 @@ public:
   Vec3 dpdu, dpdv;
 
 private:
-  const Geometry* geometry;
+  const SubGeo subgeo;
   const Shape* shape;
   Mat33 to_z;
   Mat33 from_z;

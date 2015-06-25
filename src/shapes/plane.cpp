@@ -23,22 +23,14 @@ scalar Plane::intersect(const Ray& r) const
   return -(d + N.dot(r.position)) / s;
 }
 
-Vec3 Plane::normal(const Vec3& point) const
+Vec3 Plane::normal(SubGeo geo, const Vec3& point) const
 {
   return N;
 }
 
-Vec3 Plane::sample_shadow_ray_dir(const Intersection& isect,
-                                  scalar r1, scalar r2) const
-{
-  return Vec3::zero;
-}
-
-void Plane::texture_coord(const Vec3& pos, const Vec3& normal,
-                          scalar& u, scalar& v, Vec3& dpdu, Vec3& dpdv) const
+void Plane::texture_coord(SubGeo geo, const Vec3& pos, const Vec3& normal,
+                          scalar& u, scalar& v) const
 {
   u = pos.dot(U);
   v = pos.dot(V);
-  dpdu = U;
-  dpdv = V;
 }
