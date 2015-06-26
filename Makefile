@@ -1,4 +1,9 @@
-include header.mk
+CXX = g++
+CXX_VERSION = -std=c++1y
+COMMON_FLAGS = -Wall -Wextra -Wno-unused-parameter $(CXX_VERSION)
+SFLAGS =  -fsyntax-only $(COMMON_FLAGS)
+LFLAGS = -pthread -lm  -lUnitTest++ #-lc++
+CXXFLAGS = $(COMMON_FLAGS) -g -Isrc/ -Itests/ -Iextlib/
 
 # Used for debugging makefile
 #OLD_SHELL := $(SHELL)
@@ -18,9 +23,8 @@ OBJS := $(OBJS:tests/%=obj/%)
 
 DEPS := $(OBJS:.o=.dep)
 
-EXES = twinkle test_twinkle fresnel_test tonemap model_check
-
-CXX = g++
+EXE_NAMES = twinkle test_twinkle fresnel_test tonemap model_check
+EXES = $(addprefix bin/,$(EXE_NAMES))
 
 .PHONY: test clean
 
@@ -29,8 +33,8 @@ all: $(EXES)
 -include $(DEPS)
 
 obj/%.o: %.cpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS) $(LFLAGS)
-	$(CXX) -MM $(CXXFLAGS) $(LFLAGS) $< > obj/$*.dep
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
+	$(CXX) -MM $(CXXFLAGS) $< > obj/$*.dep
 	@mv -f obj/$*.dep obj/$*.dep.tmp
 	@sed -e 's|.*:|obj/$*.o:|' < obj/$*.dep.tmp > obj/$*.dep
 	@sed -e 's/.*://' -e 's/\\$$//' < obj/$*.dep.tmp | fmt -1 | \
@@ -38,8 +42,8 @@ obj/%.o: %.cpp
 	@rm -f obj/$*.dep.tmp
 
 obj/%.o: src/%.cpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS) $(LFLAGS)
-	$(CXX) -MM $(CXXFLAGS) $(LFLAGS) $< > obj/$*.dep
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
+	$(CXX) -MM $(CXXFLAGS) $< > obj/$*.dep
 	@mv -f obj/$*.dep obj/$*.dep.tmp
 	@sed -e 's|.*:|obj/$*.o:|' < obj/$*.dep.tmp > obj/$*.dep
 	@sed -e 's/.*://' -e 's/\\$$//' < obj/$*.dep.tmp | fmt -1 | \
@@ -47,34 +51,34 @@ obj/%.o: src/%.cpp
 	@rm -f obj/$*.dep.tmp
 
 obj/%.o: tests/%.cpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS) $(LFLAGS)
-	$(CXX) -MM $(CXXFLAGS) $(LFLAGS) $< > obj/$*.dep
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
+	$(CXX) -MM $(CXXFLAGS) $< > obj/$*.dep
 	@mv -f obj/$*.dep obj/$*.dep.tmp
 	@sed -e 's|.*:|obj/$*.o:|' < obj/$*.dep.tmp > obj/$*.dep
 	@sed -e 's/.*://' -e 's/\\$$//' < obj/$*.dep.tmp | fmt -1 | \
 	  sed -e 's/^ *//' -e 's/$$/:/' >> obj/$*.dep
 	@rm -f obj/$*.dep.tmp
 
-twinkle: $(OBJS) obj/main.o
+bin/twinkle: $(OBJS) obj/main.o
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
-tonemap: $(OBJS) obj/tonemap_main.o
+bin/tonemap: $(OBJS) obj/tonemap_main.o
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
-test_twinkle: $(OBJS) $(TESTOBJS) obj/test.o
+bin/test_twinkle: $(OBJS) $(TESTOBJS) obj/test.o
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
-fresnel_test: $(OBJS) obj/fresnel_test.o
+bin/fresnel_test: $(OBJS) obj/fresnel_test.o
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
-model_check: $(OBJS) obj/model_check.o
+bin/model_check: $(OBJS) obj/model_check.o
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
-test: test_twinkle
-	./test_twinkle
+test: bin/test_twinkle
+	bin/test_twinkle
 
 clean:
-	rm -rf obj/*.dep obj/*.o obj/shapes/*.o obj/shapes/*.dep
+	rm -rf obj/*.dep obj/*.o obj/shapes/*.o obj/shapes/*.dep bin/*
 
 check-syntax:
 	$(CXX) $(SFLAGS) $(CHK_SOURCES)
