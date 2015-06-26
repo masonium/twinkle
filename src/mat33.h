@@ -84,4 +84,6 @@ private:
   static Mat33 from_axis_angle(const Vec3& axis, scalar sa, scalar ca);
 };
 
+Mat33 operator*(scalar f, const Mat33& mat);
+
 Vec3 operator*(const Vec3& v, const Mat33& mat);

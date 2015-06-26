@@ -93,7 +93,7 @@ KDMesh::KDMesh(const RawModel& model) : Mesh(model)
 
 scalar KDMesh::intersect(const Ray& r, scalar max_t, SubGeo& geo) const
 {
-  MeshTri const* tri;
+  MeshTri const* tri = nullptr;
   SubGeo dummy;
   scalar t = kd_tree->intersect(r, max_t, tri, dummy);
   if (t > 0)

@@ -359,7 +359,7 @@ namespace kd
       {
         scalar best_t = SCALAR_MAX, t;
         T best_obj{nullptr};
-        SubGeo best_geo, leaf_geo;
+        SubGeo best_geo, leaf_geo = 0;
 
         for (const auto& shape: active->shapes)
         {

@@ -8,6 +8,11 @@ scalar Mat33::det() const
     + v[2] * (v[3]*v[7] - v[4]*v[6]);
 }
 
+Mat33 operator*(scalar f, const Mat33& mat)
+{
+  return mat * f;
+}
+
 Mat33 Mat33::operator*(const Mat33& rhs) const
 {
   return Mat33(

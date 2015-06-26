@@ -141,8 +141,8 @@ bool lexographic_compare(const VectorT3<vec_type>& a, const VectorT3<vec_type>& 
   return a.z < b.z;
 }
 
-template<typename vec_type>
-vec_type operator *(scalar f, const vec_type& vec)
+template <typename vec_type>
+vec_type operator *(scalar f, const VectorT3<vec_type>& vec)
 {
   return vec * f;
 }
