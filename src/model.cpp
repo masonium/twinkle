@@ -213,7 +213,7 @@ RawModelLoadStatus RawModel::load_stl_model(string filename)
       Vec3 v;
       ss >> v;
       vertex_list.push_back(v);
-      ref_list.emplace_back(vertex_ref{(int)ref_list.size(), -1, -1});
+      ref_list.emplace_back(vertex_ref{static_cast<int>(ref_list.size()), -1, -1});
     }
     else if (line_type == "endloop")
     {
