@@ -41,7 +41,32 @@ public:
     return s;
   }
 
+  Sample2D sample_2d()
+  {
+    Sample2D s;
+    sample_2d(s[0], s[1]);
+    return s;
+  }
+
   virtual ~Sampler() { }
+};
+
+class ConstSampler : public Sampler
+{
+public:
+  ConstSampler(scalar a = 0, scalar b = 0, scalar c = 0, scalar d = 0, scalar e = 0);
+
+  using Sampler::sample_2d;
+  scalar sample_1d(void) override;
+
+  void sample_2d(scalar& r1, scalar& r2);
+  void sample_4d(scalar& r1, scalar& r2, scalar& r3, scalar& r4) override;
+
+  using Sampler::sample_5d;
+  void sample_5d(scalar& r1, scalar& r2, scalar& r3, scalar& r4, scalar& r5) override;
+
+private:
+  Sample5D base;
 };
 
 class UniformSampler : public Sampler
@@ -50,17 +75,12 @@ public:
   UniformSampler();
   void seed(int seed_value);
 
+  using Sampler::sample_2d;
   scalar sample_1d(void) override;
-  Sample2D sample_2d()
-  {
-    Sample2D s;
-    sample_2d(s.u[0], s.u[1]);
-    return s;
-  }
 
   void sample_2d(scalar& r1, scalar& r2);
   void sample_4d(scalar& r1, scalar& r2, scalar& r3, scalar& r4) override;
-  
+
   using Sampler::sample_5d;
   void sample_5d(scalar& r1, scalar& r2, scalar& r3, scalar& r4, scalar& r5) override;
 
