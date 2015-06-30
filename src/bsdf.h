@@ -10,7 +10,7 @@ class BRDF
 public:
   virtual scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const = 0;
 
-  virtual Vec3 sample(const Vec3& incoming, const Sample2D& sample,
+  virtual Vec3 sample(const Vec3& incoming, Sampler& sampler,
                       scalar& p, scalar& reflectance) const = 0;
   virtual bool is_emissive() const
   {
@@ -38,7 +38,7 @@ public:
     return r;
   }
 
-  Vec3 sample(const Vec3& incoming, const Sample2D& s,
+  Vec3 sample(const Vec3& incoming, Sampler& s,
               scalar& p, scalar& reflectance) const override;
 
   scalar r;
@@ -50,7 +50,7 @@ public:
   OrenNayar(scalar refl, scalar roughness);
   scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const override;
   
-  Vec3 sample(const Vec3& incoming, const Sample2D& s,
+  Vec3 sample(const Vec3& incoming, Sampler& s,
               scalar& p, scalar& reflectance) const override;
   
 private:
@@ -70,7 +70,7 @@ public:
     return 0.0;
   }
 
-  Vec3 sample(const Vec3& incoming, const Sample2D& s,
+  Vec3 sample(const Vec3& incoming, Sampler& s,
               scalar& p, scalar& reflectance) const override
   {
     p = 1.0;

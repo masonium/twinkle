@@ -17,7 +17,7 @@ public:
     return 0;
   };
   
-  virtual Vec3 sample_bsdf(const Vec3& incoming, const Sample2D& sample,
+  virtual Vec3 sample_bsdf(const Vec3& incoming, Sampler& sampler,
                            scalar& p, scalar& reflectance) const
   {
     p = 0;
@@ -50,7 +50,7 @@ public:
 
   scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const override;
   
-  Vec3 sample_bsdf(const Vec3& incoming, const Sample2D& sample,
+  Vec3 sample_bsdf(const Vec3& incoming, Sampler& sampler,
                    scalar& p, scalar& reflectance) const override;
 
   spectrum texture_at_point(const Intersection& isect) const override;
@@ -76,7 +76,7 @@ public:
   }
   scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const override;
   
-  Vec3 sample_bsdf(const Vec3& incoming, const Sample2D& sample,
+  Vec3 sample_bsdf(const Vec3& incoming, Sampler& sampler,
                    scalar& p, scalar& reflectance) const override;
 
   spectrum texture_at_point(const Intersection& isect) const override;
@@ -93,7 +93,7 @@ public:
 
   scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const override;
 
-  Vec3 sample_bsdf(const Vec3& incoming, const Sample2D& sample,
+  Vec3 sample_bsdf(const Vec3& incoming, Sampler& sampler,
                    scalar& p, scalar& reflectance) const override;
 
   spectrum texture_at_point(const Intersection& isect) const override;

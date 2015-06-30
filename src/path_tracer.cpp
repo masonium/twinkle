@@ -91,7 +91,7 @@ void PathTracerIntegrator::render(const Camera* cam, const Scene* scene, Film& f
 }
 
 spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
-                                         shared_ptr<UniformSampler> sampler, int depth) const
+                                         Sampler& sampler, int depth) const
 {
   ++rays_traced;
   if (depth == 1)
@@ -107,14 +107,13 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
   // direct lighting: randomly choose a light or emissive shape, and contribute
   // the light from that shape if appropriate
   scalar light_prob;
-  const Light* light = scene->sample_light(sampler->sample_1d(), light_prob);
+  const Light* light = scene->sample_light(sampler.sample_1d(), light_prob);
 
   spectrum total{0};
 
   if (light_prob > 0)
   {
-    Sample2D light_s = sampler->sample_2d();
-    LightSample ls = light->sample_emission(isect, light_s[0], light_s[1]);
+    LightSample ls = light->sample_emission(isect, sampler);
 
     if (ls)
     {
@@ -137,7 +136,7 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
     continue_trace = false;
   else if (opt.russian_roulette && depth >= opt.min_rr_depth)
   {
-    if (sampler->sample_1d() < opt.rr_kill_prob)
+    if (sampler.sample_1d() < opt.rr_kill_prob)
     {
       continue_trace = false;
     }
@@ -150,9 +149,8 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
   if (continue_trace)
   {
     scalar brdf_p = 0;
-    auto brdf_u = sampler->sample_2d();
     scalar brdf_reflectance;
-    Vec3 brdf_dir = isect.sample_bsdf(ray_dir_origin, brdf_u,
+    Vec3 brdf_dir = isect.sample_bsdf(ray_dir_origin, sampler,
                                       brdf_p, brdf_reflectance);
 
     scalar nl = fabs(brdf_dir.dot(isect.normal));
@@ -193,14 +191,12 @@ void PathTracerIntegrator::render_thread(TaskQueue& queue, const Camera* cam,
       {
         for (uint d = 0; d < task.samples_per_pixel; ++d)
         {
-          auto sample = sampler->sample_5d();
-          
           int px = x + task.rect.x;
           int py = y + task.rect.y;
           
-          PixelSample ps = cam->sample_pixel(*film, px, py, sample);
+          PixelSample ps = cam->sample_pixel(*film, px, py, *sampler);
           
-          spectrum s = trace_ray(scene, ps.ray, sampler, 1);
+          spectrum s = trace_ray(scene, ps.ray, *sampler, 1);
 
           film->add_sample(ps, s);
         }

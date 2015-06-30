@@ -14,7 +14,7 @@ using std::ostream;
 class Camera
 {
 public:
-  virtual PixelSample sample_pixel(const Film& f, int x, int y, const Sample5D&) const = 0;
+  virtual PixelSample sample_pixel(const Film& f, int x, int y, Sampler& sampler) const = 0;
 
   virtual ~Camera() { }
 };
@@ -26,7 +26,7 @@ public:
          scalar fov_, scalar aspect_,
          scalar aperture_radius_ = 0.0, scalar f = 1.0);
   
-  PixelSample sample_pixel(const Film& f, int x, int y, const Sample5D&) const override;
+  PixelSample sample_pixel(const Film& f, int x, int y, Sampler& sampler) const override;
 
   Vec3 position;
   Vec3 aspect_forward;

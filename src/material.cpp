@@ -20,10 +20,10 @@ scalar RoughMaterial::reflectance(const Vec3& incoming, const Vec3& outgoing) co
   return brdf->reflectance(incoming, outgoing);
 }
 
-Vec3 RoughMaterial::sample_bsdf(const Vec3& incoming, const Sample2D& sample,
+Vec3 RoughMaterial::sample_bsdf(const Vec3& incoming, Sampler& sampler,
                                 scalar& p, scalar& reflectance) const
 {
-  return brdf->sample(incoming, sample, p, reflectance);
+  return brdf->sample(incoming, sampler, p, reflectance);
 }
 
 spectrum RoughMaterial::texture_at_point(const Intersection& isect) const
@@ -46,10 +46,10 @@ scalar MirrorMaterial::reflectance(const Vec3& incoming, const Vec3& outgoing) c
   return 0.0;
 }
 
-Vec3 MirrorMaterial::sample_bsdf(const Vec3& incoming, const Sample2D& sample,
+Vec3 MirrorMaterial::sample_bsdf(const Vec3& incoming, Sampler& sampler,
                                 scalar& p, scalar& reflectance) const
 {
-  return brdf->sample(incoming, sample, p, reflectance);
+  return brdf->sample(incoming, sampler, p, reflectance);
 }
 
 spectrum MirrorMaterial::texture_at_point(const Intersection& isect) const
@@ -70,7 +70,7 @@ scalar GlassMaterial::reflectance(const Vec3& incoming, const Vec3& outgoing) co
   return 0.0;
 }
 
-Vec3 GlassMaterial::sample_bsdf(const Vec3& incoming, const Sample2D& sample,
+Vec3 GlassMaterial::sample_bsdf(const Vec3& incoming, Sampler& sampler,
                                 scalar& p, scalar& reflectance) const
 {
   scalar n1 = nr_outside;
@@ -82,7 +82,8 @@ Vec3 GlassMaterial::sample_bsdf(const Vec3& incoming, const Sample2D& sample,
     normal *= -1;
   }
   scalar frpdf = fresnel_reflectance(incoming, normal, n1, n2);
-  scalar samp = sample[0];
+  scalar samp = sampler.sample_1d();
+
   if (samp < frpdf)
   {
     // reflect

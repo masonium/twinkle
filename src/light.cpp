@@ -32,7 +32,7 @@ bool LightSample::is_occluded(const Scene* scene) const
 
 
 LightSample PointLight::sample_emission(const Intersection& isect,
-                                        scalar r1, scalar r2) const
+                                        Sampler& sampler) const
 {
   // inverse-squared falloff
   const auto d = position - isect.position;
@@ -42,7 +42,7 @@ LightSample PointLight::sample_emission(const Intersection& isect,
 }
 
 LightSample DirectionalLight::sample_emission(const Intersection& isect,
-                                              scalar r1, scalar r2) const
+                                              Sampler& sampler) const
 {
   if (isect.normal.dot(direction) < 0)
     return LightSample();

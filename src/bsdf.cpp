@@ -3,9 +3,10 @@
 #include "sampler.h"
 
 Vec3 Lambertian::sample(const Vec3& incoming, 
-                        const Sample2D& sample, scalar& p,
+                        Sampler& sampler, scalar& p,
                         scalar& reflectance) const
 {
+  auto sample = sampler.sample_2d();
   Vec3 wo = cosine_weighted_hemisphere_sample(sample);
 
   p = wo.z / PI;
@@ -24,9 +25,10 @@ OrenNayar::OrenNayar(scalar refl, scalar rough) :
 }
 
 Vec3 OrenNayar::sample(const Vec3& incoming,
-                       const Sample2D& sample, scalar& p,
+                       Sampler& sampler, scalar& p,
                        scalar& reflectance) const
 {
+  auto sample = sampler.sample_2d();
   Vec3 wo = cosine_weighted_hemisphere_sample(sample);
 
   p = wo.z / PI;

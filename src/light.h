@@ -41,7 +41,7 @@ private:
 class Light
 {
 public:
-  virtual LightSample sample_emission(const Intersection& isect, scalar r1, scalar r2) const = 0;
+  virtual LightSample sample_emission(const Intersection& isect, Sampler&) const = 0;
 
   virtual ~Light() { }
 };
@@ -54,7 +54,7 @@ public:
   {
   }
 
-  LightSample sample_emission(const Intersection& isect, scalar r1, scalar r2) const override;
+  LightSample sample_emission(const Intersection& isect, Sampler&) const override;
 
 private:
   Vec3 direction; // source of the light
@@ -68,7 +68,7 @@ public:
   {
   }
 
-  LightSample sample_emission(const Intersection& isect, scalar r1, scalar r2) const override;
+  LightSample sample_emission(const Intersection& isect, Sampler&) const override;
 
 private:
   Vec3 position;

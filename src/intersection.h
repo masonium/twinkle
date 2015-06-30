@@ -19,7 +19,7 @@ public:
   scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const;
   
   spectrum texture_at_point() const;
-  Vec3 sample_bsdf(const Vec3& incoming, const Sample2D& sample,
+  Vec3 sample_bsdf(const Vec3& incoming, Sampler& sampler,
                    scalar& p, scalar& reflectance) const;
 
   bool is_emissive() const;

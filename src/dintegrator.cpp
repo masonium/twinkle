@@ -16,12 +16,13 @@ DebugIntegrator::DebugIntegrator(DebugIntegrator::Type t) : type(t)
 void DebugIntegrator::render(const Camera* cam, const Scene* scene, Film& film)
 {
   ShapeColorMap scm;
+  ConstSampler sampler(0.5, 0.5);
 
   for (uint y = 0; y < film.height; ++y)
   {
     for (uint x = 0; x < film.width; ++x)
     {
-      PixelSample ps = cam->sample_pixel(film, x, y, Sample5D{{0.5, 0.5, 0, 0, 0}});
+      PixelSample ps = cam->sample_pixel(film, x, y, sampler);
 
       spectrum s = trace_ray(ps.ray, scene, scm);
       film.add_sample(ps, s);
@@ -67,7 +68,8 @@ spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene* scene, ShapeCol
       return spectrum::zero;
 
     scalar brdf_p, reflectance;
-    auto dir = isect.sample_bsdf(-ray.direction.normal(), Sample2D{1.0, 0}, brdf_p, reflectance);
+    ConstSampler s{1.0, 0.0};
+    auto dir = isect.sample_bsdf(-ray.direction.normal(), s, brdf_p, reflectance);
     return dir_to_spectrum(dir);
   }
 

@@ -11,20 +11,22 @@ PerspectiveCamera::PerspectiveCamera(Vec3 pos, Vec3 lookat_, Vec3 up_,
   aspect_forward = forward.normal() * 0.5 / tan(fov_ / 2); 
 }
 
-PixelSample PerspectiveCamera::sample_pixel(const Film& f, int x, int y, const Sample5D& samp) const
+PixelSample PerspectiveCamera::sample_pixel(const Film& f, int x, int y, Sampler& sampler) const
 {
+  auto pixel_samp = sampler.sample_2d();
   const scalar dw = 1.0 / f.width, dh = 1.0 / f.height;
-  const scalar fx = (x + samp[0]) * dw - 0.5, fy = (y + samp[1]) * dh - 0.5;
+  const scalar fx = (x + pixel_samp[0]) * dw - 0.5, fy = (y + pixel_samp[1]) * dh - 0.5;
 
   Ray r{ position, up * fy + right * fx * aspect + aspect_forward };
   
   if (aperture > 0)
   {
+    auto lens_samp = sampler.sample_2d();
     r.normalize();
     auto focal_pos = r.evaluate(focal_length);
 
-    const scalar lens_angle = 2 * PI * samp[3];
-    const scalar lens_radius = aperture * sqrt( samp[4] );
+    const scalar lens_angle = 2 * PI * lens_samp[0];
+    const scalar lens_radius = aperture * sqrt(lens_samp[1]);
 
     auto new_origin = position + right * lens_radius * cos(lens_angle) +
       up * lens_radius * sin(lens_angle);

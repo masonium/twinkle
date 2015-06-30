@@ -42,7 +42,7 @@ public:
 
   void render(const Camera* cam, const Scene* scene, Film& film) override;
   spectrum trace_ray(const Scene* scene, const Ray& r,
-                     shared_ptr<UniformSampler> sampler, int depth) const;
+                     Sampler& sampler, int depth) const;
 
   long num_rays_traced() const { return rays_traced; }
   long num_primary_rays_traced() const { return primary_rays_traced; }

@@ -36,11 +36,11 @@ spectrum Intersection::texture_at_point() const
   return shape->material->texture_at_point(*this);
 }
 
-Vec3 Intersection::sample_bsdf(const Vec3& incoming, const Sample2D& sample,
+Vec3 Intersection::sample_bsdf(const Vec3& incoming, Sampler& sampler,
                                scalar& p, scalar& reflectance) const
 {
   auto local_incoming = to_z * incoming;
-  auto local_outgoing = shape->material->sample_bsdf(local_incoming, sample, p, reflectance);
+  auto local_outgoing = shape->material->sample_bsdf(local_incoming, sampler, p, reflectance);
   auto outgoing = from_z * local_outgoing;
   return outgoing;
 }
