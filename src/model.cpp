@@ -1,4 +1,3 @@
-#include "model.h"
 #include <fstream>
 #include <vector>
 #include <cstring>
@@ -8,6 +7,7 @@
 #include <algorithm>
 #include <limits>
 #include "util.h"
+#include "model.h"
 
 using std::transform;
 using std::ifstream;
@@ -20,11 +20,6 @@ using std::pair;
 
 namespace RawModelLoad
 {
-  struct tex_coord
-  {
-    scalar u, v;
-  };
-
   struct tri_ref
   {
     int v[3];
@@ -65,6 +60,23 @@ using namespace RawModelLoad;
 
 vertex_ref parse_obj_vertex_ref(string token);
 
+RawModelLoadStatus RawModel::load_raw_model(const vector<Vertex>& verts,
+                                            const vector<Triangle>& tris, 
+                                            bool has_normal, bool has_tex)
+{
+  this->verts.clear();
+  copy(verts.begin(), verts.end(), std::inserter(this->verts, this->verts.end()));
+
+  this->tris.clear();
+  copy(tris.begin(), tris.end(), std::inserter(this->tris, this->tris.end()));
+
+  if (!has_normal)
+    compute_normals();
+
+  this->has_tex = has_tex;
+  return RawModelLoadStatus{.success=true, .has_normals=true, .has_tex=has_tex};
+}
+
 RawModelLoadStatus RawModel::load_obj_model(string filename)
 {
   RawModelLoadStatus mls;
@@ -79,7 +91,7 @@ RawModelLoadStatus RawModel::load_obj_model(string filename)
 
   vector<Vec3> vertex_list;
   vector<Vec3> normal_list;
-  vector<tex_coord> tc_list;
+  vector<Vec2> tc_list;
   vector<vertex_ref> ref_list;
   vector<tri_ref> tri_list;
 
@@ -122,8 +134,8 @@ RawModelLoadStatus RawModel::load_obj_model(string filename)
     }
     else if (line_type == "vt")
     {
-      tex_coord tc;
-      ss >> tc.u >> tc.v;
+      Vec2 tc;
+      ss >> tc.x >> tc.y;
       tc_list.push_back(tc);
     }
     else if (line_type == "f")
@@ -179,7 +191,7 @@ RawModelLoadStatus RawModel::load_stl_model(string filename)
 
   vector<Vec3> vertex_list;
   vector<Vec3> normal_list;
-  vector<tex_coord> tc_list;
+  vector<Vec2> tc_list;
   vector<vertex_ref> ref_list;
   vector<tri_ref> tri_list;
 
@@ -248,7 +260,7 @@ RawModelLoadStatus RawModel::load_stl_model(string filename)
 }
 
 RawModelLoadStatus RawModel::load_from_parts(const vector<Vec3>& vertex_list, const vector<Vec3>& normal_list,
-					     const vector<tex_coord>& tc_list, const vector<vertex_ref>& vertex_ref_list,
+					     const vector<Vec2>& tc_list, const vector<vertex_ref>& vertex_ref_list,
 					     const vector<tri_ref>& tri_list)
 {
   clear();
@@ -277,8 +289,8 @@ RawModelLoadStatus RawModel::load_from_parts(const vector<Vec3>& vertex_list, co
 	v.position = vertex_list[vr.p];
 	if (vr.t >= 0)
 	{
-	  v.u = tc_list[vr.t].u;
-	  v.v = tc_list[vr.t].v;
+	  v.u = tc_list[vr.t].x;
+	  v.v = tc_list[vr.t].y;
 	}
 	if (vr.n >= 0)
 	{

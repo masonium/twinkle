@@ -1,9 +1,10 @@
 #pragma once
 
-#include "geometry.h"
-#include "vec3.h"
 #include <string>
 #include <vector>
+#include "geometry.h"
+#include "vec3.h"
+#include "vec2.h"
 #include "bounds.h"
 
 using std::string;
@@ -11,7 +12,6 @@ using std::vector;
 
 namespace RawModelLoad
 {
-  struct tex_coord;
   struct tri_ref;
   struct vertex_ref;
 }
@@ -43,6 +43,9 @@ class RawModel
 public:
   RawModel();
 
+  RawModelLoadStatus load_raw_model(const vector<Vertex>& verts,
+                                    const vector<Triangle>& tris,
+                                    bool has_normal, bool has_tex);
   RawModelLoadStatus load_obj_model(string filename);
   RawModelLoadStatus load_stl_model(string filename);
 
@@ -68,7 +71,7 @@ private:
   void clear();
 
   RawModelLoadStatus load_from_parts(const vector<Vec3>& vertex_list, const vector<Vec3>& normal_list,
-                                     const vector<RawModelLoad::tex_coord>& tc_list,
+                                     const vector<Vec2>& tc_list,
                                      const vector<RawModelLoad::vertex_ref>& vertex_ref_list,
                                      const vector<RawModelLoad::tri_ref>& tri_list);
 };
