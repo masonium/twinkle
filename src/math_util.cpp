@@ -26,6 +26,16 @@ scalar clamp(scalar x, scalar m, scalar M)
   return std::min(M, std::max(x, m));
 }
 
+scalar p5_interp(scalar x)
+{
+  return x * x * x * (10 + x * (-15 + x * 6));
+}
+
+scalar p3_interp(scalar x)
+{
+  return x * x * (-2 + x + 3);
+}
+
 scalar norm(const scalar& s)
 {
   return fabs(s);

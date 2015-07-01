@@ -25,20 +25,27 @@ int main(int argc, char** args)
 
   Ray r(Vec3::zero, Vec3::zero);
 
-  scalar freq = 16;
+  scalar freq = 8;
 
   scalar min = 5, max = -5;
   for (int y = 0; y < height; ++y)
   {
     for (int x = 0; x < width; ++x)
     {
-      scalar p = pn->noise(x * freq / width, y * freq / height );
-      p += pn->noise(x * 2.0 * freq / width, y * 2.0 * freq / height ) * 0.5;
-      p += pn->noise(x * 4.0 * freq / width, y * 4.0 * freq / height ) * 0.25;
+      scalar z = 0.2;
+      scalar p = pn->noise(x * freq / width, y * freq / height, z );
+      p += pn->noise(x * 2.0 * freq / width, y * 2.0 * freq / height, z ) * 0.5;
+      p += pn->noise(x * 4.0 * freq / width, y * 4.0 * freq / height, z ) * 0.25;
+      p += pn->noise(x * 8.0 * freq / width, y * 8.0 * freq / height, z ) * 0.125;
 
-      auto s = (p > 0) ? spectrum{1.0, 0.0, 0.0} : spectrum{0.0, 0.0, 1.0};
+      p = p * 0.5 + 0.5;
+      spectrum s;
+      if (p < 0.5)
+        s = lerp(spectrum{0.8, 0.2, 0.2}, spectrum{0.0}, p*2.0);
+      else
+        s = lerp(spectrum{0.0}, spectrum{0.2, 0.1, 0.9}, (p-0.5)*2.0);
 
-      f.add_sample(PixelSample(x, y, 0.5, 0.5, r), s);
+      f.add_sample(PixelSample(x, y, 0.5, 0.5, r), s);//spectrum{static_cast<scalar>((p + 1.0) * 0.5)});
       if (min > p)
         min = p;
       if (max < p)

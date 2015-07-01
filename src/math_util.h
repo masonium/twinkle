@@ -44,6 +44,9 @@ T lerp(const T& a, const T& b, scalar x)
   return a + (b-a) * x;
 }
 
+scalar p3_interp(scalar x);
+scalar p5_interp(scalar x);
+
 scalar clamp(scalar x, scalar m, scalar M);
 
 /***
