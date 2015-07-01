@@ -23,7 +23,7 @@ OBJS := $(OBJS:tests/%=obj/%)
 
 DEPS := $(OBJS:.o=.dep)
 
-EXE_NAMES = twinkle test_twinkle fresnel_test tonemap model_check
+EXE_NAMES = twinkle test_twinkle fresnel_test tonemap model_check texture_check
 EXES = $(addprefix bin/,$(EXE_NAMES))
 
 .PHONY: test clean
@@ -72,6 +72,9 @@ bin/fresnel_test: $(OBJS) obj/fresnel_test.o
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
 bin/model_check: $(OBJS) obj/model_check.o
+	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
+
+bin/texture_check: $(OBJS) obj/texture_check.o
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
 test: bin/test_twinkle
