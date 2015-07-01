@@ -9,6 +9,12 @@ struct BDPTOptions
   scalar power_heuristic_power;
 };
 
+enum PVTag
+{
+  PV_INTERSECTION = 0,
+  PV_EYE,
+  PV_ENV
+};
 
 
 class BidirectionalPathTracer : public Integrator
@@ -21,10 +27,10 @@ public:
 
   struct PathVertex
   {
-    union
-    {
-      Intersection isect;
-    };
+    PathVertex(Vec3 v, PVTag pvt) : vec(v), pv_tag(pvt) {}
+
+    Vec3 vec;
+    PVTag pv_tag;
   };
 
   BidirectionalPathTracer(const BDPTOptions&);
@@ -36,9 +42,10 @@ public:
 private:
   spectrum sample_pixel(Sampler& sampler);
 
-  void construct_light_path(Sampler& sampler, vector<PathVertex>& verts);
-  void construct_eye_path(Sampler& sampler, const Camera* cam,
-                          const Scene* scene,vector<PathVertex>& verts);
+  void construct_light_path(Sampler& sampler, const Scene* scene, vector<PathVertex>& verts);
+  void construct_eye_path(const Film& film, int x, int y,
+                          Sampler& sampler, const Camera* cam,
+                          const Scene* scene, vector<PathVertex>& verts);
 
   BDPTOptions opt;
 };
