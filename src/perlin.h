@@ -42,3 +42,14 @@ private:
     return vec.x * u + vec.y * v + vec.z * w;
   }
 };
+
+
+scalar sym_fbm_1d(shared_ptr<PerlinNoise> noise,
+                  scalar x,
+                  scalar freq, scalar octaves,
+                  scalar lacunarity = 2.0, scalar persistence = 0.5);
+
+scalar sym_fbm_2d(shared_ptr<PerlinNoise> noise,
+                  scalar x, scalar y,
+                  scalar freq, scalar octaves,
+                  scalar lacunarity = 2.0, scalar persistence = 0.5);

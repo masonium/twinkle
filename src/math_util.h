@@ -44,8 +44,22 @@ T lerp(const T& a, const T& b, scalar x)
   return a + (b-a) * x;
 }
 
+/**
+ * Maps from [0, 1] to [0,1], using a third-order polynomial (First derivative
+ * vanishes at 0 and 1).
+ */
 scalar p3_interp(scalar x);
+
+/**
+ * Maps from [0, 1] to [0, 1] using a fifth order polynomial. (First and sceond
+ * derivatives vanish at 0 and 1.)
+ */
 scalar p5_interp(scalar x);
+
+/**
+ * Linearly map from [-1, 1] to [0, 1].
+ */
+scalar unitize(scalar x);
 
 scalar clamp(scalar x, scalar m, scalar M);
 

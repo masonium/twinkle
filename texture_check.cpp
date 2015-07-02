@@ -25,25 +25,26 @@ int main(int argc, char** args)
 
   Ray r(Vec3::zero, Vec3::zero);
 
-  scalar freq = 8;
+  scalar freq = 2;
 
   scalar min = 5, max = -5;
+  scalar sw = width, sh = height;
   for (int y = 0; y < height; ++y)
   {
     for (int x = 0; x < width; ++x)
     {
-      scalar z = 0.2;
-      scalar p = pn->noise(x * freq / width, y * freq / height, z );
-      p += pn->noise(x * 2.0 * freq / width, y * 2.0 * freq / height, z ) * 0.5;
-      p += pn->noise(x * 4.0 * freq / width, y * 4.0 * freq / height, z ) * 0.25;
-      p += pn->noise(x * 8.0 * freq / width, y * 8.0 * freq / height, z ) * 0.125;
+      //scalar z = 0.2;
 
-      p = p * 0.5 + 0.5;
+      scalar p = unitize(sym_fbm_2d(pn, x / sw, y / sh, freq, 4, 3.0, 0.75));
+
+      //scalar p = unitize(pn->noise(x / sw * freq, y / sh * freq));
       spectrum s;
+      auto mapper = [](scalar x) { return x; };
+      spectrum c2{0.2};
       if (p < 0.5)
-        s = lerp(spectrum{0.8, 0.2, 0.2}, spectrum{0.0}, p*2.0);
+        s = lerp(spectrum{0.8, 0.2, 0.2}, c2, mapper(p*2.0));
       else
-        s = lerp(spectrum{0.0}, spectrum{0.2, 0.1, 0.9}, (p-0.5)*2.0);
+        s = lerp(c2, spectrum{0.2, 0.1, 0.9}, mapper((p-0.5)*2.0));
 
       f.add_sample(PixelSample(x, y, 0.5, 0.5, r), s);//spectrum{static_cast<scalar>((p + 1.0) * 0.5)});
       if (min > p)

@@ -104,3 +104,38 @@ scalar PerlinNoise::noise(scalar x, scalar y, scalar z) const
                     v),
                w);
 }
+
+scalar sym_fbm_1d(shared_ptr<PerlinNoise> noise, scalar x,
+               scalar freq, scalar octaves,
+               scalar lacunarity, scalar persistence)
+{
+  scalar sum = 0;
+  scalar amplitude = 1;
+  octaves -= 1;
+  while (octaves > 0)
+  {
+    sum += noise->noise(x * freq) * amplitude * std::min<scalar>(octaves, 1.0);
+    amplitude *= persistence;
+    freq *= lacunarity;
+    octaves -= 1;
+  }
+  return sum;
+}
+
+scalar sym_fbm_2d(shared_ptr<PerlinNoise> noise,
+               scalar x, scalar y,
+               scalar freq, scalar octaves,
+               scalar lacunarity, scalar persistence)
+{
+  scalar sum = 0;
+  scalar amplitude = 1;
+  octaves -= 1;
+  while (octaves > 0)
+  {
+    sum += noise->noise(x * freq, y * freq) * amplitude * std::min<scalar>(octaves, 1.0);
+    amplitude *= persistence;
+    freq *= lacunarity;
+    octaves -= 1;
+  }
+  return sum;
+}

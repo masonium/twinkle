@@ -35,11 +35,16 @@ scalar p3_interp(scalar x)
 {
   return x * x * (-2 + x + 3);
 }
+scalar unitize(scalar x)
+{
+  return x * 0.5 + 0.5;
+}
 
 scalar norm(const scalar& s)
 {
   return fabs(s);
 }
+
 
 
 scalar fresnel_reflectance(const Vec3& incoming, const Vec3& normal,
