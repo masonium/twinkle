@@ -289,8 +289,7 @@ RawModelLoadStatus RawModel::load_from_parts(const vector<Vec3>& vertex_list, co
 	v.position = vertex_list[vr.p];
 	if (vr.t >= 0)
 	{
-	  v.u = tc_list[vr.t].x;
-	  v.v = tc_list[vr.t].y;
+	  v.uv = tc_list[vr.t];
 	}
 	if (vr.n >= 0)
 	{

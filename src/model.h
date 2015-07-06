@@ -23,7 +23,7 @@ struct Vertex
   Vec3 position;
   Vec3 normal;
   Vec3 dpdu, dpdv;
-  scalar u, v;
+  Vec2 uv;
 };
 
 struct Triangle
