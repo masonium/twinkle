@@ -373,7 +373,7 @@ void RawModel::compute_normals()
   {
     // compute the normal, and compute the angle
     auto p1 = verts[tri.v[1]].position - verts[tri.v[0]].position;
-    auto p2 = verts[tri.v[1]].position - verts[tri.v[0]].position;
+    auto p2 = verts[tri.v[2]].position - verts[tri.v[0]].position;
     Vec3 face_normal = p1.cross(p2).normal();
     for (int i: tri.v)
       normal_sum[i] += face_normal;
