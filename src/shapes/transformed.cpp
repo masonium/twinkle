@@ -1,7 +1,14 @@
 #include "transformed.h"
 
+using std::make_shared;
+
 Transformed::Transformed(shared_ptr<Geometry> ptr, Transform tr)
   : geometry(ptr), tform(tr)
+{
+}
+
+Transformed::Transformed(shared_ptr<Transformed> ptr, Transform tr)
+  : geometry(ptr->geometry), tform(tr * ptr->tform)
 {
 }
 
@@ -24,4 +31,33 @@ void Transformed::texture_coord(SubGeo subgeo, const Vec3& pos, const Vec3& norm
   geometry->texture_coord(subgeo, tform.inv_transform_point(pos),
                           tform.inv_transform_normal(normal),
                           u, v);
+}
+
+Transform Transformed::transformation() const
+{
+  return tform;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+shared_ptr<Transformed> rotate(shared_ptr<Transformed> geom, Vec3 axis, scalar angle)
+{
+  auto rot = Transform{Mat33::from_axis_angle(axis.normal(), angle), Vec3::zero};
+  return make_shared<Transformed>(geom, rot);
+}
+
+shared_ptr<Transformed> rotate(shared_ptr<Geometry> geom, Vec3 axis, scalar angle)
+{
+  return rotate(make_shared<Transformed>(geom, Transform()), axis, angle);
+}
+
+shared_ptr<Transformed> translate(shared_ptr<Transformed> geom, Vec3 displacement)
+{
+  auto trans = Transform{Mat33::identity, displacement};
+  return make_shared<Transformed>(geom, trans);
+
+}
+
+shared_ptr<Transformed> translate(shared_ptr<Geometry> geom, Vec3 displacement)
+{
+  return translate(make_shared<Transformed>(geom, Transform()), displacement);
 }
