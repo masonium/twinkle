@@ -28,6 +28,11 @@ public:
   {
     return verts[i].position;
   }
+  const Vec3& n(int i) const
+  {
+    return verts[i].normal;
+  }
+
 
   virtual ~Mesh() { }
 

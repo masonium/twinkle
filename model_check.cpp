@@ -4,9 +4,16 @@
 #include "spectrum.h"
 #include "kdtree.h"
 #include "shapes/sphere.h"
-
+#include "shapes/quad.h"
 
 using namespace std;
+
+void quad_test()
+{
+  auto mesh = make_quad();
+
+  cout << mesh->n(0) << endl;
+}
 
 void kdtree_test()
 {
@@ -46,5 +53,6 @@ int main(int argc, char** args)
   // cout << "Loaded model with " << m.verts.size() << " vertices and " <<
   // m.tris.size() << " tris." << endl;
 
-  kdtree_test();
+  //kdtree_test();
+  quad_test();
 }
