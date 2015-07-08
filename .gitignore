@@ -1,5 +1,6 @@
-*/#*#
+*#
 obj/
+bin/
 twinkle
 test_twinkle
 fresnel_test
