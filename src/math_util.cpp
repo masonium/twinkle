@@ -79,7 +79,8 @@ Vec3 refraction_direction(const Vec3& incoming, const Vec3& normal,
   return (-incoming * nr - (nr * cosi + sqrt(1 - sin2t))*normal).normal();
 }
 
-scalar ray_triangle_intersection(const Ray& ray, const Vec3& v1, const Vec3& v2, const Vec3& v3,
+scalar ray_triangle_intersection(const Ray& ray,
+                                 const Vec3& v1, const Vec3& v2, const Vec3& v3,
                                  scalar max_t)
 {
   Vec3 e1 = v2 - v1, e2 = v3 - v1;
@@ -101,13 +102,11 @@ scalar ray_triangle_intersection(const Ray& ray, const Vec3& v1, const Vec3& v2,
   if (u < 0 || u > 1)
     return -1;
 
-
   scalar v = q.dot(ray.direction) * inv_det;
   if (v < 0 || u + v > 1)
     return -1;
 
   return t;
-
 }
 
 

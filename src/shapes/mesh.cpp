@@ -7,9 +7,11 @@ using std::copy;
 MeshTri::MeshTri(const Mesh* m, const int v[3]) :
   mesh(m),
   e1(mesh->pos(v[1]) - mesh->pos(v[0])),
-  e2(mesh->pos(v[2]) - mesh->pos(v[0])),
-  n(e1.cross(e2))
+  e2(mesh->pos(v[2]) - mesh->pos(v[0]))
 {
+  Vec3 N = e1.cross(e2);
+  inv_a_double = 1.0 / N.norm();
+  n = N * inv_a_double;
   copy(v, v+3, vi);
 }
 
@@ -20,7 +22,7 @@ scalar MeshTri::intersect(const Ray& ray, scalar max_t, SubGeo& geo) const
 
 Vec3 MeshTri::normal(SubGeo geo, const Vec3& point) const
 {
-  return n.normal();
+  return n;
 }
 
 bounds::AABB MeshTri::get_bounding_box() const
@@ -29,12 +31,19 @@ bounds::AABB MeshTri::get_bounding_box() const
                       max(max(_p(0), _p(1)), _p(2)));
 }
 
-/*
-void MeshTri::texture_coord(const Vec3& pos, const Vec3& normal,
-                            scalar& u, scalar& v) const
+
+void MeshTri::texture_coord(SubGeo subgeo, const Vec3& pos, const Vec3& normal,
+                   scalar& u, scalar& v) const
 {
+  const Vec3 P = pos - _p(0);
+  const Vec3 n1 = e1.cross(P), n2 = P.cross(e2);
+  scalar bu  = n1.dot(n) * inv_a_double, bv = n2.dot(n) * inv_a_double;
+  Vec3 bary{1 - (bu + bv), bv, bu};
+
+  u = mesh->uv(vi[0])[0] * bary.v[0] + mesh->uv(vi[1])[0] * bary.v[1] + mesh->uv(vi[2])[0] * bary.v[2];
+  v = mesh->uv(vi[0])[1] * bary.v[0] + mesh->uv(vi[1])[1] * bary.v[1] + mesh->uv(vi[2])[1] * bary.v[2];
 }
-*/
+
 
 ////////////////////////////////////////////////////////////////////////////////
 

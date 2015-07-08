@@ -33,6 +33,10 @@ public:
     return verts[i].normal;
   }
 
+  const Vec2& uv(int i) const
+  {
+    return verts[i].uv;
+  }
 
   virtual ~Mesh() { }
 
@@ -55,6 +59,8 @@ public:
 
   // void texture_coord(SubGeo, const Vec3& pos, const Vec3& normal,
   //                    scalar& u, scalar& v) const override;
+  virtual void texture_coord(SubGeo subgeo, const Vec3& pos, const Vec3& normal,
+                             scalar& u, scalar& v) const override;
 
   bounds::AABB get_bounding_box() const;
 
@@ -67,4 +73,5 @@ private:
   const Mesh* mesh;
   int vi[3];
   Vec3 e1, e2, n;
+  scalar inv_a_double;
 };
