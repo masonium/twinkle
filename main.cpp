@@ -16,6 +16,7 @@
 #include "shapes/plane.h"
 #include "shapes/implicit.h"
 #include "shapes/transformed.h"
+#include "shapes/quad.h"
 
 using std::cerr;
 using std::endl;
@@ -84,26 +85,31 @@ PerspectiveCamera model_scene(Scene& scene, scalar aspect_ratio)
   RawModel m;
   if (!m.load_stl_model("cube.stl").success)
     exit(1);
-  cerr << "Loaded model with " << m.verts.size() << " verts and " << m.tris.size() << " tris." << endl;
+  cerr << "Loaded model with " << m.verts.size() << " verts and " <<
+  m.tris.size() << " tris." << endl;
+
+
   //m.rescale(bounds::AABB(Vec3(-2, 0, -2), Vec3(2, 2, 2)));
 
-  //auto kdmesh = make_shared<Transformed>(make_shared<KDMesh>(m), Transform(Mat33::identity, Vec3{2.0, 0.0, 0.0}));
-  auto kdmesh = make_shared<KDMesh>(m);
+  //auto mesh = rotate(make_shared<KDMesh>(m), Vec3::y_axis, PI/4);;
+  auto mesh = translate(make_quad(), Vec3{0.0, 0.0, 0.0});
 
   // cerr << "Created kdmesh with " << kdmesh->kd_tree->count_leaves() << " leaves and "
   //      << kdmesh->kd_tree->count_objs() << " objects.\n";
 
   auto rcm = make_shared<RoughColorMaterial>(0.0, spectrum{1.0, 0.5, 0.0});
+  auto mc = make_shared<RoughMaterial>(
+    0.0, make_shared<Gradient2D>());
   auto mirror = make_shared<MirrorMaterial>();
-  scene.add(make_shared<Shape>(kdmesh, rcm));
+  scene.add(make_shared<Shape>(mesh, mc));
   
-  auto green = make_shared<RoughColorMaterial>(0.0, spectrum{0.5, 1.0, 0.0});
+  auto green = make_shared<RoughColorMaterial>(0.0, spectrum{0.2, 0.7, 0.0});
   scene.add(make_shared<Shape>(make_shared<Plane>(Vec3::y_axis, 1.01), green));
   
   auto check = make_shared<Checkerboard2D>(spectrum{1.0}, spectrum{0.0}, 2, 1);
-  scene.add(make_shared<EnvironmentalLight>(check));
+  scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{1.0})));
 
-  return PerspectiveCamera(Vec3{0.0, 3.0, 6.0}, Vec3::zero, Vec3::y_axis,
+  return PerspectiveCamera(Vec3{0.0, 3.0, -4.0}, Vec3::zero, Vec3::y_axis,
                            PI/2.0, aspect_ratio);
 }
 
@@ -211,11 +217,10 @@ int main(int argc, char** args)
   opt.max_depth = 16;
 
   PathTracerIntegrator igr(opt);
-  // cerr << "Rendered " << igr.num_primary_rays_traced() << " rays.\n";
   //DebugIntegrator igr(DebugIntegrator::DI_NORMAL);
 
-  cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, "
-       << per_pixel << " samples per pixel\n";
+  // cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, "
+  //      << per_pixel << " samples per pixel\n";
 
   igr.render(&cam, &scene, f);
 
