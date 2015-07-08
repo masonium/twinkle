@@ -46,6 +46,17 @@ private:
   int grid_size_x, grid_size_y;
 };
 
+class Gradient2D : public Texture2D
+{
+public:
+  Gradient2D() { }
+
+  spectrum at_coord(scalar u, scalar v) const override
+  {
+    return spectrum{u, 0, v};
+  }
+};
+
 class GridTexture2D : public Texture2D
 {
 public:
