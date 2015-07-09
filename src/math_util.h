@@ -3,6 +3,7 @@
 #include "twinkle.h"
 #include <cmath>
 #include <memory>
+#include <vector>
 #include "vector.h"
 
 using std::move;
@@ -57,3 +58,11 @@ scalar ray_triangle_intersection(const Ray& ray,
                                  scalar max_t = SCALAR_MAX);
 
 Vec3 interpolate_quadratic(scalar x1, scalar y1, scalar x2, scalar y2, scalar x3, scalar y3);
+
+/***
+ * Return the convolution of 'data' with a filter. The return vector is of the
+ * same size as the data vector. Edge elements are treated as 0.
+ */
+void convolve(uint w, uint h, const std::vector<scalar>&,
+              uint fw, uint fh, const std::vector<scalar>&,
+              std::vector<scalar>&);
