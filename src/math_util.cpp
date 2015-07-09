@@ -124,6 +124,7 @@ void convolve(uint w, uint h, const vector<scalar>& data,
               uint fw, uint fh, const vector<scalar>& filter,
               vector<scalar>& conv)
 {
+  vector<scalar> conv_output(data.size());
   if (data.size() == 0)
     return;
   if (filter.size() == 0)
@@ -138,8 +139,8 @@ void convolve(uint w, uint h, const vector<scalar>& data,
   scalar center_filter_value = filter[fw * hfh + hfw];
 
   // initialize conv with the center part of the data
-  conv.resize(data.size());
-  transform(data.begin(), data.end(), conv.begin(),
+  conv_output.resize(data.size());
+  transform(data.begin(), data.end(), conv_output.begin(),
             [=](scalar x) { return x * center_filter_value; });
 
   int fi = 0;
@@ -169,9 +170,10 @@ void convolve(uint w, uint h, const vector<scalar>& data,
       {
         for (int x = mx; x < Mx; ++x)
         {
-          conv[y*w+x] += fv * data[(y-cy)*w + (x-cx)];
+          conv_output[y*w+x] += fv * data[(y-cy)*w + (x-cx)];
         }
       }
     }
   }
+  conv = std::move(conv_output);
 }
