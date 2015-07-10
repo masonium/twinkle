@@ -17,6 +17,7 @@
 #include "shapes/implicit.h"
 #include "shapes/transformed.h"
 #include "shapes/quad.h"
+#include "reinhard.h"
 
 using std::cerr;
 using std::endl;
@@ -46,6 +47,52 @@ PerspectiveCamera single_sphere(Scene& scene, scalar aspect_ratio)
 			   aspect_ratio);
 }
 
+shared_ptr<Shape> SHAPE(shared_ptr<Geometry> x, shared_ptr<Material> y)
+{
+  return make_shared<Shape>(x, y);
+}
+
+shared_ptr<Material> COLOR(const spectrum& x) 
+{
+  return make_shared<RoughColorMaterial>(0, x);
+}
+
+PerspectiveCamera box_scene(Scene& scene, scalar ar)
+{
+  // right
+  scene.add(SHAPE(translate(make_quad(Vec3::z_axis * 3.0, Vec3::y_axis * 3.0),
+                            Vec3::x_axis * 3.0),
+                  COLOR(spectrum{0.1, 0.1, 0.6})));
+  
+  // left
+  scene.add(SHAPE(translate(make_quad(Vec3::z_axis * 3.0, Vec3::y_axis * -3.0),
+                            Vec3::x_axis * -3.0), 
+                  COLOR(spectrum{0.6, 0.1, 0.1})));
+
+  // top 
+  scene.add(SHAPE(translate(make_quad(Vec3::x_axis * 3.0, Vec3::z_axis * 3.0),
+                            Vec3::y_axis * 3.0), 
+                  COLOR(spectrum{1.0})));
+
+  // back
+  scene.add(SHAPE(translate(make_quad(Vec3::x_axis * 3.0, Vec3::y_axis * 3.0),
+                            Vec3::z_axis * -3.0), 
+                  COLOR(spectrum{1.0})));
+
+
+  // botttom (plane)
+  scene.add(SHAPE(make_shared<Plane>(Vec3::y_axis, 1.5),
+                  COLOR(spectrum{1.0})));
+
+  // scene.add(make_shared<PointLight>(Vec3{-5.0, 5.0, 5.0},
+  //                                   spectrum{10.0}));
+  scene.add(make_shared<PointLight>(Vec3{0, 2.9, 0},
+                                    spectrum{10.0}));
+  scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{0.0})));
+                  
+  return PerspectiveCamera(Vec3(0, 0, 7), Vec3::zero, Vec3::y_axis,
+                           PI/2.0, ar);
+}
 
 PerspectiveCamera many_sphere_scene(Scene& scene, scalar ar)
 {
@@ -195,7 +242,7 @@ int main(int argc, char** args)
   }
 
   Scene scene;
-  PerspectiveCamera cam = model_scene(scene, scalar(WIDTH)/scalar(HEIGHT));
+  PerspectiveCamera cam = box_scene(scene, scalar(WIDTH)/scalar(HEIGHT));
 
   auto bf = make_shared<BoxFilter>();
   Film f(WIDTH, HEIGHT, bf.get());
@@ -216,8 +263,8 @@ int main(int argc, char** args)
     opt.num_threads = 0;
   opt.max_depth = 16;
 
-  PathTracerIntegrator igr(opt);
-  //DebugIntegrator igr(DebugIntegrator::DI_NORMAL);
+  //PathTracerIntegrator igr(opt);
+  DebugIntegrator igr(DebugIntegrator::DI_NORMAL);
 
   // cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, "
   //      << per_pixel << " samples per pixel\n";
@@ -225,7 +272,7 @@ int main(int argc, char** args)
   igr.render(&cam, &scene, f);
 
   //auto mapper = make_shared<LinearToneMapper>();
-  //auto mapper = shared_ptr<CompositeToneMapper>(new CompositeToneMapper{make_shared<RSSFToneMapper>(), make_shared<LinearToneMapper>()});
+  //auto mapper = shared_ptr<CompositeToneMapper>(new CompositeToneMapper{make_shared<ReinhardGlobal>(), make_shared<LinearToneMapper>()});
   auto mapper = make_shared<CutoffToneMapper>();
 
   f.render_to_ppm(cout, mapper);
