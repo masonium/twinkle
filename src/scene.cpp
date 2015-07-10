@@ -48,7 +48,7 @@ Intersection Scene::intersect(const Ray& ray) const
   {
     SubGeo g = -1;
     scalar t = s->intersect(ray, best_t, g);
-    if (t > 0)
+    if (t > 0 && t < best_t)
     {
       best_t = t;
       best_shape = s;
