@@ -30,18 +30,6 @@ public:
                uint w, uint h) const override;
 };
 
-class RSSFToneMapper : public ToneMapper
-{
-public:
-  RSSFToneMapper(scalar mid = 0.18) : middle_luminance(mid) {}
-  
-  void tonemap(const vector<spectrum>& input, vector<spectrum>& output,
-               uint w, uint h) const override;
-
-private:
-  scalar middle_luminance;
-};
-
 class CompositeToneMapper : public ToneMapper
 {
 public:

@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include "film.h"
+#include "reinhard.h"
 #include "optionparser.h"
 
 using std::string;
@@ -68,8 +69,7 @@ int main(int argc, char** argv)
     if (options[RSSF].arg)
       mid = atof(options[RSSF].arg);
     //tonemap = make_shared<RSSFToneMapper>(mid);
-    tonemap = shared_ptr<ToneMapper>(new CompositeToneMapper({make_shared<RSSFToneMapper>(mid), 
-      make_shared<LinearToneMapper>()}));
+    tonemap = make_shared<ReinhardGlobal>(mid);
     cerr << "Using RSSF tonemapper with midscale of " << mid << endl;
   }
   else

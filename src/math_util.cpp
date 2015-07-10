@@ -2,6 +2,12 @@
 #include "vec3.h"
 #include "mat33.h"
 #include "ray.h"
+#include <vector>
+#include <cassert>
+#include <algorithm>
+
+using std::transform;
+using std::vector;
 
 scalar approx_gt(scalar x, scalar y)
 {
@@ -116,4 +122,62 @@ Vec3 interpolate_quadratic(scalar x1, scalar y1, scalar x2, scalar y2, scalar x3
   auto inv = vandermonde.inverse();
   auto y = Vec3{y1, y2, y3};
   return inv * y;
+}
+
+void convolve(uint w, uint h, const vector<scalar>& data,
+              uint fw, uint fh, const vector<scalar>& filter,
+              vector<scalar>& conv)
+{
+  vector<scalar> conv_output(data.size());
+  if (data.size() == 0)
+    return;
+  if (filter.size() == 0)
+    return;
+
+  assert(data.size() == w * h);
+  assert(filter.size() == fw * fh);
+
+  uint hfh = (fh - 1) / 2; // half of filter height
+  uint hfw = (fw - 1) / 2; // half of filter width
+
+  scalar center_filter_value = filter[fw * hfh + hfw];
+
+  // initialize conv with the center part of the data
+  conv_output.resize(data.size());
+  transform(data.begin(), data.end(), conv_output.begin(),
+            [=](scalar x) { return x * center_filter_value; });
+
+  int fi = 0;
+
+  for (uint fy = 0; fy < fh; ++fy)
+  {
+    for (uint fx = 0; fx < fw; ++fx, ++fi)
+    {
+      // skip the center, since we've already accounted for that contribution
+      if (fx == hfw && fy == hfh)
+        continue;
+      const scalar fv = filter[fi];
+      if (fv == 0)
+        continue;
+
+      // center coordinates
+      int cy = hfh-fy, cx = hfw - fx;
+
+      const int my = std::max<int>(0, cy);
+      const int My = h + std::min<int>(0, cy);
+
+      const int mx = std::max<int>(0, cx);
+      const int Mx = w + std::min<int>(0, cx);
+
+      std::cout << fx << ", " << mx << ", " << Mx << std::endl;
+      for (int y = my; y < My; ++y)
+      {
+        for (int x = mx; x < Mx; ++x)
+        {
+          conv_output[y*w+x] += fv * data[(y-cy)*w + (x-cx)];
+        }
+      }
+    }
+  }
+  conv = std::move(conv_output);
 }

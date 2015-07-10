@@ -60,7 +60,7 @@ public:
     return (a /= r); 
   }
   
-  spectrum clamp(scalar m, scalar M) const;
+  spectrum clamp(scalar m = 0.0, scalar M = 1.0) const;
 
   static spectrum max(const spectrum &a, const spectrum& b);
   static spectrum from_hex(uint hex_color);
