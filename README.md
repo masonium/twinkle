@@ -26,6 +26,7 @@ Shapes
 * Plane
 * Implicit Surface
 * KD-tree-based triangle mesh
+*  - quad (based on mesh)
 Lights
 * Point
 * Directional
@@ -49,6 +50,7 @@ Textures
 * Grid
 * Checker
 * solid
+* perlin noise
 
 
 ##  Planned Features
@@ -56,11 +58,13 @@ Shapes
 * Various built-in shapes based on implicits (torus, cylinder)
 * generic quadrics...?
 
-Scripting system (probably lua or ECL)
+Tonemapping
+* Reinhard global tone mapper
+
+Scripting system (guile ?!)
 
 Surface integrators
 * Bidirectional path tracing
-* ERPT
 
 BRDFs
 * Cook-Torrance
@@ -68,24 +72,13 @@ BRDFs
 
 Textures
 * From image
-* perlin/simplex noise
 * arbitrary function-based
+* worley noise
 
 Automatic Differentiation for implicit surface rendering
+* potentially implement in guile
 
 ## Priorities
 Small library of rendering
 geometry transformations
 bi-directional path tracing
-
-
-### Transformation options
-TransformedPrimitive as wrapper around primitive
-* (pro) some primitives can "condense" themseleves
-  - Sphere (limited case)
-  - Mesh (cached version)
-* (pro) better bounding box approximations (probably limited usefulness)
-* (pro) isect code (could) remain unchanged
-
-Shape with transformation
-* intersection code
