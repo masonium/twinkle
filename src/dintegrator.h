@@ -13,6 +13,7 @@ public:
     DI_ISECT,
     DI_OBJECT_ID,
     DI_NORMAL,
+    DI_DEPTH,
     DI_SPECULAR
   };
 

@@ -43,6 +43,9 @@ spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene* scene, ShapeCol
   if (type == DI_ISECT)
     return spectrum{scalar(isect.valid() ? 1.0 : 0.0)};
 
+  if (type == DI_DEPTH)
+    return spectrum{1.0 / max<scalar>((isect.position - ray.position).norm(), 1.0)};
+
   if (type == DI_OBJECT_ID)
   {
     if (!isect.valid())
