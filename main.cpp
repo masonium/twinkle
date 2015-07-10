@@ -57,7 +57,7 @@ shared_ptr<Material> COLOR(const spectrum& x)
   return make_shared<RoughColorMaterial>(0, x);
 }
 
-PerspectiveCamera box_scene(Scene& scene, scalar ar)
+PerspectiveCamera box_scene(Scene& scene, scalar ar, scalar angle)
 {
   // right
   scene.add(SHAPE(translate(make_quad(Vec3::z_axis * 3.0, Vec3::y_axis * 3.0),
@@ -79,18 +79,17 @@ PerspectiveCamera box_scene(Scene& scene, scalar ar)
                             Vec3::z_axis * -3.0), 
                   COLOR(spectrum{1.0})));
 
-
   // botttom (plane)
   scene.add(SHAPE(make_shared<Plane>(Vec3::y_axis, 1.5),
                   COLOR(spectrum{1.0})));
 
   // scene.add(make_shared<PointLight>(Vec3{-5.0, 5.0, 5.0},
-  //                                   spectrum{10.0}));
+  //                                   spectrum{3.0}));
   scene.add(make_shared<PointLight>(Vec3{0, 2.9, 0},
-                                    spectrum{10.0}));
+                                    spectrum{3.0}));
   scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{0.0})));
                   
-  return PerspectiveCamera(Vec3(0, 0, 7), Vec3::zero, Vec3::y_axis,
+  return PerspectiveCamera(Vec3(7*sin(angle * PI / 180), 0, 7*cos(angle * PI / 180)), Vec3::zero, Vec3::y_axis,
                            PI/2.0, ar);
 }
 
@@ -227,7 +226,7 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
 
 int main(int argc, char** args)
 {
-  if (argc < 4)
+  if (argc < 5)
   {
     usage(args);
     exit(1);
@@ -241,20 +240,22 @@ int main(int argc, char** args)
     exit(1);
   }
 
-  Scene scene;
-  PerspectiveCamera cam = box_scene(scene, scalar(WIDTH)/scalar(HEIGHT));
-
-  auto bf = make_shared<BoxFilter>();
-  Film f(WIDTH, HEIGHT, bf.get());
-
-  PathTracerIntegrator::Options opt;
-
   const uint per_pixel = atoi(args[3]);
   if (per_pixel == 0)
   {
     usage(args);
     exit(1);
   }
+
+  const uint angle = atoi(args[5]);
+
+  Scene scene;
+  PerspectiveCamera cam = box_scene(scene, scalar(WIDTH)/scalar(HEIGHT), angle);
+
+  auto bf = make_shared<BoxFilter>();
+  Film f(WIDTH, HEIGHT, bf.get());
+
+  PathTracerIntegrator::Options opt;
 
   opt.samples_per_pixel = per_pixel;
   if (argc >= 5)
@@ -263,8 +264,8 @@ int main(int argc, char** args)
     opt.num_threads = 0;
   opt.max_depth = 16;
 
-  //PathTracerIntegrator igr(opt);
-  DebugIntegrator igr(DebugIntegrator::DI_NORMAL);
+  PathTracerIntegrator igr(opt);
+  //DebugIntegrator igr(DebugIntegrator::DI_NORMAL);
 
   // cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, "
   //      << per_pixel << " samples per pixel\n";
@@ -272,8 +273,8 @@ int main(int argc, char** args)
   igr.render(&cam, &scene, f);
 
   //auto mapper = make_shared<LinearToneMapper>();
-  //auto mapper = shared_ptr<CompositeToneMapper>(new CompositeToneMapper{make_shared<ReinhardGlobal>(), make_shared<LinearToneMapper>()});
-  auto mapper = make_shared<CutoffToneMapper>();
+  auto mapper = make_shared<ReinhardGlobal>();
+  //auto mapper = make_shared<CutoffToneMapper>();
 
   f.render_to_ppm(cout, mapper);
   //f.render_to_twi(cout);

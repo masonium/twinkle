@@ -79,6 +79,7 @@ Automatic Differentiation for implicit surface rendering
 * potentially implement in guile
 
 ## Priorities
+one-sided vs. two-sided issues
+ - (how to handle transparency)
 Small library of rendering
-geometry transformations
 bi-directional path tracing

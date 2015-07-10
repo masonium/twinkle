@@ -114,7 +114,6 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
   if (light_prob > 0)
   {
     LightSample ls = light->sample_emission(isect, sampler);
-
     if (ls)
     {
       if (!ls.is_occluded(scene))
@@ -153,8 +152,8 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
     Vec3 brdf_dir = isect.sample_bsdf(ray_dir_origin, sampler,
                                       brdf_p, brdf_reflectance);
 
-    scalar nl = fabs(brdf_dir.dot(isect.normal));
-    if (brdf_p > 0)
+    scalar nl = fabs(brdf_dir.dot(isect.normal));// max<scalar>(brdf_dir.dot(isect.normal), 0);
+    if (brdf_p > 0 && nl > 0)
     {
       total += trace_ray(scene, Ray{isect.position, brdf_dir}.nudge(),
                          sampler, depth + 1) *
