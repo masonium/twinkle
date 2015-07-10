@@ -1,5 +1,7 @@
 #include "tonemap.h"
 
+using std::pair;
+
 /**
  * Implements the global tone reproduction operator as specified in Eq. 4 of
  * Reinhard et. al's paper, "Photographic Tone Reproduction for Digital Images"
@@ -24,19 +26,27 @@ private:
 class ReinhardLocal : public ToneMapper
 {
 public:
-  ReinhardLocal(scalar mid = 0.18, scalar center_surround = 1.6);
+  struct Options
+  {
+    Options();
+
+    scalar key_value; // a, in the paper
+    scalar scale_selection_threshhold; // epsilon, in the paper
+    scalar sharpening_factor;  // \phi, in the paper
+    scalar scale_pixel_factor; // \alpha_1, in the paper
+    scalar cs_ratio;
+    int num_scales;
+  };
+
+
+  ReinhardLocal(const Options&);
 
   void tonemap(const vector<spectrum>& input, vector<spectrum>& output,
                uint w, uint h) const override;
 
 private:
-  static vector<vector<scalar>> center_surround_functions(const vector<scalar>&,
-                                                          uint, uint, int);
+  static vector<vector<pair<scalar, scalar>>> center_surround_functions(uint, uint, const vector<scalar>&, const Options&);
 
   static int gaussian_filter(scalar curr, vector<scalar>& filter);
-
-  scalar key_value;
-  scalar scale_param;
-  scalar cs_ratio;
-  int num_scales;
+  Options opt;
 };
