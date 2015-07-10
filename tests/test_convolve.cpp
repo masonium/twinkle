@@ -1,5 +1,8 @@
 #include "math_util.h"
 #include "test_util.h"
+#include <vector>
+
+using std::vector;
 
 void conv_test_set(vector<scalar>& data, vector<scalar>& filter, vector<scalar>& expected_conv)
 {
@@ -21,8 +24,8 @@ SUITE(convolution)
   {
     vector<scalar> data, filter, conv, expected_conv;
     conv_test_set(data, filter, expected_conv);
-    convolve(5, 5, data, 3, 3, filter, expected_conv);
+    convolve(5, 5, data, 3, 3, filter, conv);
 
-    CHECK_ARRAY(conv.data(), expected_conv.data(), 25);
+    CHECK_ARRAY_CLOSE(conv.data(), expected_conv.data(), 25, EPS);
   }
 }
