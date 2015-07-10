@@ -1,30 +1,43 @@
+ifndef CONFIG
+CONFIG = Debug
+endif
+
 CXX = g++
 CXX_VERSION = -std=c++1y
 COMMON_FLAGS = -Wall -Wextra -Wno-unused-parameter $(CXX_VERSION)
 SFLAGS =  -fsyntax-only $(COMMON_FLAGS)
 LFLAGS = -pthread -lm  -lUnitTest++ #-lc++
-CXXFLAGS = $(COMMON_FLAGS) -g -Isrc/ -Itests/ -Iextlib/
+CXXFLAGS := $(COMMON_FLAGS) -Isrc/ -Itests/ -Iextlib/
+
+ifeq (${CONFIG}, Debug)
+CXXFLAGS += -g
+else ifeq (${CONFIG}, Release)
+CXXFLAGS += -O3
+else
+echo "CONFIG must be one of (Debug, Release)"
+endif
+
+BINDIR = $(CONFIG)/bin
+OBJDIR = $(CONFIG)/obj
 
 # Used for debugging makefile
 #OLD_SHELL := $(SHELL)
 #SHELL = $(warning Building $@$(if $<, (from $<))%(if $?, ($? newer)))$(OLD_SHELL)
 
-ifndef CONFIG
-CONFIG=Debug
-endif
+SRC :=
 
 SRCS := $(wildcard src/*.cpp)
--include tests/makefile
+-include tests/Makefile
 -include src/shapes/Makefile
 
 OBJSTMP := $(SRCS:.cpp=.o)
-OBJS := $(OBJSTMP:src/%=obj/%)
-OBJS := $(OBJS:tests/%=obj/%)
+OBJSTMP := $(OBJSTMP:src/%=$(OBJDIR)/%)
+OBJS := $(OBJSTMP:tests/%=$(OBJDIR)/%)
 
 DEPS := $(OBJS:.o=.dep)
 
 EXE_NAMES = twinkle test_twinkle fresnel_test tonemap model_check texture_check
-EXES = $(addprefix bin/,$(EXE_NAMES))
+EXES = $(addprefix $(BINDIR)/,$(EXE_NAMES))
 
 .PHONY: test clean
 
@@ -32,56 +45,47 @@ all: $(EXES)
 
 -include $(DEPS)
 
-obj/%.o: %.cpp
+VPATH = .:src:src/shapes:tests
+
+$(OBJDIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
-	$(CXX) -MM $(CXXFLAGS) $< > obj/$*.dep
-	@mv -f obj/$*.dep obj/$*.dep.tmp
-	@sed -e 's|.*:|obj/$*.o:|' < obj/$*.dep.tmp > obj/$*.dep
-	@sed -e 's/.*://' -e 's/\\$$//' < obj/$*.dep.tmp | fmt -1 | \
-	  sed -e 's/^ *//' -e 's/$$/:/' >> obj/$*.dep
-	@rm -f obj/$*.dep.tmp
+	$(CXX) -MM $(CXXFLAGS) $< > $(OBJDIR)/$*.dep
+	@mv -f $(OBJDIR)/$*.dep $(OBJDIR)/$*.dep.tmp
+	@sed -e 's|.*:|$(OBJDIR)/$*.o:|' < $(OBJDIR)/$*.dep.tmp > $(OBJDIR)/$*.dep
+	@sed -e 's/.*://' -e 's/\\$$//' < $(OBJDIR)/$*.dep.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> $(OBJDIR)/$*.dep
+	@rm -f $(OBJDIR)/$*.dep.tmp
 
-obj/%.o: src/%.cpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
-	$(CXX) -MM $(CXXFLAGS) $< > obj/$*.dep
-	@mv -f obj/$*.dep obj/$*.dep.tmp
-	@sed -e 's|.*:|obj/$*.o:|' < obj/$*.dep.tmp > obj/$*.dep
-	@sed -e 's/.*://' -e 's/\\$$//' < obj/$*.dep.tmp | fmt -1 | \
-	  sed -e 's/^ *//' -e 's/$$/:/' >> obj/$*.dep
-	@rm -f obj/$*.dep.tmp
-
-obj/%.o: tests/%.cpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
-	$(CXX) -MM $(CXXFLAGS) $< > obj/$*.dep
-	@mv -f obj/$*.dep obj/$*.dep.tmp
-	@sed -e 's|.*:|obj/$*.o:|' < obj/$*.dep.tmp > obj/$*.dep
-	@sed -e 's/.*://' -e 's/\\$$//' < obj/$*.dep.tmp | fmt -1 | \
-	  sed -e 's/^ *//' -e 's/$$/:/' >> obj/$*.dep
-	@rm -f obj/$*.dep.tmp
-
-bin/twinkle: $(OBJS) obj/main.o
+$(BINDIR)/twinkle: $(OBJS) $(OBJDIR)/main.o
+	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
-bin/tonemap: $(OBJS) obj/tonemap_main.o
+$(BINDIR)/tonemap: $(OBJS) $(OBJDIR)/tonemap_main.o
+	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
-bin/test_twinkle: $(OBJS) $(TESTOBJS) obj/test.o
+$(BINDIR)/test_twinkle: $(OBJS) $(TESTOBJS) $(OBJDIR)/test.o
+	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
-bin/fresnel_test: $(OBJS) obj/fresnel_test.o
+$(BINDIR)/fresnel_test: $(OBJS) $(OBJDIR)/fresnel_test.o
+	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
-bin/model_check: $(OBJS) obj/model_check.o
+$(BINDIR)/model_check: $(OBJS) $(OBJDIR)/model_check.o
+	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
-bin/texture_check: $(OBJS) obj/texture_check.o
+$(BINDIR)/texture_check: $(OBJS) $(OBJDIR)/texture_check.o
+	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
-test: bin/test_twinkle
-	bin/test_twinkle
+test: $(BINDIR)/test_twinkle
+	$(BINDIR)/test_twinkle
 
 clean:
-	rm -rf obj/*.dep obj/*.o obj/shapes/*.o obj/shapes/*.dep bin/*
+	rm -rf $(CONFIG)
 
 check-syntax:
 	$(CXX) $(SFLAGS) $(CHK_SOURCES)
