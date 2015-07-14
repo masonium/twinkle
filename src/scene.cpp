@@ -62,5 +62,5 @@ Intersection Scene::intersect(const Ray& ray) const
 
 spectrum Scene::environment_light_emission(const Vec3& dir) const
 {
-  return env_light->emission(dir);
+  return env_light ?  env_light->emission(dir) : spectrum{0.0};
 }
