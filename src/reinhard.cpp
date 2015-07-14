@@ -80,11 +80,19 @@ void ReinhardLocal::tonemap(const vector<spectrum>& input, vector<spectrum>& out
         break;
     }
     display_lum[i] = luminances[i] / (1 + center_surround[scale][i].second);
+    //display_lum[i] = center_surround[5][i].first;
   }
 
   output.resize(input.size());
   transform(display_lum.begin(), display_lum.end(), input.begin(), output.begin(),
             [](scalar lum, const spectrum& s) { return s.rescale_luminance(std::min<scalar>(lum, 1.0)).clamp(); });
+  // transform(display_lum.begin(), display_lum.end(), output.begin(),
+  //           [](scalar lum)
+  //           {
+  //             return spectrum{lum};
+  //           });
+
+  CutoffToneMapper().tonemap(output, output, w, h);
 }
 
 vector<vector<pair<scalar, scalar>>> ReinhardLocal::center_surround_functions(
@@ -97,7 +105,8 @@ vector<vector<pair<scalar, scalar>>> ReinhardLocal::center_surround_functions(
 
   // compute the first center scale
   {
-    int fs = gaussian_filter(opt.scale_pixel_factor * current_scale, filter);
+    scalar v1_gf_sigma = opt.scale_pixel_factor * current_scale;
+    int fs = gaussian_filter(v1_gf_sigma, filter);
     convolve(w, h, luminances, fs, fs, filter, v1);
   }
 
@@ -109,7 +118,8 @@ vector<vector<pair<scalar, scalar>>> ReinhardLocal::center_surround_functions(
    */
   for (int i = 0; i < opt.num_scales; ++i)
   {
-    int fs = gaussian_filter(opt.scale_pixel_factor * current_scale * opt.cs_ratio, filter);
+    scalar v2_gf_sigma = opt.scale_pixel_factor * current_scale * opt.cs_ratio;
+    int fs = gaussian_filter(v2_gf_sigma, filter);
     const scalar normalization = normalizing_mult / (current_scale * current_scale);
     convolve(w, h, luminances, fs, fs, filter, v2);
 
