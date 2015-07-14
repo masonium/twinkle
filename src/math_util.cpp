@@ -169,7 +169,6 @@ void convolve(uint w, uint h, const vector<scalar>& data,
       const int mx = std::max<int>(0, cx);
       const int Mx = w + std::min<int>(0, cx);
 
-      std::cout << fx << ", " << mx << ", " << Mx << std::endl;
       for (int y = my; y < My; ++y)
       {
         for (int x = mx; x < Mx; ++x)
