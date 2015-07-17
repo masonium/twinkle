@@ -31,12 +31,7 @@ public:
   {
   }
 
-  scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const override
-  {
-    if (incoming.z < 0)
-      return 0.0f;
-    return r;
-  }
+  scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const override;
 
   Vec3 sample(const Vec3& incoming, Sampler& s,
               scalar& p, scalar& reflectance) const override;
