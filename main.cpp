@@ -83,11 +83,11 @@ PerspectiveCamera box_scene(Scene& scene, scalar ar, scalar angle)
   scene.add(SHAPE(make_shared<Plane>(Vec3::y_axis, 1.5),
                   COLOR(spectrum{1.0})));
 
-  // scene.add(make_shared<PointLight>(Vec3{-5.0, 5.0, 5.0},
+  scene.add(make_shared<PointLight>(Vec3{-5.0, 5.0, 5.0},
+                                     spectrum{3.0}));
+  // scene.add(make_shared<PointLight>(Vec3{0, 2.9, 0},
   //                                   spectrum{3.0}));
-  scene.add(make_shared<PointLight>(Vec3{0, 2.9, 0},
-                                    spectrum{3.0}));
-  scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{0.0})));
+  scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{4.0})));
                   
   return PerspectiveCamera(Vec3(7*sin(angle * PI / 180), 0, 7*cos(angle * PI / 180)), Vec3::zero, Vec3::y_axis,
                            PI/2.0, ar);
@@ -190,11 +190,11 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
   auto impf = sphere_sdf;
   auto implicit = make_shared<ImplicitSurface>(impf, gradient_from_sdf(impf), 1.0);
   auto sphere = make_shared<Sphere>(Vec3{0.0, 0.0, 0.0}, 1.0);
-  scene.add(make_shared<Shape>(implicit, mirror));
+  scene.add(make_shared<Shape>(implicit, glass));
 
   scalar distance_from_center = 5.0;
   scalar sphere_radius = 1.0;
-  scalar fill_rate = 0.75;
+  scalar fill_rate = 0.5;
 
   const int num_sides = fill_rate * PI / atan(sphere_radius / (distance_from_center));
 
@@ -250,7 +250,7 @@ int main(int argc, char** args)
   const uint angle = atoi(args[5]);
 
   Scene scene;
-  PerspectiveCamera cam = box_scene(scene, scalar(WIDTH)/scalar(HEIGHT), angle);
+  PerspectiveCamera cam = default_scene(scene, scalar(WIDTH)/scalar(HEIGHT));
 
   auto bf = make_shared<BoxFilter>();
   Film f(WIDTH, HEIGHT, bf.get());
