@@ -104,36 +104,29 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
   if (isect.is_emissive())
     return isect.emission();
 
-  spectrum total{0};
-  scalar VN = ray_dir_origin.dot(isect.normal);
-
   // direct lighting: randomly choose a light or emissive shape, and contribute
-  // the light from that shape if appropriate, but only if we're not 'behind'
-  // the intersection point
-  if (VN > 0)
+  // the light from that shape if appropriate
+  scalar light_prob;
+  const Light* light = scene->sample_light(sampler.sample_1d(), light_prob);
+
+  spectrum total(0);
+
+  if (light_prob > 0)
   {
-    scalar light_prob;
-
-    const Light* light = scene->sample_light(sampler.sample_1d(), light_prob);
-
-    if (light_prob > 0)
+    LightSample ls = light->sample_emission(isect, sampler);
+    if (ls)
     {
-      LightSample ls = light->sample_emission(isect, sampler);
-    
-      if (ls)
+      if (!ls.is_occluded(scene))
       {
-        if (!ls.is_occluded(scene))
-        {
-          scalar NL = max<scalar>(ls.direction().dot(isect.normal), 0.0);
-          scalar ca = isect.reflectance(ls.direction(), ray_dir_origin);
+        scalar NL = max<scalar>(ls.direction().dot(isect.normal), 0.0);
+        scalar ca = isect.reflectance(ls.direction(), ray_dir_origin);
 
-          auto light_contrib = ls.emission() * spectrum{NL * ca / light_prob};
-          total += light_contrib;
-        }
+        auto light_contrib = ls.emission() * spectrum{NL * ca / light_prob};
+        total += light_contrib;
       }
     }
   }
-    
+
   // Decide whether or not to continue trace and, if so, what the multiplier
   // should be.
   bool continue_trace = true;
