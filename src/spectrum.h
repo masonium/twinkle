@@ -12,32 +12,13 @@ using std::string;
 using std::ostream;
 
 class spectrum;
-class specturm_xyz;
-class specturm_xyY;
+class spectrum_XYZ;
+class spectrum_xyY;
 
-/**
- * spectrum_xyY is a class representing colors following the CIE standard xyY
- * color space. It is used in practice in most CIE standard specifications, as
- * opposed to the XYZ space, whose benefits are more abstract.
+/*
+ * spectrum represents colors in linear rgb format. It should probably be called
+ * spectrum_rgb to reflect this fact.
  */
-class spectrum_xyY
-{
-public:
-  spectrum_xyY() : x(0), y(0), Y(0) { }
-  spectrum_xyY(scalar a, scalar b, scalar c): x(a), y(b), Y(c)
-  {
-  };
-
-  union
-  {
-    struct
-    {
-      scalar x, y, Y;
-    };
-    scalar v[3];
-  };
-};
-
 class spectrum : public VectorT3<spectrum>
 {
 public:
@@ -45,6 +26,8 @@ public:
   explicit spectrum(scalar s) : VectorT3<spectrum>(s) { }
   explicit spectrum(scalar x, scalar y, scalar z) : VectorT3<spectrum>(x, y, z) { }
   spectrum(const spectrum& s) : VectorT3<spectrum>(s.x, s.y, s.z) { }
+
+  spectrum(const spectrum_XYZ&);
   
   spectrum& operator*=(const spectrum& r)
   {
@@ -59,6 +42,8 @@ public:
 
   using VectorT3<spectrum>::operator/;
   using VectorT3<spectrum>::operator/=;
+
+  operator spectrum_XYZ() const;
 
   spectrum operator*(const spectrum& r) const
   {
@@ -92,24 +77,56 @@ public:
   static const spectrum zero;
 };
 
-class spectrum_xyz : public VectorT3<spectrum_xyz>
+/**
+ * spectrum_xyY is a class representing colors following the CIE standard xyY
+ * color space. It is used in practice in most CIE standard specifications, as
+ * opposed to the XYZ space, whose benefits are more abstract.
+ */
+class spectrum_xyY
 {
-  spectrum_xyz() : VectorT3<spectrum_xyz>() { }
-  explicit spectrum_xyz(scalar x, scalar y, scalar z) : VectorT3<spectrum_xyz>(x, y, z) { }
-  spectrum_xyz(const spectrum_xyz& s) : VectorT3<spectrum_xyz>(s.x, s.y, s.z) { }
+public:
+  spectrum_xyY() : x(0), y(0), Y(0) { }
+  spectrum_xyY(scalar a, scalar b, scalar c): x(a), y(b), Y(c)
+  {
+  };
+  spectrum_xyY(const spectrum_XYZ&);
 
-  using VectorT3<spectrum_xyz>::operator=;
+  scalar luminance() const { return Y; }
 
-  spectrum_xyz& operator/=(const spectrum_xyz& r)
+  operator spectrum_XYZ() const;
+
+  union
+  {
+    struct
+    {
+      scalar x, y, Y;
+    };
+    scalar v[3];
+  };
+};
+
+class spectrum_XYZ : public VectorT3<spectrum_XYZ>
+{
+public:
+
+  spectrum_XYZ() : VectorT3<spectrum_XYZ>() { }
+  explicit spectrum_XYZ(scalar x, scalar y, scalar z) : VectorT3<spectrum_XYZ>(x, y, z) { }
+  spectrum_XYZ(const spectrum_XYZ& s) : VectorT3<spectrum_XYZ>(s.x, s.y, s.z) { }
+
+  using VectorT3<spectrum_XYZ>::operator=;
+
+  scalar luminance() const { return y; }
+
+  spectrum_XYZ& operator/=(const spectrum_XYZ& r)
   {
     this->x /= r.x;
     this->y /= r.y;
     this->z /= r.z;
     return *this;
   }
-  spectrum_xyz operator/(const spectrum_xyz& r) const
+  spectrum_XYZ operator/(const spectrum_XYZ& r) const
   {
-    spectrum_xyz a = *this;
+    spectrum_XYZ a = *this;
     return (a /= r); 
   }
 

@@ -6,6 +6,32 @@ using std::cout;
 const spectrum spectrum::zero{0.0};
 const spectrum spectrum::one{1.0};
 
+const scalar CIE_RGB_TO_XYZ[3][3] = {{0.4887180,  0.3106803,  0.2006017},
+                                     {0.1762044,  0.8129847,  0.0108109},
+                                     {0.0000000,  0.0102048,  0.9897952}};
+
+const scalar CIE_XYZ_TO_RGB[3][3] = {{2.3706743, -0.9000405 -0.4706338},
+                                     {-0.5138850, 1.4253036, 0.0885814},
+                                     {0.0052982, -0.0146949, 1.0093968}};
+
+spectrum::spectrum(const spectrum_XYZ& xyz)
+{
+  for (int i = 0; i < 3; ++i)
+    for (int j = 0; j < 3; ++j)
+      v[i] += CIE_XYZ_TO_RGB[i][j] * xyz[j];
+}
+
+spectrum::operator spectrum_XYZ() const
+{
+  spectrum_XYZ xyz;
+  for (int i = 0; i < 3; ++i)
+    for (int j = 0; j < 3; ++j)
+      xyz.v[i] += CIE_RGB_TO_XYZ[i][j] * v[j];
+
+  return xyz;
+}
+
+
 spectrum spectrum::clamp(scalar m, scalar M) const
 {
   return spectrum{::max(m, ::min(x, M)), ::max(m, ::min(y, M)), ::max(m, ::min(z, M))};
@@ -62,11 +88,9 @@ spectrum spectrum::max(const spectrum &a, const spectrum& b)
   return spectrum{::max(a.x, b.x), ::max(a.y, b.y), ::max(a.z, b.z)};
 }
 
-static const spectrum LC{0.299, 0.587, 0.114};
-
 scalar spectrum::luminance() const
 {
-  return LC.x * x + LC.y * y + LC.z * z;
+  return CIE_RGB_TO_XYZ[1][0] * x + CIE_RGB_TO_XYZ[1][1] * y + CIE_RGB_TO_XYZ[1][2] * z;
 }
 
 spectrum spectrum::rescale_luminance(scalar nl) const
@@ -78,8 +102,7 @@ spectrum spectrum::rescale_luminance(scalar nl) const
   scalar m = ::max(x, ::max(y, z));
   spectrum coef = *this / m;
 
-  spectrum ret;
-  const scalar max_denom = (LC.x * coef.x + LC.y * coef.y + LC.z * coef.z);
+  const scalar max_denom = coef.luminance();
 
   return coef * nl / max_denom;
 }
@@ -90,3 +113,19 @@ ostream& operator<<(ostream& out, spectrum s)
   return out;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+spectrum_xyY::spectrum_xyY(const spectrum_XYZ& xyz)
+{
+  auto denom = xyz.x + xyz.y + xyz.z;
+  x = xyz.x / denom;
+  Y = xyz.y;
+  y = xyz.z / denom;
+}
+
+spectrum_xyY::operator spectrum_XYZ() const
+{
+  return spectrum_XYZ{x * Y / y, Y, (1 - x - y) * Y / y};
+}
+
+////////////////////////////////////////////////////////////////////////////////
