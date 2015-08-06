@@ -34,13 +34,12 @@ private:
 
   static spectrum_xyY sun_spectrum_xyY(scalar turbidity, scalar angle_from_top);
 
+  spectrum_xyY sky_spectrum_xyY(scalar cos_phi, scalar cos_sun) const;
+
   Vec3 sun_dir;
-  spectrum_xyY sun_spec_xyY;
-  spectrum_xyY base_dist;
+  spectrum_xyY point_to_sun_ratio;
 
-  sky_distribution_coef x_coef, y_coef, Y_coef;
-
-  spectrum_xyY at_coord_xyY(scalar cos_phi, scalar cos_sun) const;
+  sky_distribution_coef x_sky_coef, y_sky_coef, Y_sky_coef;
 };
 
 scalar luminance_gradient(scalar cos_phi, const sky_distribution_coef& sdc);
