@@ -4,6 +4,7 @@
 #include "spectrum.h"
 #include "sampler.h"
 #include "mat33.h"
+#include "vec2.h"
 #include "geometry.h"
 
 class Shape;
@@ -30,7 +31,7 @@ public:
 
   const scalar t;
   Vec3 position, normal;
-  scalar u, v;
+  Vec2 tc;
   Vec3 dpdu, dpdv;
 
 private:

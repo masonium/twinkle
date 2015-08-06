@@ -10,18 +10,22 @@ public:
   Vec2() : x(0), y(0) { }
 
   scalar operator [](int i) const {
-    return v[i];
+    return c[i];
   }
   scalar& operator [](int i) {
-    return v[i];
+    return c[i];
   }
 
   union
   {
-    scalar v[2];
+    scalar c[2];
     struct
     {
       scalar x, y;
+    };
+    struct
+    {
+      scalar u, v;
     };
   };
 };

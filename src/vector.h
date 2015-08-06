@@ -23,6 +23,13 @@ public:
   {
   }
   VectorT3(const VectorT3<vec_type>& a) = default;
+  vec_type& operator=(const vec_type& rhs)
+  {
+    x = rhs.x;
+    y = rhs.y;
+    z = rhs.z;
+    return *this;
+  };
 
   VectorT3(VectorT3<vec_type>& a) : x(a.x), y(a.y), z(a.z)
   {

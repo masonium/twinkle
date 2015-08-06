@@ -9,7 +9,7 @@ Intersection::Intersection(const Shape* s, const SubGeo subgeo_, const Ray& r, s
   {
     normal = s->geometry->normal(subgeo, position);
     if (s->geometry->is_differential())
-      s->geometry->texture_coord(subgeo, position, normal, u, v);
+      s->geometry->texture_coord(subgeo, position, normal, tc.u, tc.v);
     to_z = Mat33::rotate_to_z(normal);
     from_z = to_z.transpose();
   }

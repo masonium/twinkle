@@ -1,6 +1,7 @@
 #pragma once
 
 #include "spectrum.h"
+#include "vec2.h"
 #include "vec3.h"
 #include "intersection.h"
 
@@ -16,10 +17,10 @@ class Texture2D : public Texture
 public:
   virtual spectrum at_point(const Intersection& isect) const override
   {
-    return at_coord(isect.u, isect.v);
+    return at_coord(isect.tc);
   }
   
-  virtual spectrum at_coord(scalar u, scalar v) const = 0;
+  virtual spectrum at_coord(const Vec2& uv) const = 0;
 };
 
 class SolidColor : public Texture2D
@@ -28,7 +29,7 @@ public:
   SolidColor(spectrum x = spectrum::zero) : color(x) {}
 
   spectrum at_point(const Intersection& isect) const override;
-  spectrum at_coord(scalar u, scalar v) const override;
+  spectrum at_coord(const Vec2& uv) const override;
 
 private:
   spectrum color;
@@ -39,7 +40,7 @@ class Checkerboard2D : public Texture2D
 public:
   Checkerboard2D(spectrum a, spectrum b, int gs, int gsy = 0);
 
-  spectrum at_coord(scalar u, scalar v) const override;
+  spectrum at_coord(const Vec2& uv) const override;
 
 private:
   spectrum c1, c2;
@@ -51,9 +52,9 @@ class Gradient2D : public Texture2D
 public:
   Gradient2D() { }
 
-  spectrum at_coord(scalar u, scalar v) const override
+  spectrum at_coord(const Vec2& uv) const override
   {
-    return spectrum{u, 0, v};
+    return spectrum{uv.u, 0, uv.v};
   }
 };
 
@@ -65,7 +66,7 @@ public:
     : solid(solid_), border(border_), grid_size(grid_size_),
       border_pct(border_pct_) {}
 
-  spectrum at_coord(scalar x, scalar y) const override;
+  spectrum at_coord(const Vec2& uv) const override;
   
 private:
   const spectrum solid, border;

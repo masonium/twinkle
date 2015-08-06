@@ -76,10 +76,14 @@ Textures
 * worley noise
 
 Automatic Differentiation for implicit surface rendering
-* potentially implement in guile
+* implemented in CL?
 
 ## Priorities
-one-sided vs. two-sided issues
- - (how to handle transparency)
-Small library of rendering
+sky texture
+other procedural textures
+heightmap scene
+rough glass material
+multi-dome
+random box building
+Small library of rendered scenes
 bi-directional path tracing
