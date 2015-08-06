@@ -30,6 +30,7 @@ SRC :=
 SRCS := $(wildcard src/*.cpp)
 -include tests/Makefile
 -include src/shapes/Makefile
+-include src/textures/Makefile
 
 OBJSTMP := $(SRCS:.cpp=.o)
 OBJSTMP := $(OBJSTMP:src/%=$(OBJDIR)/%)
@@ -44,11 +45,11 @@ EXES = $(addprefix $(BINDIR)/,$(EXE_NAMES))
 
 SHARED_LIBS = $(LIBDIR)/libtg.so
 
-all: $(EXES) $(SHARED_LIBS)
+all: $(EXES)
 
 -include $(DEPS)
 
-VPATH = .:src:src/shapes:tests
+VPATH = .:src:src/shapes:src/textures:tests
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
