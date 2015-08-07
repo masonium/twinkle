@@ -2,6 +2,8 @@
 #include "perlin.h"
 #include "film.h"
 #include "tonemap.h"
+#include "reinhard.h"
+#include "textures/skytexture.h"
 #include <random>
 
 using std::make_shared;
@@ -15,11 +17,13 @@ int main(int argc, char** args)
 
   int width = atoi(args[1]);
   int height = atoi(args[2]);
+  int angle = atoi(args[3]);
 
   auto filter = make_shared<BoxFilter>();
   Film f(width, height, filter.get());
 
   auto pn = PerlinNoise::get_instance();
+  auto sky = ShirleySkyTexture(Vec3::from_euler(3*PI/4, angle * PI / 180), 8);
   // auto eng = std::mt19937();
   // auto unf = std::uniform_real_distribution<scalar>(0, 256);
 
@@ -34,7 +38,12 @@ int main(int argc, char** args)
     for (int x = 0; x < width; ++x)
     {
       //scalar z = 0.2;
+      auto uv = Vec2{x / sw, 0.5 - (y / sh) * 0.5};
 
+      auto s = sky.at_coord(uv);
+      f.add_sample(PixelSample(x, y, 0.5, 0.5, r), s);
+
+/*
       scalar p = unitize(sym_fbm_2d(pn, x / sw, y / sh, freq, 4, 3.0, 0.75));
 
       //scalar p = unitize(pn->noise(x / sw * freq, y / sh * freq));
@@ -51,8 +60,14 @@ int main(int argc, char** args)
         min = p;
       if (max < p)
         max = p;
+*/
+      scalar p = s.luminance();
+      if (min > p)
+        min = p;
+      if (max < p)
+        max = p;
     }
   }
   cerr << min << ", " << max << endl;
-  f.render_to_ppm(cout, make_shared<CutoffToneMapper>());
+  f.render_to_ppm(cout, make_shared<ReinhardLocal>(ReinhardLocal::Options{}));
 }
