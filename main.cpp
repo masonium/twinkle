@@ -18,6 +18,7 @@
 #include "shapes/transformed.h"
 #include "shapes/quad.h"
 #include "reinhard.h"
+#include "textures/skytexture.h"
 
 using std::cerr;
 using std::endl;
@@ -32,7 +33,7 @@ void usage(char** args)
 PerspectiveCamera single_sphere(Scene& scene, scalar aspect_ratio)
 {
   scene.add( make_shared<Shape>( make_shared<Sphere>(Vec3::zero, 1.0),
-			make_shared<RoughColorMaterial>(0, spectrum{0.2, 0.2, 1.0})));
+                                 make_shared<RoughColorMaterial>(0, spectrum{0.2, 0.2, 1.0})));
 
   scene.add( make_shared<Shape>( make_shared<Plane>(Vec3::y_axis, 1.0),
                                  make_shared<RoughColorMaterial>(0, spectrum{0.2, 0.2, 0.2})));
@@ -84,7 +85,7 @@ PerspectiveCamera box_scene(Scene& scene, scalar ar, scalar angle)
                   COLOR(spectrum{1.0})));
 
   scene.add(make_shared<PointLight>(Vec3{-5.0, 5.0, 5.0},
-                                     spectrum{3.0}));
+                                    spectrum{3.0}));
   // scene.add(make_shared<PointLight>(Vec3{0, 2.9, 0},
   //                                   spectrum{3.0}));
   scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{4.0})));
@@ -107,12 +108,12 @@ PerspectiveCamera many_sphere_scene(Scene& scene, scalar ar)
 		      lerp<scalar>(-5, 5, y/(SPHERES_PER_SIDE-1.0)), 0.0};
 
       scene.add(make_shared<Shape>(make_shared<Sphere>(pos, 10.0/(2.1*SPHERES_PER_SIDE)),
-			  make_shared<RoughColorMaterial>(1.0, color)));
+                                   make_shared<RoughColorMaterial>(1.0, color)));
     }
   }
 
   scene.add(make_shared<Shape>(make_shared<Plane>(Vec3::y_axis, 6.0),
-		      make_shared<MirrorMaterial>()));
+                               make_shared<MirrorMaterial>()));
   // scene.add(make_shared<Shape>(make_shared<Plane>(Vec3{-1, 0, 1}, 10.0),
   //                     make_shared<MirrorMaterial>()));
 
@@ -132,7 +133,7 @@ PerspectiveCamera model_scene(Scene& scene, scalar aspect_ratio)
   if (!m.load_stl_model("cube.stl").success)
     exit(1);
   cerr << "Loaded model with " << m.verts.size() << " verts and " <<
-  m.tris.size() << " tris." << endl;
+    m.tris.size() << " tris." << endl;
 
 
   //m.rescale(bounds::AABB(Vec3(-2, 0, -2), Vec3(2, 2, 2)));
@@ -182,7 +183,7 @@ scalar capsule_sdf(Vec3 v)
   return ( va - ba * s ).norm() - 0.1;
 }
 
-PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
+shared_ptr<Camera> default_scene(Scene& scene, scalar aspect_ratio)
 {
   auto glass = make_shared<GlassMaterial>();
   auto mirror = make_shared<MirrorMaterial>();
@@ -202,7 +203,7 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
   {
     const scalar angle = 2 * PI * i / num_sides;
     const scalar pr = distance_from_center;
-    const Vec3 sp(pr*cos(angle), 0, pr*sin(angle));
+    const Vec3 sp(pr*cos(angle), pr*sin(angle), 0);
     auto sc = spectrum::from_hsv(i*360.0/num_sides, 1.0, 1.0);
     auto sc2 = spectrum::from_hsv(i*360.0/num_sides, 0.75, 0.75);
 
@@ -210,17 +211,18 @@ PerspectiveCamera default_scene(Scene& scene, scalar aspect_ratio)
                                    make_shared<RoughMaterial>(0.0, make_shared<GridTexture2D>(sc, sc2, 30.0, 0.1))));
   }
 
-  scene.add(make_shared<Shape>(make_shared<Plane>(Vec3{0.0, 1.0, 0.0}, sphere_radius),
+  scene.add(make_shared<Shape>(make_shared<Plane>(Vec3{0.0, 0.0, 1.0}, sphere_radius),
                                make_shared<RoughColorMaterial>(0.0, spectrum{0.6})));
 
-  auto env_light_tex = make_shared<Checkerboard2D>(spectrum{1.0}, spectrum{0.0}, 2, 1);
+  //auto env_light_tex = make_shared<Checkerboard2D>(spectrum{1.0}, spectrum{0.0}, 2, 1);
   //auto env_light_tex = make_shared<SolidColor>(spectrum{1.0});
+  auto env_light_tex = make_shared<ShirleySkyTexture>(Vec3{0, 0, 1}, 20);
   scene.add(make_shared<EnvironmentalLight>(env_light_tex));
 
-  auto cam_pos = Mat33::from_axis_angle(Vec3::y_axis, -PI/1.33) * Vec3{0, 2.0, 7.5};
+  auto cam_pos = Mat33::from_axis_angle(Vec3::z_axis, -PI/1.33) * Vec3{0, 7.5, 2.0};
   auto look_at = Vec3{0.0, 0.0, 0.0};
 
-  return PerspectiveCamera(cam_pos, look_at, Vec3{0, 1, 0}, PI / 2.0, aspect_ratio);
+  return make_shared<SphericalCamera>(cam_pos, look_at, Vec3{0, 0, 1});
 }
 
 
@@ -250,7 +252,7 @@ int main(int argc, char** args)
   const uint angle = atoi(args[5]);
 
   Scene scene;
-  PerspectiveCamera cam = default_scene(scene, scalar(WIDTH)/scalar(HEIGHT));
+  auto cam = default_scene(scene, scalar(WIDTH)/scalar(HEIGHT));
 
   auto bf = make_shared<BoxFilter>();
   Film f(WIDTH, HEIGHT, bf.get());
@@ -270,10 +272,11 @@ int main(int argc, char** args)
   // cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, "
   //      << per_pixel << " samples per pixel\n";
 
-  igr.render(&cam, &scene, f);
+  igr.render(cam.get(), &scene, f);
 
-  //auto mapper = make_shared<LinearToneMapper>();
+  // auto mapper = make_shared<LinearToneMapper>();
   auto mapper = make_shared<ReinhardGlobal>();
+  //auto mapper = make_shared<ReinhardLocal>(ReinhardLocal::Options{});
   //auto mapper = make_shared<CutoffToneMapper>();
 
   f.render_to_ppm(cout, mapper);

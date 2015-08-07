@@ -1,5 +1,16 @@
 #include "camera.h"
 
+using std::tie;
+using std::make_pair;
+
+pair<scalar, scalar> Camera::to_unit_coord(const Film& f, int x, int y, Sample2D samp) const
+{
+  const scalar dw = 1.0 / f.width, dh = 1.0 / f.height;
+  const scalar fx = (x + samp[0]) * dw - 0.5, fy = (y + samp[1]) * dh - 0.5;
+  return make_pair(fx, fy);
+}
+
+
 PerspectiveCamera::PerspectiveCamera(Vec3 pos, Vec3 lookat_, Vec3 up_,
                                      scalar fov_, scalar aspect_, scalar aperture_radius_,
                                      scalar f) :
@@ -13,9 +24,9 @@ PerspectiveCamera::PerspectiveCamera(Vec3 pos, Vec3 lookat_, Vec3 up_,
 
 PixelSample PerspectiveCamera::sample_pixel(const Film& f, int x, int y, Sampler& sampler) const
 {
-  auto pixel_samp = sampler.sample_2d();
-  const scalar dw = 1.0 / f.width, dh = 1.0 / f.height;
-  const scalar fx = (x + pixel_samp[0]) * dw - 0.5, fy = (y + pixel_samp[1]) * dh - 0.5;
+  auto ps = sampler.sample_2d();
+  scalar fx, fy;
+  tie(fx, fy) = to_unit_coord(f, x, y, ps);
 
   Ray r{ position, up * fy + right * fx * aspect + aspect_forward };
   
@@ -34,4 +45,27 @@ PixelSample PerspectiveCamera::sample_pixel(const Film& f, int x, int y, Sampler
   }
 
   return PixelSample(x, y, fx, fy, r);
+}
+
+SphericalCamera::SphericalCamera(Vec3 pos, Vec3 lookat_, Vec3 up_) :
+  position(pos)
+{
+  const auto forward = (lookat_ - pos).normal();
+  const auto right = forward.cross(up_).normal();
+  const auto up = right.cross(forward).normal();
+
+  rot_mat = Mat33(right, forward, up).transpose();
+}
+
+PixelSample SphericalCamera::sample_pixel(const Film& f, int x, int y, Sampler& sampler) const
+{
+  auto ps = sampler.sample_2d();
+  scalar fx, fy;
+  tie(fx, fy) = to_unit_coord(f, x, y, ps);
+
+  const scalar phi = fy * PI, theta = fx * (2 * PI);
+
+  auto dir = Vec3::from_euler(theta, phi);
+
+  return PixelSample(x, y, fx, fy, Ray(position, rot_mat * dir));
 }
