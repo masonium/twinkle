@@ -63,7 +63,7 @@ PixelSample SphericalCamera::sample_pixel(const Film& f, int x, int y, Sampler& 
   scalar fx, fy;
   tie(fx, fy) = to_unit_coord(f, x, y, ps);
 
-  const scalar phi = fy * PI, theta = fx * (2 * PI);
+  const scalar phi = (0.5 - fy) * PI, theta = (fx + 0.5) * (2 * PI);
 
   auto dir = Vec3::from_euler(theta, phi);
 
