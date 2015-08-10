@@ -1,5 +1,5 @@
 ifndef CONFIG
-CONFIG = Debug
+CONFIG = Release
 endif
 
 CXX = g++
