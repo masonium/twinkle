@@ -14,11 +14,14 @@ public:
     double env_light_weight;
   };
 
+  DirectLightingIntegrator() {}
+  DirectLightingIntegrator(const Options& opt);
+
   void render(const Camera* cam, const Scene* scene, Film& film)  override;
 
   virtual ~DirectLightingIntegrator() {}
 private:
-  spectrum trace_ray(const Ray& ray, const Scene* scene);
+  spectrum trace_ray(const Ray& ray, const Scene* scene, shared_ptr<Sampler> sampler);
 
   Options options;
 };
