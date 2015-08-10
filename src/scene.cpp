@@ -25,7 +25,7 @@ void Scene::add(shared_ptr<const EnvironmentalLight> env_light_)
 
 const vector<shared_ptr<const Light>>& Scene::lights() const
 {
-  return lights;
+  return lights_;
 }
 
 
