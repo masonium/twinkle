@@ -17,8 +17,8 @@ class LightSample
 {
 public:
   LightSample() : ray{Vec3::zero, Vec3::zero}, occ_type(OCCLUSION_NONE) {}
-  LightSample(spectrum s, const Vec3& p1, const Vec3& p2 );
-  LightSample(spectrum s, const Ray& r);
+  LightSample(spectrum s, scalar p, const Vec3& p1, const Vec3& p2 );
+  LightSample(spectrum s, scalar p, const Ray& r);
 
 
   operator bool() const
@@ -27,6 +27,7 @@ public:
   }
 
   Vec3 direction( ) const { return ray.direction.normal(); }
+  scalar p() const { return p_; }
 
   bool is_occluded( const Scene* scene ) const;
 
@@ -35,6 +36,7 @@ public:
 private:
   Ray ray;
   spectrum em;
+  scalar p_;
   OcclusionType occ_type;
 };
 

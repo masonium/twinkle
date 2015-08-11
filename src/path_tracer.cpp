@@ -121,7 +121,7 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
         scalar NL = max<scalar>(ls.direction().dot(isect.normal), 0.0);
         scalar ca = isect.reflectance(ls.direction(), ray_dir_origin);
 
-        auto light_contrib = ls.emission() * spectrum{NL * ca / light_prob};
+        auto light_contrib = ls.emission() * spectrum{NL * ca / (light_prob * ls.p())};
         total += light_contrib;
       }
     }
