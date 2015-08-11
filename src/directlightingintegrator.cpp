@@ -99,5 +99,5 @@ spectrum DirectLightingIntegrator::trace_ray(const Ray& ray, const Scene* scene,
       total += l_dir.dot(isect_normal) * refl * scene->environment_light_emission(l_dir);
   }
 
-  return total * isect.texture_at_point();
+  return total * isect.texture_at_point() / options.lighting_samples;
 }
