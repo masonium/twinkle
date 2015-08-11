@@ -21,7 +21,7 @@ public:
 
   virtual ~DirectLightingIntegrator() {}
 private:
-  spectrum trace_ray(const Ray& ray, const Scene* scene, shared_ptr<Sampler> sampler);
+  spectrum trace_ray(const Ray& ray, const Scene* scene, shared_ptr<Sampler> sampler) const;
 
   Options options;
 };

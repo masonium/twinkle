@@ -34,11 +34,11 @@ void DirectLightingIntegrator::render(const Camera* cam, const Scene* scene, Fil
 }
 
 spectrum DirectLightingIntegrator::trace_ray(const Ray& ray, const Scene* scene,
-                                             shared_ptr<Sampler> shading_sampler)
+                                             shared_ptr<Sampler> shading_sampler) const
 {
   auto isect = scene->intersect(ray);
   if (!isect)
-    return spectrum::zero;
+    return scene->environment_light_emission(ray.direction.normal());
 
   auto view_vector = -ray.direction.normal();
   const auto isect_normal = isect.normal;
@@ -46,35 +46,33 @@ spectrum DirectLightingIntegrator::trace_ray(const Ray& ray, const Scene* scene,
   // For now, simple integrations
   auto lights = scene->lights();
   int num_lights = lights.size();
-  if (scene->env_light())
-    num_lights += 1;
 
   spectrum total{0};
 
   int i = 0;
   int cum_samples = 0;
-  int total_light_samples;
+  int local_light_samples;
 
   if (scene->env_light())
   {
     if (num_lights > 0)
     {
       if (options.env_light_weight > 0)
-        total_light_samples = (1 - min<scalar>(options.env_light_weight, 1.0)) * options.lighting_samples;
+        local_light_samples = (1 - min<scalar>(options.env_light_weight, 1.0)) * options.lighting_samples;
       else
-        total_light_samples = options.lighting_samples * static_cast<scalar>(num_lights) / (num_lights + 1);
+        local_light_samples = options.lighting_samples * static_cast<scalar>(num_lights) / (num_lights + 1);
     }
     else
-      total_light_samples = 0;
+      local_light_samples = 0;
   }
   else
   {
-    total_light_samples = options.lighting_samples;
+    local_light_samples = options.lighting_samples;
   }
 
   for (auto light: lights)
   {
-    int new_cum_samples = (total_light_samples * (i + 1)) / num_lights;
+    int new_cum_samples = (local_light_samples * (i + 1)) / num_lights;
     int num_samples =  new_cum_samples - cum_samples;
     cum_samples = new_cum_samples;
 
@@ -89,14 +87,14 @@ spectrum DirectLightingIntegrator::trace_ray(const Ray& ray, const Scene* scene,
     ++i;
   }
 
-  int num_env_samples = options.lighting_samples - total_light_samples;
+  int num_env_samples = options.lighting_samples - local_light_samples;
   auto normal_rotation = Mat33::rotate_match(Vec3::z_axis, isect_normal);
   for (int s = 0; s < num_env_samples; ++s)
   {
     Vec3 l_dir = normal_rotation * cosine_weighted_hemisphere_sample(shading_sampler->sample_2d());
     scalar refl = isect.reflectance(l_dir, view_vector);
 
-    auto light_ray = Ray{isect.position, l_dir};
+    auto light_ray = Ray{isect.position, l_dir}.nudge();
     if (!scene->intersect(light_ray))
       total += l_dir.dot(isect_normal) * refl * scene->environment_light_emission(l_dir);
   }
