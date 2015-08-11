@@ -1,13 +1,13 @@
 #include "light.h"
 #include "scene.h"
 
-LightSample::LightSample(spectrum s, const Vec3& p1, const Vec3& p2) :
-  ray{p1, p2-p1}, em(s), occ_type(OCCLUSION_POINTS)
+LightSample::LightSample(spectrum s, scalar p, const Vec3& p1, const Vec3& p2) :
+  ray{p1, p2-p1}, em(s), p_(p), occ_type(OCCLUSION_POINTS)
 {
 }
 
-LightSample::LightSample(spectrum s, const Ray& ray_) :
-  ray(ray_), em(s), occ_type(OCCLUSION_RAY)
+LightSample::LightSample(spectrum s, scalar p, const Ray& ray_) :
+  ray(ray_), em(s), p_(p),occ_type(OCCLUSION_RAY)
 {
   
 }
@@ -38,7 +38,7 @@ LightSample PointLight::sample_emission(const Intersection& isect,
   const auto d = position - isect.position;
   spectrum emit = emission;// / d.norm2();
 
-  return LightSample{emit, isect.position + d.normal() * 0.001, position};
+  return LightSample{emit, 1.0, isect.position + d.normal() * 0.001, position};
 }
 
 LightSample DirectionalLight::sample_emission(const Intersection& isect,
@@ -47,5 +47,5 @@ LightSample DirectionalLight::sample_emission(const Intersection& isect,
   if (isect.normal.dot(direction) < 0)
     return LightSample();
 
-  return LightSample(emission, Ray{isect.position, direction}.normal().nudge(0.0005) );
+  return LightSample(emission, 1.0, Ray{isect.position, direction}.normal().nudge(0.0005) );
 }

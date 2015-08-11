@@ -42,7 +42,7 @@ void UniformSampler::sample_5d(scalar& r1, scalar& r2, scalar& r3, scalar& r4, s
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-ConstSampler::  ConstSampler(scalar a, scalar b, scalar c, scalar d, scalar e) :
+ConstSampler::ConstSampler(scalar a, scalar b, scalar c, scalar d, scalar e) :
   base{a, b, c, d, e}
 {
 }
@@ -139,10 +139,24 @@ Vec3 cosine_weighted_hemisphere_sample(const Sample2D& sample)
   return Vec3{x, y, z};
 }
 
+Vec3 cosine_weighted_hemisphere_sample(const Sample2D& sample, scalar& p)
+{
+  auto cwhs = cosine_weighted_hemisphere_sample(sample);
+  p = sin(2 * cwhs.z) * INV_2PI;
+  return cwhs;
+}
+
 Vec3 uniform_hemisphere_sample(const Sample2D& sample)
 {
   scalar theta = 2 * PI * sample[0];
   scalar phi = acos(sample[1]);
 
   return Vec3::from_euler(theta, phi);
+}
+
+Vec3 uniform_hemisphere_sample(const Sample2D& sample, scalar& p)
+{
+  auto ret = uniform_hemisphere_sample(sample);
+  p = INV_2PI;
+  return ret;
 }

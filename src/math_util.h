@@ -8,6 +8,9 @@
 
 using std::move;
 const scalar PI = 4.0 * atan(1.0);
+const scalar INV_PI = 1 / PI;
+const scalar INV_2PI = 1 / (2 * PI);
+
 
 #define SCALAR_EPSILON 0.00001
 
