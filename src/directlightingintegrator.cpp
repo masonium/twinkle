@@ -4,7 +4,7 @@
 using std::make_shared;
 
 DirectLightingIntegrator::Options::Options()
-  : samples_per_pixel(4), lighting_samples(16), env_light_weight(50)
+  : samples_per_pixel(4), lighting_samples(16), env_light_weight(.50)
 {
 
 }
@@ -82,21 +82,23 @@ spectrum DirectLightingIntegrator::trace_ray(const Ray& ray, const Scene* scene,
       auto NL = std::max<scalar>(se.direction().dot(isect_normal), 0.0);
 
       if (NL > 0 && !se.is_occluded(scene))
-        total += NL * se.emission() * isect.reflectance(se.direction(), view_vector);
+        total += (NL / se.p()) * se.emission() * isect.reflectance(se.direction(), view_vector);
     }
     ++i;
   }
 
   int num_env_samples = options.lighting_samples - local_light_samples;
   auto normal_rotation = Mat33::rotate_match(Vec3::z_axis, isect_normal);
+  Vec3 new_pos = isect.position + isect_normal * 0.0001;
   for (int s = 0; s < num_env_samples; ++s)
   {
-    Vec3 l_dir = normal_rotation * cosine_weighted_hemisphere_sample(shading_sampler->sample_2d());
+    scalar l_p;
+    Vec3 l_dir = normal_rotation * cosine_weighted_hemisphere_sample(shading_sampler->sample_2d(), l_p);
     scalar refl = isect.reflectance(l_dir, view_vector);
 
-    auto light_ray = Ray{isect.position, l_dir}.nudge();
+    auto light_ray = Ray{new_pos, l_dir};
     if (!scene->intersect(light_ray))
-      total += l_dir.dot(isect_normal) * refl * scene->environment_light_emission(l_dir);
+      total += l_dir.dot(isect_normal) * (refl / l_p) * scene->environment_light_emission(l_dir);
   }
 
   return total * isect.texture_at_point() / options.lighting_samples;
