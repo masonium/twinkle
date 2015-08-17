@@ -6,7 +6,7 @@
 using std::iterator_traits;
 using std::forward_iterator_tag;
 
-int num_system_procs();
+uint num_system_procs();
 
 template <typename T=int>
 class iota_iterator
