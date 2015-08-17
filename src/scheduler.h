@@ -3,6 +3,9 @@
 #include <iostream>
 #include <vector>
 #include <thread>
+#include <condition_variable>
+#include <atomic>
+#include <future>
 #include <queue>
 
 using std::istream;
@@ -13,8 +16,7 @@ class Task
 public:
   virtual void run() = 0;
 
-  virtual void serialize(ostream&) = 0;
-  virtual void deserializer(istream&) = 0;
+  virtual ~LocalTask() {}
 };
 
 enum ScheduleHint
@@ -28,29 +30,48 @@ enum ScheduleHint
 class Scheduler
 {
 public:
-  virtual void add_task(const Task* t, ScheduleHint hint) = 0;
+  /* add a task to be scheduled */
+  virtual void add_task(LocalTask* t, ScheduleHint hint) = 0;
+
+  /* blocks until all current tasks are complete. */
+  virtual void complete_pending() = 0;
 
   virtual int tasks_added() const = 0;
   virtual int tasks_completed() const = 0;
 
   virtual int tasks_pending() const = 0;
-private:
+
+  virtual ~Scheduler() { }
 };
 
 
 class LocalThreadScheduler : public Scheduler
 {
 public:
-  LocalThreadScheduler(int num_threads_ = 1);
+  LocalThreadScheduler(uint num_threads_ = 1);
 
-  void add_task(const Task* t, ScheduleHint hint) override;
+  void add_task(LocalTask* t, ScheduleHint hint) override;
 
-  int tasks_added() const override;
-  int tasks_completed() const override;
-  int tasks_pending() const override;
+  /* blocks until all current tasks are complete. */
+  void complete_pending() override;
+
+  ~LocalThreadScheduler();
 
 private:
-  std::queue<Task*> task_queue;
+  static void worker(LocalThreadScheduler* sched, int worker_id,
+                     std::future<int>&& fut);
+
+  void on_task_started(int worker_id, LocalTask* task);
+  void on_task_completed(int worker_id, LocalTask* task);
+
+  std::queue<LocalTask*> task_queue;
+  std::condition_variable queue_cv;
+  std::mutex queue_mutex;
+
+  std::condition_variable status_cv;
+  std::mutex status_mutex;
+  std::atomic<uint> num_threads_free;
 
   std::vector<std::thread> pool;
+  std::vector<std::promise<int>> worker_signals;
 };
