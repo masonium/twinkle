@@ -3,13 +3,14 @@
 #include <iostream>
 #include <vector>
 #include <thread>
-#include <condition_variable>
 #include <atomic>
 #include <future>
 #include <queue>
+#include <memory>
 
 using std::istream;
 using std::ostream;
+using std::shared_ptr;
 
 class LocalTask
 {
@@ -31,16 +32,16 @@ class Scheduler
 {
 public:
   /* add a task to be scheduled */
-  virtual void add_task(LocalTask* t, ScheduleHint hint) = 0;
+  virtual void add_task(shared_ptr<LocalTask> t, ScheduleHint hint) = 0;
 
   /* blocks until all current tasks are complete. */
   virtual void complete_pending() = 0;
-
+/*
   virtual int tasks_added() const = 0;
   virtual int tasks_completed() const = 0;
 
   virtual int tasks_pending() const = 0;
-
+*/
   virtual ~Scheduler() { }
 };
 
@@ -48,9 +49,9 @@ public:
 class LocalThreadScheduler : public Scheduler
 {
 public:
-  LocalThreadScheduler(uint num_threads_ = 1);
+  LocalThreadScheduler(uint num_threads_ = 0);
 
-  void add_task(LocalTask* t, ScheduleHint hint) override;
+  void add_task(shared_ptr<LocalTask> t, ScheduleHint hint) override;
 
   /* blocks until all current tasks are complete. */
   void complete_pending() override;
@@ -61,15 +62,13 @@ private:
   static void worker(LocalThreadScheduler* sched, int worker_id,
                      std::future<int>&& fut);
 
-  void on_task_started(int worker_id, LocalTask* task);
-  void on_task_completed(int worker_id, LocalTask* task);
+  void on_task_started(int worker_id, const shared_ptr<LocalTask>& task);
+  void on_task_completed(int worker_id, const shared_ptr<LocalTask>& task);
 
-  std::queue<LocalTask*> task_queue;
-  std::condition_variable queue_cv;
+  std::queue<shared_ptr<LocalTask>> task_queue;
   std::mutex queue_mutex;
+  std::atomic<uint> pending_task_count;
 
-  std::condition_variable status_cv;
-  std::mutex status_mutex;
   std::atomic<uint> num_threads_free;
 
   std::vector<std::thread> pool;

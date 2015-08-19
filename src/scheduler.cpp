@@ -17,14 +17,16 @@ void LocalThreadScheduler::worker(LocalThreadScheduler* scheduler,
                                   int worker_id,
                                   std::future<int>&& fut)
 {
-  while (fut.wait_for(std::chrono::seconds(0)) != std::future_status::ready)
+  while (fut.wait_for(std::chrono::milliseconds(100)) != std::future_status::ready)
   {
-    std::unique_lock<std::mutex> lock(scheduler->queue_mutex);
+    uint task_count = scheduler->pending_task_count;
+    if (task_count == 0)
+      continue;
 
-    scheduler->queue_cv.wait(lock);
-
-    if (!scheduler->task_queue.empty())
+    if (std::atomic_compare_exchange_weak(&scheduler->pending_task_count, &task_count, task_count - 1))
     {
+      std::unique_lock<std::mutex> lock(scheduler->queue_mutex);
+
       auto task = scheduler->task_queue.front();
       scheduler->task_queue.pop();
       lock.unlock();
@@ -36,7 +38,7 @@ void LocalThreadScheduler::worker(LocalThreadScheduler* scheduler,
   }
 }
 
-LocalThreadScheduler::LocalThreadScheduler(uint num_threads_)
+LocalThreadScheduler::LocalThreadScheduler(uint num_threads_) : pending_task_count(0)
 {
   if (num_threads_ == 0)
     num_threads_ = num_system_procs();
@@ -51,22 +53,23 @@ LocalThreadScheduler::LocalThreadScheduler(uint num_threads_)
 }
 
 
-void LocalThreadScheduler::add_task(LocalTask* task, ScheduleHint hint)
+void LocalThreadScheduler::add_task(shared_ptr<LocalTask> task, ScheduleHint hint)
 {
-  unique_lock<std::mutex> lock(queue_mutex);
-  task_queue.push(task);
-  queue_cv.notify_one();
+  {
+    unique_lock<std::mutex> lock(queue_mutex);
+    task_queue.push(task);
+  }
+  ++pending_task_count;
 }
 
-void LocalThreadScheduler::on_task_started(int worker_id, LocalTask* task)
+void LocalThreadScheduler::on_task_started(int worker_id, const shared_ptr<LocalTask>& task)
 {
   --num_threads_free;
 }
 
-void LocalThreadScheduler::on_task_completed(int worker_id, LocalTask* task)
+void LocalThreadScheduler::on_task_completed(int worker_id, const shared_ptr<LocalTask>& task)
 {
   ++num_threads_free;
-  status_cv.notify_one();
 }
 
 void LocalThreadScheduler::complete_pending()
@@ -80,7 +83,7 @@ void LocalThreadScheduler::complete_pending()
       break;
   }
 
-  // wait for all of thre threads to be free
+  // wait for all of the threads to be free
   while (num_threads_free != pool.size())
     std::this_thread::yield();
 }
