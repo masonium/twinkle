@@ -1,5 +1,5 @@
 ifndef CONFIG
-CONFIG = Debug
+CONFIG = Release
 endif
 
 CXX = g++
@@ -43,13 +43,16 @@ EXES = $(addprefix $(BINDIR)/,$(EXE_NAMES))
 
 .PHONY: test clean
 
-SHARED_LIBS = $(LIBDIR)/libtg.so
+STATIC_LIBS = $(LIBDIR)/libtwinkle.a
 
 all: $(EXES)
 
 -include $(DEPS)
 
 VPATH = .:src:src/shapes:src/textures:tests
+
+$(LIBDIR)/libtwinkle.a: $(OBJS)
+	ar -rc $@ $^
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
@@ -61,27 +64,27 @@ $(OBJDIR)/%.o: %.cpp
 	  sed -e 's/^ *//' -e 's/$$/:/' >> $(OBJDIR)/$*.dep
 	@rm -f $(OBJDIR)/$*.dep.tmp
 
-$(BINDIR)/twinkle: $(OBJS) $(OBJDIR)/main.o
+$(BINDIR)/twinkle: $(LIBDIR)/libtwinkle.a $(OBJDIR)/main.o
 	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
-$(BINDIR)/tonemap: $(OBJS) $(OBJDIR)/tonemap_main.o
+$(BINDIR)/tonemap: $(LIBDIR)/libtwinkle.a $(OBJDIR)/tonemap_main.o
 	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
-$(BINDIR)/test_twinkle: $(OBJS) $(TESTOBJS) $(OBJDIR)/test.o
+$(BINDIR)/test_twinkle: $(LIBDIR)/libtwinkle.a $(TESTOBJS) $(OBJDIR)/test.o
 	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
-$(BINDIR)/fresnel_test: $(OBJS) $(OBJDIR)/fresnel_test.o
+$(BINDIR)/fresnel_test: $(LIBDIR)/libtwinkle.a $(OBJDIR)/fresnel_test.o
 	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
-$(BINDIR)/model_check: $(OBJS) $(OBJDIR)/model_check.o
+$(BINDIR)/model_check: $(LIBDIR)/libtwinkle.a $(OBJDIR)/model_check.o
 	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
-$(BINDIR)/texture_check: $(OBJS) $(OBJDIR)/texture_check.o
+$(BINDIR)/texture_check: $(LIBDIR)/libtwinkle.a $(OBJDIR)/texture_check.o
 	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
