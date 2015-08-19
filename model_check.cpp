@@ -1,5 +1,6 @@
 #include <iostream>
 #include "model.h"
+#include "scheduler.h"
 #include "material.h"
 #include "spectrum.h"
 #include "kdtree.h"
@@ -13,6 +14,36 @@ void quad_test()
   auto mesh = make_quad();
 
   cout << mesh->n(0) << endl;
+}
+
+void scheduler_test()
+{
+  LocalThreadScheduler lts;
+
+  class SleepTask : public LocalTask
+  {
+  public:
+    SleepTask(int index_) : index(index_) {}
+    int index;
+    void run() override
+    {
+      cout << "starting task " << index << "\n";
+      std::this_thread::sleep_for(std::chrono::seconds(2));
+      cout << "finishing task " << index << "\n";
+    }
+  };
+
+  int j = 0;
+  for (auto i = 0; i < 9; ++i)
+    lts.add_task(make_shared<SleepTask>(++j), SCHEDULE_HINT_NONE);
+
+  lts.complete_pending();
+  cout << "Round 2:" << endl;
+
+  for (auto i = 0; i < 9; ++i)
+    lts.add_task(make_shared<SleepTask>(++j), SCHEDULE_HINT_NONE);
+
+  lts.complete_pending();
 }
 
 void kdtree_test()
@@ -54,5 +85,6 @@ int main(int argc, char** args)
   // m.tris.size() << " tris." << endl;
 
   //kdtree_test();
-  quad_test();
+  //quad_test();
+  scheduler_test();
 }
