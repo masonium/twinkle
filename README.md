@@ -79,8 +79,9 @@ Automatic Differentiation for implicit surface rendering
 * implemented in CL?
 
 ## Priorities
-sky texture
+new sky texture
 other procedural textures
+building scene
 heightmap scene
 rough glass material
 multi-dome

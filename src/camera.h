@@ -31,7 +31,6 @@ public:
   
   PixelSample sample_pixel(const Film& f, int x, int y, Sampler& sampler) const override;
 
-private:
   Vec3 position;
   Vec3 aspect_forward;
   Vec3 up;

@@ -30,6 +30,14 @@ void usage(char** args)
   cerr << args[0] << ": WIDTH HEIGHT SAMPLES-PER-PIXEL\n";
 }
 
+shared_ptr<Camera> empty_scene(Scene& scene, scalar aspect_ratio)
+{
+  auto sun_dir = Vec3::from_euler(PI/4, PI/4);
+  scene.add(make_shared<EnvironmentalLight>(make_shared<ShirleySkyTexture>(sun_dir, 8)));
+
+  return make_shared<SphericalCamera>(Vec3::zero, -Vec3::y_axis, Vec3::z_axis);
+}
+
 PerspectiveCamera single_sphere(Scene& scene, scalar aspect_ratio)
 {
   scene.add( make_shared<Shape>( make_shared<Sphere>(Vec3::zero, 1.0),

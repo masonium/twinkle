@@ -25,8 +25,15 @@ public:
   Intersection intersect(const Ray& ray) const;
 
   spectrum environment_light_emission(const Vec3& dir) const;
+
+  const vector<shared_ptr<const Light>>& lights() const;
+  const shared_ptr<const EnvironmentalLight>& env_light() const
+  {
+    return env_light_;
+  }
+
 private:
-  vector<shared_ptr<const Shape>> shapes;
-  vector<shared_ptr<const Light>> lights;
-  shared_ptr<const EnvironmentalLight> env_light;
+  vector<shared_ptr<const Shape>> shapes_;
+  vector<shared_ptr<const Light>> lights_;
+  shared_ptr<const EnvironmentalLight> env_light_;
 };
