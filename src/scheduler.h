@@ -11,7 +11,7 @@
 using std::istream;
 using std::ostream;
 
-class Task
+class LocalTask
 {
 public:
   virtual void run() = 0;
