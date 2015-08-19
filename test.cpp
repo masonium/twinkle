@@ -6,7 +6,7 @@
 #include "sampler.h"
 #include "spectrum.h"
 
-#include "test_util.h"
+#include "tests/test_util.h"
 
 namespace
 {

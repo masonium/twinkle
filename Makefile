@@ -1,13 +1,21 @@
+# Used for debugging makefile
+#OLD_SHELL := $(SHELL)
+#SHELL = $(warning Building $@$(if $<, (from $<))%(if $?, ($? newer)))$(OLD_SHELL)
+
 ifndef CONFIG
 CONFIG = Release
 endif
 
+BINDIR = $(CONFIG)/bin
+OBJDIR = $(CONFIG)/obj
+LIBDIR = $(CONFIG)/lib
+
 CXX = g++
 CXX_VERSION = -std=c++1y
 COMMON_FLAGS = -Wall -Wextra -Wno-unused-parameter $(CXX_VERSION)
-SFLAGS =  -fsyntax-only $(COMMON_FLAGS)
-LFLAGS = -pthread -lm  -lUnitTest++
-CXXFLAGS := $(COMMON_FLAGS) -Isrc/ -Itests/ -Iextlib/
+CXXFLAGS := $(COMMON_FLAGS) -Isrc/ -Iextlib/
+SFLAGS =  -fsyntax-only $(CXXFLAGS)
+LFLAGS = -pthread -lm  -lUnitTest++ -L$(LIBDIR) -ltwinkle
 
 ifeq (${CONFIG}, Debug)
 CXXFLAGS += -g
@@ -17,42 +25,31 @@ else
 echo "CONFIG must be one of (Debug, Release)"
 endif
 
-BINDIR = $(CONFIG)/bin
-OBJDIR = $(CONFIG)/obj
-LIBDIR = $(CONFIG)/lib
-
-# Used for debugging makefile
-#OLD_SHELL := $(SHELL)
-#SHELL = $(warning Building $@$(if $<, (from $<))%(if $?, ($? newer)))$(OLD_SHELL)
-
-SRC :=
-
 SRCS := $(wildcard src/*.cpp)
--include tests/Makefile
 -include src/shapes/Makefile
 -include src/textures/Makefile
+-include src/tests/Makefile
 
 OBJSTMP := $(SRCS:.cpp=.o)
-OBJSTMP := $(OBJSTMP:src/%=$(OBJDIR)/%)
-OBJS := $(OBJSTMP:tests/%=$(OBJDIR)/%)
-
-DEPS := $(OBJS:.o=.dep)
+OBJS := $(OBJSTMP:src/%=$(OBJDIR)/%)
 
 EXE_NAMES = twinkle test_twinkle fresnel_test tonemap model_check texture_check
 EXES = $(addprefix $(BINDIR)/,$(EXE_NAMES))
-
-.PHONY: test clean
 
 STATIC_LIBS = $(LIBDIR)/libtwinkle.a
 
 all: $(EXES)
 
+DEPS := $(OBJS:.o=.dep)
 -include $(DEPS)
 
-VPATH = .:src:src/shapes:src/textures:tests
+VPATH = .:src:src/shapes:src/textures:src/tests
+
+.PHONY: test clean check-syntax
 
 $(LIBDIR)/libtwinkle.a: $(OBJS)
-	ar -rc $@ $^
+	@mkdir -p $(dir $@)
+	ar rcs $@ $^
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
@@ -64,35 +61,28 @@ $(OBJDIR)/%.o: %.cpp
 	  sed -e 's/^ *//' -e 's/$$/:/' >> $(OBJDIR)/$*.dep
 	@rm -f $(OBJDIR)/$*.dep.tmp
 
-$(BINDIR)/twinkle: $(LIBDIR)/libtwinkle.a $(OBJDIR)/main.o
+$(BINDIR)/twinkle: $(OBJDIR)/main.o $(LIBDIR)/libtwinkle.a
 	@mkdir -p $(dir $@)
-	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
+	$(CXX) -o $@ $< $(CXXFLAGS) $(LFLAGS)
 
-$(BINDIR)/tonemap: $(LIBDIR)/libtwinkle.a $(OBJDIR)/tonemap_main.o
+$(BINDIR)/tonemap: $(OBJDIR)/tonemap_main.o $(LIBDIR)/libtwinkle.a
 	@mkdir -p $(dir $@)
-	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
+	$(CXX) -o $@ $< $(CXXFLAGS) $(LFLAGS)
 
-$(BINDIR)/test_twinkle: $(LIBDIR)/libtwinkle.a $(TESTOBJS) $(OBJDIR)/test.o
+$(BINDIR)/test_twinkle: $(OBJDIR)/test.o $(LIBDIR)/libtwinkle.a
 	@mkdir -p $(dir $@)
-	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
+	$(CXX) -o $@ $< $(CXXFLAGS) $(LFLAGS)
 
-$(BINDIR)/fresnel_test: $(LIBDIR)/libtwinkle.a $(OBJDIR)/fresnel_test.o
+$(BINDIR)/model_check: $(OBJDIR)/model_check.o $(LIBDIR)/libtwinkle.a
 	@mkdir -p $(dir $@)
-	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
+	$(CXX) -o $@ $< $(CXXFLAGS) $(LFLAGS)
 
-$(BINDIR)/model_check: $(LIBDIR)/libtwinkle.a $(OBJDIR)/model_check.o
+$(BINDIR)/texture_check: $(OBJDIR)/texture_check.o $(LIBDIR)/libtwinkle.a
 	@mkdir -p $(dir $@)
-	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
-
-$(BINDIR)/texture_check: $(LIBDIR)/libtwinkle.a $(OBJDIR)/texture_check.o
-	@mkdir -p $(dir $@)
-	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
+	$(CXX) -o $@ $< $(CXXFLAGS) $(LFLAGS)
 
 test: $(BINDIR)/test_twinkle
 	$(BINDIR)/test_twinkle
 
 clean:
 	rm -rf $(CONFIG)
-
-check-syntax:
-	$(CXX) $(SFLAGS) $(CHK_SOURCES)
