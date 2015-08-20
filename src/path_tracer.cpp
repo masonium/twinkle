@@ -22,13 +22,12 @@ PathTracerIntegrator::Options::Options()
   assert( 0.0 <= rr_kill_prob && rr_kill_prob <= 1.0 );
 }
 
-
 PathTracerIntegrator::PathTracerIntegrator(const PathTracerIntegrator::Options& opt_)
   : rays_traced(0), primary_rays_traced(0), opt(opt_)
 {
 }
 
-void PathTracerIntegrator::render(const Camera* cam, const Scene* scene, Film& film)
+void PathTracerIntegrator::render(const Camera& cam, const Scene& scene, Film& film)
 {
   int num_threads = opt.num_threads;
   if (num_threads == 0)
@@ -79,7 +78,7 @@ void PathTracerIntegrator::render(const Camera* cam, const Scene* scene, Film& f
   {
     films.push_back(make_shared<Film>(film.width, film.height, film.filter));
     threads.push_back(thread(&PathTracerIntegrator::render_thread,
-                             this, std::ref(queue), cam, scene, films[i]));
+                             this, std::ref(queue), std::ref(cam), std::ref(scene), films[i]));
   }
 
   // Merge and join the results.
@@ -90,24 +89,24 @@ void PathTracerIntegrator::render(const Camera* cam, const Scene* scene, Film& f
     film.merge(*f.get());
 }
 
-spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
+spectrum PathTracerIntegrator::trace_ray(const Scene& scene, const Ray& ray,
                                          Sampler& sampler, int depth) const
 {
   ++rays_traced;
   if (depth == 1)
     ++primary_rays_traced;
   
-  Intersection isect = scene->intersect(ray);
+  Intersection isect = scene.intersect(ray);
   const Vec3 ray_dir_origin = -ray.direction.normal();
   if (!isect.valid())
-    return scene->environment_light_emission(-ray_dir_origin);
+    return scene.environment_light_emission(-ray_dir_origin);
   if (isect.is_emissive())
     return isect.emission();
 
   // direct lighting: randomly choose a light or emissive shape, and contribute
   // the light from that shape if appropriate
   scalar light_prob;
-  const Light* light = scene->sample_light(sampler.sample_1d(), light_prob);
+  const Light* light = scene.sample_light(sampler.sample_1d(), light_prob);
 
   spectrum total(0);
 
@@ -164,8 +163,8 @@ spectrum PathTracerIntegrator::trace_ray(const Scene* scene, const Ray& ray,
   return total * isect.texture_at_point();
 }
 
-void PathTracerIntegrator::render_thread(TaskQueue& queue, const Camera* cam,
-                                         const Scene* scene, shared_ptr<Film> film) const
+void PathTracerIntegrator::render_thread(TaskQueue& queue, const Camera& cam,
+                                         const Scene& scene, shared_ptr<Film> film) const
 {
   auto sampler = make_shared<UniformSampler>();
   
@@ -193,7 +192,7 @@ void PathTracerIntegrator::render_thread(TaskQueue& queue, const Camera* cam,
           int px = x + task.rect.x;
           int py = y + task.rect.y;
           
-          PixelSample ps = cam->sample_pixel(*film, px, py, *sampler);
+          PixelSample ps = cam.sample_pixel(*film, px, py, *sampler);
           
           spectrum s = trace_ray(scene, ps.ray, *sampler, 1);
 

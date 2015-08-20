@@ -40,15 +40,15 @@ public:
 
   PathTracerIntegrator(const Options& opt);
 
-  void render(const Camera* cam, const Scene* scene, Film& film) override;
-  spectrum trace_ray(const Scene* scene, const Ray& r,
+  void render(const Camera& cam, const Scene& scene, Film& film) override;
+  spectrum trace_ray(const Scene& scene, const Ray& r,
                      Sampler& sampler, int depth) const;
 
   long num_rays_traced() const { return rays_traced; }
   long num_primary_rays_traced() const { return primary_rays_traced; }
 
 private:
-  void render_thread(TaskQueue& queue, const Camera* cam, const Scene* scene,
+  void render_thread(TaskQueue& queue, const Camera& cam, const Scene& scene,
                      shared_ptr<Film> film) const;
 
   mutable std::atomic_ullong rays_traced;

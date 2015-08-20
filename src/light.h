@@ -29,7 +29,7 @@ public:
   Vec3 direction( ) const { return ray.direction.normal(); }
   scalar p() const { return p_; }
 
-  bool is_occluded( const Scene* scene ) const;
+  bool is_occluded( const Scene& scene ) const;
 
   spectrum emission() const { return em; }
 
