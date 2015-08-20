@@ -19,10 +19,10 @@ public:
 
   DebugIntegrator(Type type);
 
-  void render(const Camera* cam, const Scene* scene, Film& film) override;
+  void render(const Camera& cam, const Scene& scene, Film& film) override;
 
 private:
-  spectrum trace_ray(const Ray& ray, const Scene* scene, ShapeColorMap& scm);
+  spectrum trace_ray(const Ray& ray, const Scene& scene, ShapeColorMap& scm);
 
   std::unordered_map<Shape const*, int> shape_ids;
   Type type;

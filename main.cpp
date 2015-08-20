@@ -7,6 +7,7 @@
 #include "scene.h"
 #include "bsdf.h"
 #include "path_tracer.h"
+//#include "directlightingintegrator.h"
 #include "util.h"
 #include "model.h"
 #include "material.h"
@@ -191,7 +192,7 @@ scalar capsule_sdf(Vec3 v)
   return ( va - ba * s ).norm() - 0.1;
 }
 
-shared_ptr<Camera> default_scene(Scene& scene, scalar aspect_ratio)
+shared_ptr<Camera> default_scene(Scene& scene, scalar aspect_ratio, int angle)
 {
   auto glass = make_shared<GlassMaterial>();
   auto mirror = make_shared<MirrorMaterial>();
@@ -199,11 +200,11 @@ shared_ptr<Camera> default_scene(Scene& scene, scalar aspect_ratio)
   auto impf = sphere_sdf;
   auto implicit = make_shared<ImplicitSurface>(impf, gradient_from_sdf(impf), 1.0);
   auto sphere = make_shared<Sphere>(Vec3{0.0, 0.0, 0.0}, 1.0);
-  scene.add(make_shared<Shape>(implicit, glass));
+  //scene.add(make_shared<Shape>(implicit, glass));
 
   scalar distance_from_center = 5.0;
   scalar sphere_radius = 1.0;
-  scalar fill_rate = 0.5;
+  scalar fill_rate = 0.75;
 
   const int num_sides = fill_rate * PI / atan(sphere_radius / (distance_from_center));
 
@@ -222,15 +223,16 @@ shared_ptr<Camera> default_scene(Scene& scene, scalar aspect_ratio)
   scene.add(make_shared<Shape>(make_shared<Plane>(Vec3{0.0, 0.0, 1.0}, sphere_radius),
                                make_shared<RoughColorMaterial>(0.0, spectrum{0.6})));
 
-  //auto env_light_tex = make_shared<Checkerboard2D>(spectrum{1.0}, spectrum{0.0}, 2, 1);
+  auto env_light_tex = make_shared<Checkerboard2D>(spectrum{1.0}, spectrum{0.0}, 2, 1);
   //auto env_light_tex = make_shared<SolidColor>(spectrum{1.0});
-  auto env_light_tex = make_shared<ShirleySkyTexture>(Vec3{0, 0, 1}, 20);
+  //auto env_light_tex = make_shared<ShirleySkyTexture>(Vec3{0, 0, 1}, 20);
   scene.add(make_shared<EnvironmentalLight>(env_light_tex));
 
-  auto cam_pos = Mat33::from_axis_angle(Vec3::z_axis, -PI/1.33) * Vec3{0, 7.5, 2.0};
+  auto cam_pos = Mat33::from_axis_angle(Vec3::z_axis, angle * PI / 180) * Vec3{0, 7.5, 2.0};
   auto look_at = Vec3{0.0, 0.0, 0.0};
 
-  return make_shared<SphericalCamera>(cam_pos, look_at, Vec3{0, 0, 1});
+  //return make_shared<SphericalCamera>(cam_pos, look_at, Vec3{0, 0, 1});
+  return make_shared<PerspectiveCamera>(cam_pos, look_at, Vec3{0, 0, 1}, PI/2, aspect_ratio);
 }
 
 
@@ -257,30 +259,34 @@ int main(int argc, char** args)
     exit(1);
   }
 
-  const uint angle = atoi(args[5]);
-
   Scene scene;
-  auto cam = default_scene(scene, scalar(WIDTH)/scalar(HEIGHT));
+  int angle = atoi(args[5]);
+  auto cam = default_scene(scene, scalar(WIDTH)/scalar(HEIGHT), angle);
 
   auto bf = make_shared<BoxFilter>();
   Film f(WIDTH, HEIGHT, bf.get());
 
   PathTracerIntegrator::Options opt;
-
   opt.samples_per_pixel = per_pixel;
   if (argc >= 5)
     opt.num_threads = atoi(args[4]);
   else
     opt.num_threads = 0;
   opt.max_depth = 16;
-
   PathTracerIntegrator igr(opt);
+  
+/*
+  DirectLightingIntegrator::Options opt;
+  opt.samples_per_pixel = 4;
+  opt.lighting_samples = 64;
+  DirectLightingIntegrator igr(opt);
+*/  
   //DebugIntegrator igr(DebugIntegrator::DI_NORMAL);
 
   // cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, "
   //      << per_pixel << " samples per pixel\n";
 
-  igr.render(cam.get(), &scene, f);
+  igr.render(*cam, scene, f);
 
   // auto mapper = make_shared<LinearToneMapper>();
   auto mapper = make_shared<ReinhardGlobal>();

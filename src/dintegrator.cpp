@@ -13,7 +13,7 @@ DebugIntegrator::DebugIntegrator(DebugIntegrator::Type t) : type(t)
     color_list[i] = spectrum::from_hsv(i * 18, 0.8, 1.0);
 }
 
-void DebugIntegrator::render(const Camera* cam, const Scene* scene, Film& film)
+void DebugIntegrator::render(const Camera& cam, const Scene& scene, Film& film)
 {
   ShapeColorMap scm;
   ConstSampler sampler(0.5, 0.5);
@@ -22,7 +22,7 @@ void DebugIntegrator::render(const Camera* cam, const Scene* scene, Film& film)
   {
     for (uint x = 0; x < film.width; ++x)
     {
-      PixelSample ps = cam->sample_pixel(film, x, y, sampler);
+      PixelSample ps = cam.sample_pixel(film, x, y, sampler);
 
       spectrum s = trace_ray(ps.ray, scene, scm);
       film.add_sample(ps, s);
@@ -36,9 +36,9 @@ spectrum dir_to_spectrum(const Vec3& dir)
    return 0.5 * (c + spectrum{0.5});
 }
 
-spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene* scene, ShapeColorMap& scm)
+spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene, ShapeColorMap& scm)
 {
-  Intersection isect = scene->intersect(ray);
+  Intersection isect = scene.intersect(ray);
   
   if (type == DI_ISECT)
     return spectrum{scalar(isect.valid() ? 1.0 : 0.0)};
