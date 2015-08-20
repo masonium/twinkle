@@ -14,7 +14,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(const DirectLightingIntegrato
 {
 }
 
-void DirectLightingIntegrator::render(const Camera* cam, const Scene* scene, Film& film)
+void DirectLightingIntegrator::render(const Camera& cam, const Scene& scene, Film& film)
 {
   auto pixel_sampler = make_shared<UniformSampler>();
 
@@ -26,25 +26,25 @@ void DirectLightingIntegrator::render(const Camera* cam, const Scene* scene, Fil
     {
       for (auto d = 0u; d < options.samples_per_pixel; ++d)
       {
-        auto ps = cam->sample_pixel(film, x, y, *pixel_sampler);
+        auto ps = cam.sample_pixel(film, x, y, *pixel_sampler);
         film.add_sample(ps, trace_ray(ps.ray, scene, shading_sampler));
       }
     }
   }
 }
 
-spectrum DirectLightingIntegrator::trace_ray(const Ray& ray, const Scene* scene,
+spectrum DirectLightingIntegrator::trace_ray(const Ray& ray, const Scene& scene,
                                              shared_ptr<Sampler> shading_sampler) const
 {
-  auto isect = scene->intersect(ray);
+  auto isect = scene.intersect(ray);
   if (!isect)
-    return scene->environment_light_emission(ray.direction.normal());
+    return scene.environment_light_emission(ray.direction.normal());
 
   auto view_vector = -ray.direction.normal();
   const auto isect_normal = isect.normal;
 
   // For now, simple integrations
-  auto lights = scene->lights();
+  auto lights = scene.lights();
   int num_lights = lights.size();
 
   spectrum total{0};
@@ -53,7 +53,7 @@ spectrum DirectLightingIntegrator::trace_ray(const Ray& ray, const Scene* scene,
   int cum_samples = 0;
   int local_light_samples;
 
-  if (scene->env_light())
+  if (scene.env_light())
   {
     if (num_lights > 0)
     {
@@ -97,8 +97,8 @@ spectrum DirectLightingIntegrator::trace_ray(const Ray& ray, const Scene* scene,
     scalar refl = isect.reflectance(l_dir, view_vector);
 
     auto light_ray = Ray{new_pos, l_dir};
-    if (!scene->intersect(light_ray))
-      total += l_dir.dot(isect_normal) * (refl / l_p) * scene->environment_light_emission(l_dir);
+    if (!scene.intersect(light_ray))
+      total += l_dir.dot(isect_normal) * (refl / l_p) * scene.environment_light_emission(l_dir);
   }
 
   return total * isect.texture_at_point() / options.lighting_samples;

@@ -17,11 +17,11 @@ public:
   DirectLightingIntegrator() {}
   DirectLightingIntegrator(const Options& opt);
 
-  void render(const Camera* cam, const Scene* scene, Film& film)  override;
+  void render(const Camera& cam, const Scene& scene, Film& film)  override;
 
   virtual ~DirectLightingIntegrator() {}
 private:
-  spectrum trace_ray(const Ray& ray, const Scene* scene, shared_ptr<Sampler> sampler) const;
+  spectrum trace_ray(const Ray& ray, const Scene& scene, shared_ptr<Sampler> sampler) const;
 
   Options options;
 };
