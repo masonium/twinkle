@@ -8,11 +8,6 @@ using std::future;
 using std::unique_lock;
 using std::mutex;
 
-class ThreadQuitTask : public LocalTask
-{
-  void run() override {}
-};
-
 void LocalThreadScheduler::worker(LocalThreadScheduler* scheduler,
                                   int worker_id,
                                   std::future<int>&& fut)
@@ -32,7 +27,7 @@ void LocalThreadScheduler::worker(LocalThreadScheduler* scheduler,
       lock.unlock();
 
       scheduler->on_task_started(worker_id, task);
-      task->run();
+      task->run(worker_id);
       scheduler->on_task_completed(worker_id, task);
     }
   }

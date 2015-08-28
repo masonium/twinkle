@@ -15,7 +15,7 @@ using std::shared_ptr;
 class LocalTask
 {
 public:
-  virtual void run() = 0;
+  virtual void run(uint worker_id) = 0;
 
   virtual ~LocalTask() {}
 };
@@ -51,7 +51,7 @@ class LocalThreadScheduler : public Scheduler
 public:
   LocalThreadScheduler(uint num_threads_ = 0);
 
-  void add_task(shared_ptr<LocalTask> t, ScheduleHint hint) override;
+  void add_task(shared_ptr<LocalTask> t, ScheduleHint hint = SCHEDULE_HINT_NONE) override;
 
   /* blocks until all current tasks are complete. */
   void complete_pending() override;

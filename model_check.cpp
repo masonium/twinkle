@@ -25,7 +25,7 @@ void scheduler_test()
   public:
     SleepTask(int index_) : index(index_) {}
     int index;
-    void run() override
+    void run(uint task) override
     {
       cout << "starting task " << index << "\n";
       std::this_thread::sleep_for(std::chrono::seconds(2));

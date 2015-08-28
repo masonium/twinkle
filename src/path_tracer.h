@@ -1,6 +1,7 @@
 #pragma once
 
 #include "integrator.h"
+#include "scheduler.h"
 #include "film.h"
 
 #include <atomic>
@@ -20,8 +21,6 @@ struct Task
   Film::Rect rect;
   uint samples_per_pixel;
 };
-
-typedef queue<Task> TaskQueue;
 
 class PathTracerIntegrator : public Integrator
 {
@@ -48,12 +47,29 @@ public:
   long num_primary_rays_traced() const { return primary_rays_traced; }
 
 private:
-  void render_thread(TaskQueue& queue, const Camera& cam, const Scene& scene,
-                     shared_ptr<Film> film) const;
+  class RenderTask : public LocalTask
+  {
+  public:
+    RenderTask(const PathTracerIntegrator* pit, const Camera& cam_,
+               const Scene& scene, Film::Rect rect, uint spp, vector<Film>& films);
+
+    void run(uint id) override;
+
+  private:
+    const PathTracerIntegrator* owner;
+    const Camera& cam;
+    const Scene& scene;
+    Film::Rect rect;
+    uint samples_per_pixel;
+    vector<Film>& films;
+  };
+
+  void render_rect(const Camera& cam, const Scene& scene,
+                   const Film::Rect& rect, uint samples_per_pixel,
+                   Film& film) const;
 
   mutable std::atomic_ullong rays_traced;
   mutable std::atomic_ullong primary_rays_traced;
-  mutable mutex render_queue_mutex;
 
   Options opt;
 };
