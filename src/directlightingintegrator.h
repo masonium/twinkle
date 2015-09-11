@@ -1,6 +1,9 @@
 #pragma once
 
 #include "integrator.h"
+#include "grid_tasks.h"
+#include "scheduler.h"
+#include "film.h"
 
 class DirectLightingIntegrator : public Integrator
 {
@@ -8,10 +11,12 @@ public:
   struct Options
   {
     Options();
-    
+
+    double env_light_weight;
     unsigned int samples_per_pixel;
     unsigned int lighting_samples;
-    double env_light_weight;
+    uint num_threads;
+    uint subdivision;
   };
 
   DirectLightingIntegrator() {}
@@ -20,8 +25,32 @@ public:
   void render(const Camera& cam, const Scene& scene, Film& film)  override;
 
   virtual ~DirectLightingIntegrator() {}
+
 private:
-  spectrum trace_ray(const Ray& ray, const Scene& scene, shared_ptr<Sampler> sampler) const;
+  class RenderTask : public LocalTask
+  {
+  public:
+    RenderTask(const DirectLightingIntegrator* dli, const Camera& cam_,
+               const Scene& scene, const Film::Rect& rect_, uint spp);
+
+    void run(uint id) override;
+
+    SampleVector samples;
+
+  private:
+    const DirectLightingIntegrator* owner;
+    const Camera& cam;
+    const Scene& scene;
+    Film::Rect rect;
+    uint spp;
+  };
+
+  SampleVector render_rect(const Camera& cam, const Scene& scene,
+                           const Film::Rect& parent_rect,
+                           const Film::Rect& rect, uint samples_per_pixel) const;
+
+
+  spectrum trace_ray(const Scene& scene, const Ray& ray, Sampler& sampler) const;
 
   Options options;
 };

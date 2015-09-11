@@ -15,11 +15,11 @@ using std::ostream;
 class Camera
 {
 public:
-  virtual PixelSample sample_pixel(const Film& f, int x, int y, Sampler& sampler) const = 0;
+  virtual PixelSample sample_pixel(uint w, uint h, int x, int y, Sampler& sampler) const = 0;
   virtual ~Camera() { }
 
 protected:
-  pair<scalar, scalar> to_unit_coord(const Film& f, int x, int y, Sample2D samp) const;
+  pair<scalar, scalar> to_unit_coord(uint w, uint h, int x, int y, Sample2D samp) const;
 };
 
 class PerspectiveCamera : public Camera
@@ -29,7 +29,7 @@ public:
          scalar fov_, scalar aspect_,
          scalar aperture_radius_ = 0.0, scalar f = 1.0);
   
-  PixelSample sample_pixel(const Film& f, int x, int y, Sampler& sampler) const override;
+  PixelSample sample_pixel(uint w, uint h, int x, int y, Sampler& sampler) const override;
 
   Vec3 position;
   Vec3 aspect_forward;
@@ -45,7 +45,7 @@ class SphericalCamera : public Camera
 public:
   SphericalCamera(Vec3 pos, Vec3 lookat_, Vec3 up);
                   
-  PixelSample sample_pixel(const Film& f, int x, int y, Sampler& sampler) const override;
+  PixelSample sample_pixel(uint w, uint h, int x, int y, Sampler& sampler) const override;
 
 private:  
   Vec3 position;

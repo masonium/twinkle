@@ -22,7 +22,7 @@ void DebugIntegrator::render(const Camera& cam, const Scene& scene, Film& film)
   {
     for (uint x = 0; x < film.width; ++x)
     {
-      PixelSample ps = cam.sample_pixel(film, x, y, sampler);
+      PixelSample ps = cam.sample_pixel(film.width, film.height, x, y, sampler);
 
       spectrum s = trace_ray(ps.ray, scene, scm);
       film.add_sample(ps, s);

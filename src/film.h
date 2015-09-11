@@ -8,6 +8,7 @@
 #include "ray.h"
 #include "tonemap.h"
 
+
 using std::vector;
 using std::ostream;
 using std::weak_ptr;
@@ -26,6 +27,9 @@ struct PixelSample
   Ray ray;
 };
 
+using PixelSampleValue = pair<PixelSample, spectrum>;
+using SampleVector = vector<PixelSampleValue>;
+
 /**
  * An image sample filter combines adds a pixel sample to the film. A given
  * pixel sample is allowed to contribute to multiple pixels, but the filter must
@@ -34,7 +38,7 @@ struct PixelSample
 class ImageSampleFilter
 {
 public:
-  virtual void add_sample(Film* film, const PixelSample& p, const spectrum& s) const = 0;
+  virtual void add_sample(Film& film, const PixelSample& p, const spectrum& s) const = 0;
 
   virtual ~ImageSampleFilter() { }
 };
@@ -46,8 +50,10 @@ public:
 class BoxFilter : public ImageSampleFilter
 {
 public:
-  void add_sample(Film* film, const PixelSample& p, const spectrum& s) const override;
+  void add_sample(Film& film, const PixelSample& p, const spectrum& s) const override;
 };
+
+class FilmWindow;
 
 class Film
 {
@@ -72,14 +78,23 @@ public:
   
   Film(uint w_, uint h_, const ImageSampleFilter* f);
   Film(istream& in);
-  
+
+  Film(const Film& f);
+  Film& operator =(const Film& f) = delete;
+  Film& operator =(Film&& f) = delete;
+
+  Film(Film&& f) ;
+
   void add_sample(const PixelSample& ps, const spectrum& s);
-  
+  Rect rect() const { return Rect(0, 0, width, height); }
+
+  FilmWindow window(const Film::Rect& rect) const;
+
   void render_to_console(ostream& out) const;
   void render_to_ppm(ostream& out, weak_ptr<ToneMapper> mapper);
   void render_to_twi(ostream& out) const;
   
-  void merge(const Film& other);
+  void merge(const SampleVector& other);
   
   Pixel at(int x, int y) const
   {
@@ -91,7 +106,7 @@ public:
     return plate[index(x, y)];
   }
 
-  const uint32_t width, height;  
+  const uint width, height;  
   const ImageSampleFilter* filter;
 
 private:

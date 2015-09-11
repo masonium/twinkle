@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <sstream>
 
 #include "camera.h"
 #include "integrator.h"
@@ -7,7 +8,7 @@
 #include "scene.h"
 #include "bsdf.h"
 #include "path_tracer.h"
-//#include "directlightingintegrator.h"
+#include "directlightingintegrator.h"
 #include "util.h"
 #include "model.h"
 #include "material.h"
@@ -274,13 +275,14 @@ int main(int argc, char** args)
     opt.num_threads = 0;
   opt.max_depth = 16;
   PathTracerIntegrator igr(opt);
+
+  // DirectLightingIntegrator::Options opt;
+  // opt.samples_per_pixel = 1;
+  // opt.lighting_samples = 16;
+  // opt.subdivision = atoi(args[5]);
+  // opt.num_threads = 1;
+  // DirectLightingIntegrator igr(opt);
   
-/*
-  DirectLightingIntegrator::Options opt;
-  opt.samples_per_pixel = 4;
-  opt.lighting_samples = 64;
-  DirectLightingIntegrator igr(opt);
-*/  
   //DebugIntegrator igr(DebugIntegrator::DI_NORMAL);
 
   // cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, "
@@ -293,7 +295,8 @@ int main(int argc, char** args)
   //auto mapper = make_shared<ReinhardLocal>(ReinhardLocal::Options{});
   //auto mapper = make_shared<CutoffToneMapper>();
 
-  f.render_to_ppm(cout, mapper);
+  std::ostringstream out;
+  f.render_to_ppm(out, mapper);
   //f.render_to_twi(cout);
   //f.render_to_console(cout);
 

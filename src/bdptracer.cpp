@@ -21,7 +21,7 @@ void BidirectionalPathTracer::construct_eye_path(
   Sampler& sampler, const Camera* cam,
   const Scene* scene, vector<PathVertex>& verts)
 {
-  auto ps = cam->sample_pixel(film, x, y, sampler);
+  auto ps = cam->sample_pixel(film.width, film.height, x, y, sampler);
   verts.emplace_back(ps.ray.position, PV_EYE);
 
   auto ray = ps.ray;

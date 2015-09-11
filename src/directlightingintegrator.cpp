@@ -1,10 +1,17 @@
 #include "directlightingintegrator.h"
+#include "scheduler.h"
 #include "sampler.h"
+#include "util.h"
+#include <iostream>
+#include <algorithm>
 
+using std::cerr;
 using std::make_shared;
+using std::transform;
+using std::for_each;
 
 DirectLightingIntegrator::Options::Options()
-  : samples_per_pixel(4), lighting_samples(16), env_light_weight(.50)
+  : env_light_weight(.50), samples_per_pixel(4), lighting_samples(16), num_threads(1), subdivision(16)
 {
 
 }
@@ -16,25 +23,32 @@ DirectLightingIntegrator::DirectLightingIntegrator(const DirectLightingIntegrato
 
 void DirectLightingIntegrator::render(const Camera& cam, const Scene& scene, Film& film)
 {
-  auto pixel_sampler = make_shared<UniformSampler>();
+  uint num_threads = options.num_threads ? options.num_threads : num_system_procs();
 
-  auto shading_sampler = make_shared<UniformSampler>();
+  LocalThreadScheduler lts{num_threads};
+  vector<Film> films;
 
-  for (auto y = 0u; y < film.height; ++y)
-  {
-    for (auto x = 0u; x < film.width; ++x)
-    {
-      for (auto d = 0u; d < options.samples_per_pixel; ++d)
-      {
-        auto ps = cam.sample_pixel(film, x, y, *pixel_sampler);
-        film.add_sample(ps, trace_ray(ps.ray, scene, shading_sampler));
-      }
-    }
-  }
+  grid_subtask_options opt;
+  opt.grid_subdivision = options.subdivision;
+  auto subrects = subtasks_from_grid(film.width, film.height, opt);
+  vector<shared_ptr<RenderTask>> render_tasks(subrects.size());
+  transform(subrects.begin(), subrects.end(), render_tasks.begin(),
+            [&](auto& rect) { return make_shared<RenderTask>(this, cam, scene, rect, options.samples_per_pixel); });
+
+  for_each(render_tasks.begin(), render_tasks.end(),
+           [&](auto& task) { lts.add_task(task); });
+
+  // for (const auto& rect: subrects)
+  //   lts->add_task(make_shared<RenderTask>(this, cam, scene, rect, options.samples_per_pixel, films));
+
+  lts.complete_pending();
+
+  for (const auto& task: render_tasks)
+    film.merge(task->samples);
 }
 
-spectrum DirectLightingIntegrator::trace_ray(const Ray& ray, const Scene& scene,
-                                             shared_ptr<Sampler> shading_sampler) const
+spectrum DirectLightingIntegrator::trace_ray(const Scene& scene, const Ray& ray,
+                                             Sampler& shading_sampler) const
 {
   auto isect = scene.intersect(ray);
   if (!isect)
@@ -78,7 +92,7 @@ spectrum DirectLightingIntegrator::trace_ray(const Ray& ray, const Scene& scene,
 
     for (int s = 0; s < num_samples; ++s)
     {
-      auto se = light->sample_emission(isect, *shading_sampler);
+      auto se = light->sample_emission(isect, shading_sampler);
       auto NL = std::max<scalar>(se.direction().dot(isect_normal), 0.0);
 
       if (NL > 0 && !se.is_occluded(scene))
@@ -93,7 +107,7 @@ spectrum DirectLightingIntegrator::trace_ray(const Ray& ray, const Scene& scene,
   for (int s = 0; s < num_env_samples; ++s)
   {
     scalar l_p;
-    Vec3 l_dir = normal_rotation * cosine_weighted_hemisphere_sample(shading_sampler->sample_2d(), l_p);
+    Vec3 l_dir = normal_rotation * cosine_weighted_hemisphere_sample(shading_sampler.sample_2d(), l_p);
     scalar refl = isect.reflectance(l_dir, view_vector);
 
     auto light_ray = Ray{new_pos, l_dir};
@@ -102,4 +116,44 @@ spectrum DirectLightingIntegrator::trace_ray(const Ray& ray, const Scene& scene,
   }
 
   return total * isect.texture_at_point() / options.lighting_samples;
+}
+
+SampleVector DirectLightingIntegrator::render_rect(
+  const Camera& cam, const Scene& scene, const Film::Rect& parent_rect,
+  const Film::Rect& render_rect, uint samples_per_pixel) const
+{
+  auto sampler = UniformSampler{};
+  SampleVector samples;
+
+  for (uint x = 0; x < render_rect.width; ++x)
+  {
+    for (uint y = 0; y < render_rect.height; ++y)
+    {
+      for (uint d = 0; d < samples_per_pixel; ++d)
+      {
+        int px = x + render_rect.x;
+        int py = y + render_rect.y;
+
+        PixelSample ps = cam.sample_pixel(parent_rect.width, parent_rect.height, px, py, sampler);
+
+        spectrum s = trace_ray(scene, ps.ray, sampler);
+
+        samples.emplace_back(ps, s);
+      }
+    }
+  }
+
+  return samples;
+}
+
+DirectLightingIntegrator::RenderTask::RenderTask(
+  const DirectLightingIntegrator* pit, const Camera& cam_, const Scene& scene_,
+  const Film::Rect& rect_, uint spp_) :
+  window(rect_), owner(pit), cam(cam_), scene(scene_), rect(rect_), spp(spp_)
+{
+}
+
+void DirectLightingIntegrator::RenderTask::run(uint worker_id)
+{
+  owner->render_rect(cam, scene, rect, spp, window);
 }

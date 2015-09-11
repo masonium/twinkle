@@ -3,9 +3,9 @@
 using std::tie;
 using std::make_pair;
 
-pair<scalar, scalar> Camera::to_unit_coord(const Film& f, int x, int y, Sample2D samp) const
+pair<scalar, scalar> Camera::to_unit_coord(uint w, uint h, int x, int y, Sample2D samp) const
 {
-  const scalar dw = 1.0 / f.width, dh = 1.0 / f.height;
+  const scalar dw = 1.0 / w, dh = 1.0 / h;
   const scalar fx = (x + samp[0]) * dw - 0.5, fy = (y + samp[1]) * dh - 0.5;
   return make_pair(fx, fy);
 }
@@ -22,11 +22,11 @@ PerspectiveCamera::PerspectiveCamera(Vec3 pos, Vec3 lookat_, Vec3 up_,
   aspect_forward = forward.normal() * 0.5 / tan(fov_ / 2); 
 }
 
-PixelSample PerspectiveCamera::sample_pixel(const Film& f, int x, int y, Sampler& sampler) const
+PixelSample PerspectiveCamera::sample_pixel(uint w, uint h, int x, int y, Sampler& sampler) const
 {
   auto ps = sampler.sample_2d();
   scalar fx, fy;
-  tie(fx, fy) = to_unit_coord(f, x, y, ps);
+  tie(fx, fy) = to_unit_coord(w, h, x, y, ps);
 
   Ray r{ position, up * fy + right * fx * aspect + aspect_forward };
   
@@ -57,11 +57,11 @@ SphericalCamera::SphericalCamera(Vec3 pos, Vec3 lookat_, Vec3 up_) :
   rot_mat = Mat33(right, forward, up).transpose();
 }
 
-PixelSample SphericalCamera::sample_pixel(const Film& f, int x, int y, Sampler& sampler) const
+PixelSample SphericalCamera::sample_pixel(uint w, uint h, int x, int y, Sampler& sampler) const
 {
   auto ps = sampler.sample_2d();
   scalar fx, fy;
-  tie(fx, fy) = to_unit_coord(f, x, y, ps);
+  tie(fx, fy) = to_unit_coord(w, h, x, y, ps);
 
   const scalar phi = (0.5 - fy) * PI, theta = (fx + 0.5) * (2 * PI);
 

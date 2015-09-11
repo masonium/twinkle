@@ -1,6 +1,7 @@
 #include "path_tracer.h"
 #include "util.h"
 #include "scheduler.h"
+#include "grid_tasks.h"
 #include <iostream>
 #include <queue>
 #include <thread>
@@ -32,41 +33,16 @@ void PathTracerIntegrator::render(const Camera& cam, const Scene& scene, Film& f
 {
   int num_threads = opt.num_threads;
 
-  const uint PER_SIDE = 2;
-  const int SAMPLES_PER_TASK = 16;
-
   unique_ptr<LocalThreadScheduler> lts{new LocalThreadScheduler(num_threads)};
-  
-  int samples_left = opt.samples_per_pixel;
-
-  // Create and run the threads.
   vector<Film> films;
   for (int i = 0; i < num_threads; ++i)
   {
     films.emplace_back(film.width, film.height, film.filter);
   }
-  
-  // Populate the task queue.
-  while (samples_left > 0)
-  {
-    int task_samples = min(samples_left, SAMPLES_PER_TASK);
-    samples_left -= SAMPLES_PER_TASK;
-    for (uint i = 0; i < PER_SIDE; ++i)
-    {
-      uint x = film.width * i / PER_SIDE;
-      uint w = film.width * (i+1) / PER_SIDE - film.width * i / PER_SIDE;
-      
-      for (uint j = 0; j < PER_SIDE; ++j)
-      {
-        uint y = film.height * j / PER_SIDE;
-        uint h = film.height * (j+1) / PER_SIDE - film.height * j / PER_SIDE;
 
-        shared_ptr<LocalTask> task(new RenderTask(this, cam, scene, 
-                                                  Film::Rect(x, y, w, h), task_samples, films));
-        lts->add_task(task);
-      }
-    }
-  }
+  auto subrects = subtasks_from_grid(film.width, film.height, num_threads);
+  for (const auto& rect: subrects)
+    lts->add_task(make_shared<RenderTask>(this, cam, scene, rect, opt.samples_per_pixel, films));
 
   lts->complete_pending();
 
@@ -153,20 +129,23 @@ void PathTracerIntegrator::render_rect(const Camera& cam, const Scene& scene,
                                        Film& film) const
 {
   auto sampler = UniformSampler{};
+
+//  std::cerr  << "Printing width: " << film.width << "\n";
   
   for (uint x = 0; x < rect.width; ++x)
   {
     for (uint y = 0; y < rect.height; ++y)
     {
+      const int px = x + rect.x;
+      const int py = y + rect.y;
+          
       for (uint d = 0; d < samples_per_pixel; ++d)
       {
-        int px = x + rect.x;
-        int py = y + rect.y;
-          
+//        std::cerr << "Printing width: " << d << " " << film.width << "\n";
         PixelSample ps = cam.sample_pixel(film, px, py, sampler);
           
         spectrum s = trace_ray(scene, ps.ray, sampler, 1);
-
+//        std::cerr << "Printing width: " << d << " " << film.width << "\n";
         film.add_sample(ps, s);
       }
     }
@@ -175,12 +154,12 @@ void PathTracerIntegrator::render_rect(const Camera& cam, const Scene& scene,
 
 PathTracerIntegrator::RenderTask::RenderTask(
   const PathTracerIntegrator* pit, const Camera& cam_, const Scene& scene_,
-  Film::Rect rect_, uint spp, vector<Film>& films_) :
-  owner(pit), cam(cam_), scene(scene_), rect(rect_), samples_per_pixel(spp), films(films_)
+  const Film::Rect& rect_, uint spp_, vector<Film>& films_) :
+  owner(pit), cam(cam_), scene(scene_), rect(rect_), spp(spp_), films(films_)
 {
 }
 
 void PathTracerIntegrator::RenderTask::run(uint worker_id)
 {
-  owner->render_rect(cam, scene, rect, samples_per_pixel, films[worker_id]);
+  owner->render_rect(cam, scene, rect, spp, films[worker_id]);
 }

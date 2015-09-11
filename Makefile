@@ -2,6 +2,8 @@
 #OLD_SHELL := $(SHELL)
 #SHELL = $(warning Building $@$(if $<, (from $<))%(if $?, ($? newer)))$(OLD_SHELL)
 
+.PHONY: test clean check-syntax debug release
+
 ifndef CONFIG
 CONFIG = Release
 endif
@@ -33,19 +35,25 @@ SRCS := $(wildcard src/*.cpp)
 OBJSTMP := $(SRCS:.cpp=.o)
 OBJS := $(OBJSTMP:src/%=$(OBJDIR)/%)
 
-EXE_NAMES = twinkle test_twinkle fresnel_test tonemap model_check texture_check
+EXE_NAMES = twinkle test_twinkle tonemap model_check texture_check
 EXES = $(addprefix $(BINDIR)/,$(EXE_NAMES))
 
 STATIC_LIBS = $(LIBDIR)/libtwinkle.a
 
 all: $(EXES)
 
+release:
+	make CONFIG=Release all ${OPTIONS}
+
+debug:
+	make CONFIG=Debug all ${OPTIONS}
+cleandebug debugclean:
+	make CONFIG=Debug clean ${OPTIONS}
+
 DEPS := $(OBJS:.o=.dep)
 -include $(DEPS)
 
 VPATH = .:src:src/shapes:src/textures:src/tests
-
-.PHONY: test clean check-syntax
 
 $(LIBDIR)/libtwinkle.a: $(OBJS)
 	@mkdir -p $(dir $@)

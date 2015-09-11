@@ -17,6 +17,18 @@ Film::Film(uint w_, uint h_, const ImageSampleFilter* f)
 {
 }
 
+Film::Film(const Film& f)
+  : width(f.width), height(f.height), filter(f.filter), plate(f.plate)
+{
+}
+
+Film::Film(Film&& f) 
+  : width(f.width), height(f.height), filter(f.filter)
+{
+  std::swap(plate, f.plate);
+}
+
+
 
 Film::Film(istream& in) : width(0), height(0), filter(new BoxFilter)
 {
@@ -40,9 +52,14 @@ Film::Film(istream& in) : width(0), height(0), filter(new BoxFilter)
   }
 }
 
+FilmWindow Film::window(const Film::Rect& rect) const
+{
+  return FilmWindow(rect, width, height);
+}
+
 void Film::add_sample(const PixelSample& ps, const spectrum& s)
 {
-  filter->add_sample(this, ps, s);
+  filter->add_sample(*this, ps, s);
 }
 
 vector<spectrum> Film::pixel_list() const
@@ -54,12 +71,10 @@ vector<spectrum> Film::pixel_list() const
   return ret;
 }
 
-void Film::merge(const Film& f) 
+void Film::merge(const SampleVector& v) 
 {
-  transform( plate.begin(), plate.end(),
-             f.plate.begin(),
-             plate.begin(),
-             [](Pixel a, Pixel b) { return Pixel{a.weight + b.weight, a.total + b.total}; });
+  for (const auto& s: v)
+    add_sample(s.first, s.second);
 }
 
 
@@ -110,9 +125,9 @@ void Film::render_to_console(ostream& out) const
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void BoxFilter::add_sample(Film* film, const PixelSample& p, const spectrum& s) const
+void BoxFilter::add_sample(Film& film, const PixelSample& p, const spectrum& s) const
 {
-  Film::Pixel& fp = film->at(p.x, p.y);
+  Film::Pixel& fp = film.at(p.x, p.y);
   fp.total += s;
   fp.weight += 1;
 }
