@@ -77,7 +77,7 @@ int main(int argc, char** argv)
     cerr << "default to linear tonemapper." << endl;
   }
 
-  film.render_to_ppm(cout, tonemap);
+  film.render_to_ppm(cout, *tonemap);
 }
 
 

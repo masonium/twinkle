@@ -75,7 +75,7 @@ public:
     spectrum total;
   };
   
-  Film(uint w_, uint h_, const ImageSampleFilter* f);
+  Film(uint w_, uint h_, const shared_ptr<ImageSampleFilter> f);
   Film(istream& in);
 
   Film(const Film& f);
@@ -88,7 +88,7 @@ public:
   Rect rect() const { return Rect(0, 0, width, height); }
 
   void render_to_console(ostream& out) const;
-  void render_to_ppm(ostream& out, weak_ptr<ToneMapper> mapper);
+  void render_to_ppm(ostream& out, const ToneMapper& mapper);
   void render_to_twi(ostream& out) const;
   
   void merge(const SampleVector& other);
@@ -104,7 +104,7 @@ public:
   }
 
   const uint width, height;  
-  const ImageSampleFilter* filter;
+  const shared_ptr<ImageSampleFilter> filter;
 
 private:
   

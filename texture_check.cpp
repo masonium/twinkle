@@ -20,7 +20,7 @@ int main(int argc, char** args)
   int angle = atoi(args[3]);
 
   auto filter = make_shared<BoxFilter>();
-  Film f(width, height, filter.get());
+  Film f(width, height, filter);
 
   auto pn = PerlinNoise::get_instance();
   auto sky = ShirleySkyTexture(Vec3::from_euler(3*PI/4, angle * PI / 180), 8);
@@ -69,5 +69,6 @@ int main(int argc, char** args)
     }
   }
   cerr << min << ", " << max << endl;
-  f.render_to_ppm(cout, make_shared<ReinhardLocal>(ReinhardLocal::Options{}));
+  auto mapper = ReinhardLocal{ReinhardLocal::Options()};
+  f.render_to_ppm(cout, mapper);
 }

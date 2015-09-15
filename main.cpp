@@ -265,7 +265,7 @@ int main(int argc, char** args)
   auto cam = default_scene(scene, scalar(WIDTH)/scalar(HEIGHT), angle);
 
   auto bf = make_shared<BoxFilter>();
-  Film f(WIDTH, HEIGHT, bf.get());
+  Film f(WIDTH, HEIGHT, bf);
 
   // PathTracerIntegrator::Options opt;
   // opt.samples_per_pixel = per_pixel;
@@ -295,7 +295,7 @@ int main(int argc, char** args)
   //auto mapper = make_shared<ReinhardLocal>(ReinhardLocal::Options{});
   //auto mapper = make_shared<CutoffToneMapper>();
 
-  f.render_to_ppm(cout, mapper);
+  f.render_to_ppm(cout, *mapper);
   //f.render_to_twi(cout);
   //f.render_to_console(cout);
 
