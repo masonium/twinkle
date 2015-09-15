@@ -27,6 +27,11 @@ void DirectLightingIntegrator::render(const Camera& cam, const Scene& scene, Fil
 
   LocalThreadScheduler lts{num_threads};
 
+  vector<Film> films;
+  for (auto i = 0u; i < num_threads; ++i)
+    films.emplace_back(film.width, film.height, film.filter);
+
+
   RenderInfo ri{cam, scene, film.rect()};
 
   grid_subtask_options opt;
@@ -36,15 +41,16 @@ void DirectLightingIntegrator::render(const Camera& cam, const Scene& scene, Fil
   render_tasks.resize(subrects.size());
 
   transform(subrects.begin(), subrects.end(), render_tasks.begin(),
-            [&](auto& rect) { return make_shared<RenderTask>(this, ri.camera, ri.scene, ri.rect, rect, options.samples_per_pixel); });
+            [&](auto& rect) { return make_shared<RenderTask>(std::ref(*this), ri, std::ref(films),
+                                                             rect, options.samples_per_pixel); });
 
   for_each(render_tasks.begin(), render_tasks.end(),
            [&](auto& task) { lts.add_task(task); });
 
   lts.complete_pending();
 
-  for (const auto& task: render_tasks)
-    film.merge(task->samples);
+  for (const auto& f: films)
+    film.merge(f);
 }
 
 spectrum DirectLightingIntegrator::trace_ray(const Scene& scene, const Ray& ray,
@@ -118,12 +124,11 @@ spectrum DirectLightingIntegrator::trace_ray(const Scene& scene, const Ray& ray,
   return total * isect.texture_at_point() / options.lighting_samples;
 }
 
-SampleVector DirectLightingIntegrator::render_rect(
-  const Camera& cam, const Scene& scene, const Film::Rect& parent_rect,
+void DirectLightingIntegrator::render_rect(
+  const Camera& cam, const Scene& scene, Film& film,
   const Film::Rect& render_rect, uint samples_per_pixel) const
 {
   auto sampler = UniformSampler{};
-  SampleVector samples;
 
   for (uint x = 0; x < render_rect.width; ++x)
   {
@@ -134,27 +139,24 @@ SampleVector DirectLightingIntegrator::render_rect(
         int px = x + render_rect.x;
         int py = y + render_rect.y;
 
-        PixelSample ps = cam.sample_pixel(parent_rect.width, parent_rect.height, px, py, sampler);
+        PixelSample ps = cam.sample_pixel(film.width, film.height, px, py, sampler);
 
         spectrum s = trace_ray(scene, ps.ray, sampler);
 
-        samples.emplace_back(ps, s);
+        film.add_sample(ps, s);
       }
     }
   }
-
-  return samples;
 }
 
 DirectLightingIntegrator::RenderTask::RenderTask(
-  const DirectLightingIntegrator* pit, const Camera& cam_, const Scene& scene_,
-  const Film::Rect& full_rect_,  const Film::Rect& rect_, uint spp_) :
-  owner(pit), cam(cam_), scene(scene_),
-  full_rect(full_rect_), rect(rect_), spp(spp_)
+  const DirectLightingIntegrator& pit, const RenderInfo& ri_,
+  vector<Film>& films_,  const Film::Rect& rect_, uint spp_) :
+  owner(pit), ri(ri_), films(films_), rect(rect_), spp(spp_)
 {
 }
 
 void DirectLightingIntegrator::RenderTask::run(uint worker_id)
 {
-  samples = owner->render_rect(cam, scene, full_rect, rect, spp);
+  owner.render_rect(ri.camera, ri.scene, films[worker_id], rect, spp);
 }

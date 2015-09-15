@@ -70,7 +70,10 @@ public:
   {
     Pixel() = default;
     Pixel(scalar w, const spectrum& t) : weight(w), total(t) { }
-    
+
+    Pixel& operator +=(const Pixel&);
+    Pixel operator +(const Pixel&) const;
+
     scalar weight;
     spectrum total;
   };
@@ -91,7 +94,7 @@ public:
   void render_to_ppm(ostream& out, const ToneMapper& mapper);
   void render_to_twi(ostream& out) const;
   
-  void merge(const SampleVector& other);
+  void merge(const Film& other);
   
   Pixel at(int x, int y) const
   {

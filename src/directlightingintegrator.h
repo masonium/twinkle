@@ -30,24 +30,23 @@ private:
   class RenderTask : public LocalTask
   {
   public:
-    RenderTask(const DirectLightingIntegrator* dli, const Camera& cam_,
-               const Scene& scene, const Film::Rect& full_rect_, const Film::Rect& rect_, uint spp);
+    RenderTask(const DirectLightingIntegrator& dli, const RenderInfo&,
+               vector<Film>&, const Film::Rect& rect_,
+               uint spp);
 
     void run(uint id) override;
 
-    SampleVector samples;
-
   private:
-    const DirectLightingIntegrator* owner;
-    const Camera& cam;
-    const Scene& scene;
-    Film::Rect full_rect, rect;
+    const DirectLightingIntegrator& owner;
+    const RenderInfo& ri;
+    vector<Film>& films;
+    Film::Rect rect;
     uint spp;
   };
 
-  SampleVector render_rect(const Camera& cam, const Scene& scene,
-                           const Film::Rect& parent_rect,
-                           const Film::Rect& rect, uint samples_per_pixel) const;
+  void render_rect(const Camera& cam, const Scene& scene,
+                   Film& film, const Film::Rect& rect,
+                   uint samples_per_pixel) const;
 
 
   spectrum trace_ray(const Scene& scene, const Ray& ray, Sampler& sampler) const;

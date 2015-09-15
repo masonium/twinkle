@@ -277,10 +277,10 @@ int main(int argc, char** args)
   // PathTracerIntegrator igr(opt);
 
   DirectLightingIntegrator::Options opt;
-  opt.samples_per_pixel = 1;
+  opt.samples_per_pixel = 4;
   opt.lighting_samples = 16;
   opt.subdivision = atoi(args[5]);
-  opt.num_threads = 1;
+  opt.num_threads = 4;
   DirectLightingIntegrator igr(opt);
   
   //DebugIntegrator igr(DebugIntegrator::DI_NORMAL);

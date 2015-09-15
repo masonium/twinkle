@@ -66,10 +66,12 @@ vector<spectrum> Film::pixel_list() const
   return ret;
 }
 
-void Film::merge(const SampleVector& v) 
+void Film::merge(const Film& f) 
 {
-  for (const auto& s: v)
-    add_sample(s.first, s.second);
+  assert(width == f.width);
+  assert(height == f.height);
+  transform(plate.begin(), plate.end(), f.plate.begin(),
+            plate.begin(), [](auto& x, const auto& y) { return x + y; });
 }
 
 
@@ -125,4 +127,16 @@ void BoxFilter::add_sample(Film& film, const PixelSample& p, const spectrum& s) 
   Film::Pixel& fp = film.at(p.x, p.y);
   fp.total += s;
   fp.weight += 1;
+}
+
+Film::Pixel& Film::Pixel::operator+=(const Pixel& p)
+{
+  total += p.total;
+  weight += p.weight;
+  return *this;
+}
+Film::Pixel Film::Pixel::operator+(const Pixel& p) const
+{
+  Pixel x(*this);
+  return x += p;
 }
