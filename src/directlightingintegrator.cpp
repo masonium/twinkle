@@ -26,20 +26,20 @@ void DirectLightingIntegrator::render(const Camera& cam, const Scene& scene, Fil
   uint num_threads = options.num_threads ? options.num_threads : num_system_procs();
 
   LocalThreadScheduler lts{num_threads};
-  vector<Film> films;
+
+  RenderInfo ri{cam, scene, film.rect()};
 
   grid_subtask_options opt;
   opt.grid_subdivision = options.subdivision;
   auto subrects = subtasks_from_grid(film.width, film.height, opt);
-  vector<shared_ptr<RenderTask>> render_tasks(subrects.size());
+  vector<shared_ptr<RenderTask>> render_tasks;
+  render_tasks.resize(subrects.size());
+
   transform(subrects.begin(), subrects.end(), render_tasks.begin(),
-            [&](auto& rect) { return make_shared<RenderTask>(this, cam, scene, rect, options.samples_per_pixel); });
+            [&](auto& rect) { return make_shared<RenderTask>(this, ri.camera, ri.scene, ri.rect, rect, options.samples_per_pixel); });
 
   for_each(render_tasks.begin(), render_tasks.end(),
            [&](auto& task) { lts.add_task(task); });
-
-  // for (const auto& rect: subrects)
-  //   lts->add_task(make_shared<RenderTask>(this, cam, scene, rect, options.samples_per_pixel, films));
 
   lts.complete_pending();
 
@@ -148,12 +148,13 @@ SampleVector DirectLightingIntegrator::render_rect(
 
 DirectLightingIntegrator::RenderTask::RenderTask(
   const DirectLightingIntegrator* pit, const Camera& cam_, const Scene& scene_,
-  const Film::Rect& rect_, uint spp_) :
-  window(rect_), owner(pit), cam(cam_), scene(scene_), rect(rect_), spp(spp_)
+  const Film::Rect& full_rect_,  const Film::Rect& rect_, uint spp_) :
+  owner(pit), cam(cam_), scene(scene_),
+  full_rect(full_rect_), rect(rect_), spp(spp_)
 {
 }
 
 void DirectLightingIntegrator::RenderTask::run(uint worker_id)
 {
-  owner->render_rect(cam, scene, rect, spp, window);
+  samples = owner->render_rect(cam, scene, full_rect, rect, spp);
 }

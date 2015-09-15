@@ -8,6 +8,8 @@
 #include <mutex>
 #include <memory>
 
+#ifdef FEATURE_PATH_TRACER
+
 using std::cerr;
 using std::queue;
 using std::mutex;
@@ -15,7 +17,6 @@ using std::lock_guard;
 using std::make_shared;
 using std::shared_ptr;
 using std::unique_ptr;
-
 
 PathTracerIntegrator::Options::Options()
   : russian_roulette(true), rr_kill_prob(0.1), min_rr_depth(4),
@@ -159,7 +160,9 @@ PathTracerIntegrator::RenderTask::RenderTask(
 {
 }
 
-void PathTracerIntegrator::RenderTask::run(uint worker_id)
+bool PathTracerIntegrator::RenderTask::run(uint worker_id)
 {
   owner->render_rect(cam, scene, rect, spp, films[worker_id]);
 }
+
+#endif

@@ -59,18 +59,43 @@ public:
   ~LocalThreadScheduler();
 
 private:
-  static void worker(LocalThreadScheduler* sched, int worker_id,
-                     std::future<int>&& fut);
+  class SchedulerTask
+  {
+  public:
+    virtual bool run(uint worker)
+    {
+      return false;
+    }
+    SchedulerTask() { }
+  };
 
-  void on_task_started(int worker_id, const shared_ptr<LocalTask>& task);
-  void on_task_completed(int worker_id, const shared_ptr<LocalTask>& task);
+  class LocalTaskWrapper : public SchedulerTask
+  {
+  public:
+    LocalTaskWrapper(shared_ptr<LocalTask> task_) : task(task_) { }
 
-  std::queue<shared_ptr<LocalTask>> task_queue;
+    bool run(uint worker) override
+    {
+      task->run(worker);
+      return true;
+    }
+
+  private:
+    shared_ptr<LocalTask> task;
+  };
+
+  static void worker(LocalThreadScheduler& sched, int worker_id);
+
+  void add_task(shared_ptr<SchedulerTask> t, ScheduleHint hint = SCHEDULE_HINT_NONE);
+
+  void on_task_started(int worker_id, const shared_ptr<SchedulerTask>& task);
+  void on_task_completed(int worker_id, const shared_ptr<SchedulerTask>& task);
+
+  std::queue<shared_ptr<SchedulerTask>> task_queue;
   std::mutex queue_mutex;
   std::atomic<uint> pending_task_count;
 
   std::atomic<uint> num_threads_free;
 
   std::vector<std::thread> pool;
-  std::vector<std::promise<int>> worker_signals;
 };

@@ -110,9 +110,8 @@ namespace
   TEST(SinglePixelCamera)
   {
     PerspectiveCamera cam(Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0, 1.0);
-    Film f(1, 1, new BoxFilter);
     ConstSampler sampler{0.5, 0.5};
-    Ray r = cam.sample_pixel(f, 0, 0, sampler).ray;
+    Ray r = cam.sample_pixel(1, 1, 0, 0, sampler).ray;
     r.normalize();
     CHECK_CLOSE(1.0, r.direction.norm(), PRECISE_EPS);
     CHECK_ARRAY_CLOSE(Vec3(0.0, 0.0, -1.0).v, r.direction.v, 3, PRECISE_EPS);
@@ -121,11 +120,10 @@ namespace
   TEST(TwoPixelCamera)
   {
     PerspectiveCamera cam(Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0, 1.0);
-    Film f(2, 2, new BoxFilter);
     ConstSampler sampler{0.5, 0.5};
-    Ray r1 = cam.sample_pixel(f, 0, 0, sampler).ray;
-    Ray r2 = cam.sample_pixel(f, 0, 1, sampler).ray;
-    Ray r3 = cam.sample_pixel(f, 1, 0, sampler).ray;
+    Ray r1 = cam.sample_pixel(2, 2, 0, 0, sampler).ray;
+    Ray r2 = cam.sample_pixel(2, 2, 0, 1, sampler).ray;
+    Ray r3 = cam.sample_pixel(2, 2, 1, 0, sampler).ray;
     r1.normalize();
     r2.normalize();
     r3.normalize();

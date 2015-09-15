@@ -10,6 +10,8 @@
 #include <mutex>
 #include <memory>
 
+#ifdef FEATURE_PATH_TRACER
+
 using std::queue;
 using std::mutex;
 using std::shared_ptr;
@@ -46,28 +48,29 @@ private:
                const Film::Rect& rect_, uint spp_, vector<Film>& films_);
 
 
-  RenderTask(const RenderTask&) = delete;
-  RenderTask(RenderTask&&) = delete;
+    RenderTask(const RenderTask&) = delete;
+    RenderTask(RenderTask&&) = delete;
 
-  void run(uint id) override;
+    bool run(uint id) override;
 
-  ~RenderTask() { }
+    ~RenderTask() { }
 
-private:
-  const PathTracerIntegrator* owner;
-  const Camera& cam;
-  const Scene& scene;
-  const Film::Rect& rect;
-  uint spp;
-  vector<Film>& films;
+    const PathTracerIntegrator* owner;
+    const Camera& cam;
+    const Scene& scene;
+    const Film::Rect& rect;
+    uint spp;
+    vector<Film>& films;
+  };
+
+  void render_rect(const Camera& cam, const Scene& scene,
+                   const Film::Rect& rect, uint samples_per_pixel,
+                   Film& film) const;
+
+  mutable std::atomic_ullong rays_traced;
+  mutable std::atomic_ullong primary_rays_traced;
+
+  Options opt;
 };
 
-void render_rect(const Camera& cam, const Scene& scene,
-                 const Film::Rect& rect, uint samples_per_pixel,
-                 Film& film) const;
-
-mutable std::atomic_ullong rays_traced;
-mutable std::atomic_ullong primary_rays_traced;
-
-Options opt;
-};
+#endif

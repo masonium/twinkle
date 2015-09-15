@@ -31,7 +31,7 @@ private:
   {
   public:
     RenderTask(const DirectLightingIntegrator* dli, const Camera& cam_,
-               const Scene& scene, const Film::Rect& rect_, uint spp);
+               const Scene& scene, const Film::Rect& full_rect_, const Film::Rect& rect_, uint spp);
 
     void run(uint id) override;
 
@@ -41,7 +41,7 @@ private:
     const DirectLightingIntegrator* owner;
     const Camera& cam;
     const Scene& scene;
-    Film::Rect rect;
+    Film::Rect full_rect, rect;
     uint spp;
   };
 

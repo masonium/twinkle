@@ -16,3 +16,17 @@ public:
 
   virtual ~Integrator() { }
 };
+
+class RenderInfo
+{
+public:
+  RenderInfo(const Camera& cam_, const Scene& scene_, const Film::Rect rect_)
+    : camera(cam_), scene(scene_), rect(rect_)
+  {
+  }
+  RenderInfo(const RenderInfo&) = delete;
+
+  const Camera& camera;
+  const Scene& scene;
+  const Film::Rect rect;
+};

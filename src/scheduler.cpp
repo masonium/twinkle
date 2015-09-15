@@ -8,27 +8,29 @@ using std::future;
 using std::unique_lock;
 using std::mutex;
 
-void LocalThreadScheduler::worker(LocalThreadScheduler* scheduler,
-                                  int worker_id,
-                                  std::future<int>&& fut)
+void LocalThreadScheduler::worker(LocalThreadScheduler& scheduler, int worker_id)
 {
-  while (fut.wait_for(std::chrono::milliseconds(100)) != std::future_status::ready)
+  bool keep_running = true;
+  while (keep_running)
   {
-    uint task_count = scheduler->pending_task_count;
+    uint task_count = scheduler.pending_task_count;
     if (task_count == 0)
-      continue;
-
-    if (std::atomic_compare_exchange_weak(&scheduler->pending_task_count, &task_count, task_count - 1))
     {
-      std::unique_lock<std::mutex> lock(scheduler->queue_mutex);
+      std::this_thread::yield();
+      continue;
+    }
 
-      auto task = scheduler->task_queue.front();
-      scheduler->task_queue.pop();
+    if (std::atomic_compare_exchange_weak(&scheduler.pending_task_count, &task_count, task_count - 1))
+    {
+      std::unique_lock<std::mutex> lock(scheduler.queue_mutex);
+
+      auto task = scheduler.task_queue.front();
+      scheduler.task_queue.pop();
       lock.unlock();
 
-      scheduler->on_task_started(worker_id, task);
-      task->run(worker_id);
-      scheduler->on_task_completed(worker_id, task);
+      scheduler.on_task_started(worker_id, task);
+      keep_running = task->run(worker_id);
+      scheduler.on_task_completed(worker_id, task);
     }
   }
 }
@@ -39,16 +41,12 @@ LocalThreadScheduler::LocalThreadScheduler(uint num_threads_) : pending_task_cou
     num_threads_ = num_system_procs();
 
   for (auto i = 0u; i < num_threads_; ++i)
-  {
-    worker_signals.emplace_back();
-    pool.emplace_back(LocalThreadScheduler::worker, this, i, worker_signals[i].get_future());
-  }
+    pool.emplace_back(LocalThreadScheduler::worker, std::ref(*this), i);
 
   num_threads_free = num_threads_;
 }
 
-
-void LocalThreadScheduler::add_task(shared_ptr<LocalTask> task, ScheduleHint hint)
+void LocalThreadScheduler::add_task(shared_ptr<SchedulerTask> task, ScheduleHint hint)
 {
   {
     unique_lock<std::mutex> lock(queue_mutex);
@@ -57,12 +55,18 @@ void LocalThreadScheduler::add_task(shared_ptr<LocalTask> task, ScheduleHint hin
   ++pending_task_count;
 }
 
-void LocalThreadScheduler::on_task_started(int worker_id, const shared_ptr<LocalTask>& task)
+
+void LocalThreadScheduler::add_task(shared_ptr<LocalTask> task, ScheduleHint hint)
+{
+  add_task(std::make_shared<LocalTaskWrapper>(task), hint);
+}
+
+void LocalThreadScheduler::on_task_started(int worker_id, const shared_ptr<SchedulerTask>& task)
 {
   --num_threads_free;
 }
 
-void LocalThreadScheduler::on_task_completed(int worker_id, const shared_ptr<LocalTask>& task)
+void LocalThreadScheduler::on_task_completed(int worker_id, const shared_ptr<SchedulerTask>& task)
 {
   ++num_threads_free;
 }
@@ -85,8 +89,8 @@ void LocalThreadScheduler::complete_pending()
 
 LocalThreadScheduler::~LocalThreadScheduler()
 {
-  for (auto& signal: worker_signals)
-    signal.set_value(0);
+  for (auto& thread: pool)
+    add_task(std::make_shared<SchedulerTask>());
 
   for (auto& thread: pool)
     thread.join();

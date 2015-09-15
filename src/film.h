@@ -53,7 +53,6 @@ public:
   void add_sample(Film& film, const PixelSample& p, const spectrum& s) const override;
 };
 
-class FilmWindow;
 
 class Film
 {
@@ -87,8 +86,6 @@ public:
 
   void add_sample(const PixelSample& ps, const spectrum& s);
   Rect rect() const { return Rect(0, 0, width, height); }
-
-  FilmWindow window(const Film::Rect& rect) const;
 
   void render_to_console(ostream& out) const;
   void render_to_ppm(ostream& out, weak_ptr<ToneMapper> mapper);

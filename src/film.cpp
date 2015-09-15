@@ -52,11 +52,6 @@ Film::Film(istream& in) : width(0), height(0), filter(new BoxFilter)
   }
 }
 
-FilmWindow Film::window(const Film::Rect& rect) const
-{
-  return FilmWindow(rect, width, height);
-}
-
 void Film::add_sample(const PixelSample& ps, const spectrum& s)
 {
   filter->add_sample(*this, ps, s);

@@ -267,21 +267,21 @@ int main(int argc, char** args)
   auto bf = make_shared<BoxFilter>();
   Film f(WIDTH, HEIGHT, bf.get());
 
-  PathTracerIntegrator::Options opt;
-  opt.samples_per_pixel = per_pixel;
-  if (argc >= 5)
-    opt.num_threads = atoi(args[4]);
-  else
-    opt.num_threads = 0;
-  opt.max_depth = 16;
-  PathTracerIntegrator igr(opt);
+  // PathTracerIntegrator::Options opt;
+  // opt.samples_per_pixel = per_pixel;
+  // if (argc >= 5)
+  //   opt.num_threads = atoi(args[4]);
+  // else
+  //   opt.num_threads = 0;
+  // opt.max_depth = 16;
+  // PathTracerIntegrator igr(opt);
 
-  // DirectLightingIntegrator::Options opt;
-  // opt.samples_per_pixel = 1;
-  // opt.lighting_samples = 16;
-  // opt.subdivision = atoi(args[5]);
-  // opt.num_threads = 1;
-  // DirectLightingIntegrator igr(opt);
+  DirectLightingIntegrator::Options opt;
+  opt.samples_per_pixel = 1;
+  opt.lighting_samples = 16;
+  opt.subdivision = atoi(args[5]);
+  opt.num_threads = 1;
+  DirectLightingIntegrator igr(opt);
   
   //DebugIntegrator igr(DebugIntegrator::DI_NORMAL);
 
@@ -295,8 +295,7 @@ int main(int argc, char** args)
   //auto mapper = make_shared<ReinhardLocal>(ReinhardLocal::Options{});
   //auto mapper = make_shared<CutoffToneMapper>();
 
-  std::ostringstream out;
-  f.render_to_ppm(out, mapper);
+  f.render_to_ppm(cout, mapper);
   //f.render_to_twi(cout);
   //f.render_to_console(cout);
 
