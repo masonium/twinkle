@@ -1,5 +1,7 @@
 #include "bdptracer.h"
 
+#ifdef FEATURE_BIDIRECTIONAL
+
 BidirectionalPathTracer::BidirectionalPathTracer(const BDPTOptions& opt_)
   : opt(opt_)
 {
@@ -46,3 +48,5 @@ void BidirectionalPathTracer::construct_eye_path(
     ray = Ray(isect.position, new_ray_dir).nudge();
   }
 }
+
+#endif

@@ -2,6 +2,8 @@
 
 #include "integrator.h"
 
+#ifdef FEATURE_BIDIRECTIONAL
+
 struct BDPTOptions
 {
   int light_path_max_length;
@@ -49,3 +51,5 @@ private:
 
   BDPTOptions opt;
 };
+
+#endif
