@@ -15,17 +15,28 @@ DebugIntegrator::DebugIntegrator(DebugIntegrator::Type t) : type(t)
 
 void DebugIntegrator::render(const Camera& cam, const Scene& scene, Film& film)
 {
+  grid_render(*this, cam, scene, film, 0, 4, 1);
+}
+
+void DebugIntegrator::render_rect(const Camera& cam, const Scene& scene, Film& film,
+                                  const Film::Rect& rect, uint samples_per_pixel) const
+{
   ShapeColorMap scm;
-  ConstSampler sampler(0.5, 0.5);
+  UniformSampler sampler;
 
-  for (uint y = 0; y < film.height; ++y)
+  for (uint y = 0; y < rect.height; ++y)
   {
-    for (uint x = 0; x < film.width; ++x)
+    for (uint x = 0; x < rect.width; ++x)
     {
-      PixelSample ps = cam.sample_pixel(film.width, film.height, x, y, sampler);
+      auto px = x + rect.x;
+      auto py = y + rect.y;
+      for (auto d = 0u; d < samples_per_pixel; ++d)
+      {
+        PixelSample ps = cam.sample_pixel(film.width, film.height, px, py, sampler);
 
-      spectrum s = trace_ray(ps.ray, scene, scm);
-      film.add_sample(ps, s);
+        spectrum s = trace_ray(ps.ray, scene, scm);
+        film.add_sample(ps, s);
+      }
     }
   }
 }
@@ -36,7 +47,7 @@ spectrum dir_to_spectrum(const Vec3& dir)
    return 0.5 * (c + spectrum{0.5});
 }
 
-spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene, ShapeColorMap& scm)
+spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene, ShapeColorMap& scm) const
 {
   Intersection isect = scene.intersect(ray);
   

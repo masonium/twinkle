@@ -5,7 +5,7 @@
 
 using ShapeColorMap = std::unordered_map<Shape const*, spectrum>;
 
-class DebugIntegrator : public Integrator
+class DebugIntegrator : public RectIntegrator
 {
 public:
   enum Type
@@ -21,8 +21,12 @@ public:
 
   void render(const Camera& cam, const Scene& scene, Film& film) override;
 
+  void render_rect(const Camera& cam, const Scene& scene,
+                   Film& film, const Film::Rect& rect,
+                   uint samples_per_pixel) const override;
+
 private:
-  spectrum trace_ray(const Ray& ray, const Scene& scene, ShapeColorMap& scm);
+  spectrum trace_ray(const Ray& ray, const Scene& scene, ShapeColorMap& scm) const;
 
   std::unordered_map<Shape const*, int> shape_ids;
   Type type;
