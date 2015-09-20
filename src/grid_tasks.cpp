@@ -27,7 +27,6 @@ vector<Film::Rect> subtasks_from_grid(uint width, uint height, const grid_subtas
       assert(x + w <= width);
       assert(y + h <= height);
 
-      std::cerr << "creating subtask " << x << " " << y << " " << w << " " << h << "\n";
       subtasks.emplace_back(x, y, w, h);
     }
   }

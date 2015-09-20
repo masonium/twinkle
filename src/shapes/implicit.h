@@ -8,6 +8,7 @@
 using ImplicitEvalFunc = std::function<scalar(const Vec3&)>;
 using ImplicitGradFunc = std::function<Vec3(const Vec3&)>;
 
+
 ImplicitGradFunc gradient_from_sdf(ImplicitEvalFunc);
 
 class ImplicitSurface : public SimpleGeometry, public Bounded

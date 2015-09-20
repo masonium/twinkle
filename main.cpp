@@ -261,27 +261,24 @@ int main(int argc, char** args)
   }
 
   Scene scene;
-  int angle = atoi(args[5]);
+  int angle = atoi(args[4]);
   auto cam = default_scene(scene, scalar(WIDTH)/scalar(HEIGHT), angle);
 
   auto bf = make_shared<BoxFilter>();
   Film f(WIDTH, HEIGHT, bf);
 
-  // PathTracerIntegrator::Options opt;
-  // opt.samples_per_pixel = per_pixel;
-  // if (argc >= 5)
-  //   opt.num_threads = atoi(args[4]);
-  // else
-  //   opt.num_threads = 0;
-  // opt.max_depth = 16;
-  // PathTracerIntegrator igr(opt);
+  PathTracerIntegrator::Options opt;
+  opt.samples_per_pixel = per_pixel;
+  opt.num_threads = 0;
+  opt.max_depth = 10;
+  PathTracerIntegrator igr(opt);
 
-  DirectLightingIntegrator::Options opt;
-  opt.samples_per_pixel = 4;
-  opt.lighting_samples = 16;
-  opt.subdivision = atoi(args[5]);
-  opt.num_threads = 4;
-  DirectLightingIntegrator igr(opt);
+  // DirectLightingIntegrator::Options opt;
+  // opt.samples_per_pixel = 4;
+  // opt.lighting_samples = 16;
+  // opt.subdivision = atoi(args[5]);
+  // opt.num_threads = 4;
+  // DirectLightingIntegrator igr(opt);
   
   //DebugIntegrator igr(DebugIntegrator::DI_NORMAL);
 

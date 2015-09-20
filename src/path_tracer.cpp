@@ -32,23 +32,8 @@ PathTracerIntegrator::PathTracerIntegrator(const PathTracerIntegrator::Options& 
 
 void PathTracerIntegrator::render(const Camera& cam, const Scene& scene, Film& film)
 {
-  int num_threads = opt.num_threads;
-
-  unique_ptr<LocalThreadScheduler> lts{new LocalThreadScheduler(num_threads)};
-  vector<Film> films;
-  for (int i = 0; i < num_threads; ++i)
-  {
-    films.emplace_back(film.width, film.height, film.filter);
-  }
-
-  auto subrects = subtasks_from_grid(film.width, film.height, num_threads);
-  for (const auto& rect: subrects)
-    lts->add_task(make_shared<RenderTask>(this, cam, scene, rect, opt.samples_per_pixel, films));
-
-  lts->complete_pending();
-
-  for (const auto& f: films)
-    film.merge(f);
+  grid_render(*this, cam, scene, film,
+              opt.num_threads, 4, opt.samples_per_pixel);
 }
 
 spectrum PathTracerIntegrator::trace_ray(const Scene& scene, const Ray& ray,
@@ -125,9 +110,9 @@ spectrum PathTracerIntegrator::trace_ray(const Scene& scene, const Ray& ray,
   return total * isect.texture_at_point();
 }
 
-void PathTracerIntegrator::render_rect(const Camera& cam, const Scene& scene, 
-                                       const Film::Rect& rect, uint samples_per_pixel,
-                                       Film& film) const
+void PathTracerIntegrator::render_rect(const Camera& cam, const Scene& scene,
+                   Film& film, const Film::Rect& rect,
+                   uint samples_per_pixel) const
 {
   auto sampler = UniformSampler{};
 
@@ -143,7 +128,7 @@ void PathTracerIntegrator::render_rect(const Camera& cam, const Scene& scene,
       for (uint d = 0; d < samples_per_pixel; ++d)
       {
 //        std::cerr << "Printing width: " << d << " " << film.width << "\n";
-        PixelSample ps = cam.sample_pixel(film, px, py, sampler);
+        PixelSample ps = cam.sample_pixel(film.width, film.height, px, py, sampler);
           
         spectrum s = trace_ray(scene, ps.ray, sampler, 1);
 //        std::cerr << "Printing width: " << d << " " << film.width << "\n";
@@ -151,18 +136,6 @@ void PathTracerIntegrator::render_rect(const Camera& cam, const Scene& scene,
       }
     }
   }
-}
-
-PathTracerIntegrator::RenderTask::RenderTask(
-  const PathTracerIntegrator* pit, const Camera& cam_, const Scene& scene_,
-  const Film::Rect& rect_, uint spp_, vector<Film>& films_) :
-  owner(pit), cam(cam_), scene(scene_), rect(rect_), spp(spp_), films(films_)
-{
-}
-
-bool PathTracerIntegrator::RenderTask::run(uint worker_id)
-{
-  owner->render_rect(cam, scene, rect, spp, films[worker_id]);
 }
 
 #endif

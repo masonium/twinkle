@@ -1,3 +1,4 @@
+
 #include "directlightingintegrator.h"
 #include "scheduler.h"
 #include "sampler.h"
@@ -23,34 +24,8 @@ DirectLightingIntegrator::DirectLightingIntegrator(const DirectLightingIntegrato
 
 void DirectLightingIntegrator::render(const Camera& cam, const Scene& scene, Film& film)
 {
-  uint num_threads = options.num_threads ? options.num_threads : num_system_procs();
-
-  LocalThreadScheduler lts{num_threads};
-
-  vector<Film> films;
-  for (auto i = 0u; i < num_threads; ++i)
-    films.emplace_back(film.width, film.height, film.filter);
-
-
-  RenderInfo ri{cam, scene, film.rect()};
-
-  grid_subtask_options opt;
-  opt.grid_subdivision = options.subdivision;
-  auto subrects = subtasks_from_grid(film.width, film.height, opt);
-  vector<shared_ptr<RenderTask>> render_tasks;
-  render_tasks.resize(subrects.size());
-
-  transform(subrects.begin(), subrects.end(), render_tasks.begin(),
-            [&](auto& rect) { return make_shared<RenderTask>(std::ref(*this), ri, std::ref(films),
-                                                             rect, options.samples_per_pixel); });
-
-  for_each(render_tasks.begin(), render_tasks.end(),
-           [&](auto& task) { lts.add_task(task); });
-
-  lts.complete_pending();
-
-  for (const auto& f: films)
-    film.merge(f);
+  grid_render(*this, cam, scene, film, options.num_threads,
+    options.subdivision, options.samples_per_pixel);
 }
 
 spectrum DirectLightingIntegrator::trace_ray(const Scene& scene, const Ray& ray,
@@ -148,7 +123,7 @@ void DirectLightingIntegrator::render_rect(
     }
   }
 }
-
+/*
 DirectLightingIntegrator::RenderTask::RenderTask(
   const DirectLightingIntegrator& pit, const RenderInfo& ri_,
   vector<Film>& films_,  const Film::Rect& rect_, uint spp_) :
@@ -158,5 +133,6 @@ DirectLightingIntegrator::RenderTask::RenderTask(
 
 void DirectLightingIntegrator::RenderTask::run(uint worker_id)
 {
-  owner.render_rect(ri.camera, ri.scene, films[worker_id], rect, spp);
+
 }
+*/

@@ -18,7 +18,9 @@ Vec3 ImplicitSurface::normal(SubGeo subgeo, const Vec3& point) const
   return g(point).normal();
 }
 
-
+/*
+ * intersectino using a basic sphere-tracing algorithm
+ */
 scalar ImplicitSurface::intersect(const Ray& r, scalar max_t) const
 {
   scalar t0, t1;
