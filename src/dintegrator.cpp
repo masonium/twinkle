@@ -46,7 +46,7 @@ void DebugIntegrator::render_rect(const Camera& cam, const Scene& scene, Film& f
 spectrum dir_to_spectrum(const Vec3& dir)
 {
    auto c = spectrum{dir.x, dir.y, dir.z};
-   return 0.5 * (c + spectrum{0.5});
+   return 0.5 * (c + spectrum{1.0});
 }
 
 spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene, ShapeColorMap& scm) const
