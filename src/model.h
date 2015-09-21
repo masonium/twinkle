@@ -49,11 +49,6 @@ public:
   RawModelLoadStatus load_obj_model(string filename);
   RawModelLoadStatus load_stl_model(string filename);
 
-  vector<Vertex> verts;
-  vector<Triangle> tris;
-
-  bool has_tex;
-
   RawModel merge_vertices(scalar eps = EPSILON) const;
   
   void rescale(const bounds::AABB& new_bb);
@@ -62,8 +57,19 @@ public:
   bounds::AABB bounding_box( ) const;
   bounds::Sphere bounding_sphere( ) const;
 
+  void invert_normals();
+
+  const vector<Vertex>& verts() const { return verts_; }
+  const vector<Triangle>& tris() const { return tris_; }
+
+  bool has_tex() const { return has_tex_; }
 
 private:
+  vector<Vertex> verts_;
+  vector<Triangle> tris_;
+
+  bool has_tex_;
+
   // equal-weighted normals
   void compute_normals();
 

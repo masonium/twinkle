@@ -36,7 +36,7 @@ namespace RawModelLoad
 
 }
 
-RawModel::RawModel() : verts(), tris(), has_tex(false)
+RawModel::RawModel() : verts_(), tris_(), has_tex_(false)
 {
 }
 
@@ -64,16 +64,16 @@ RawModelLoadStatus RawModel::load_raw_model(const vector<Vertex>& verts,
                                             const vector<Triangle>& tris, 
                                             bool has_normal, bool has_tex)
 {
-  this->verts.clear();
-  copy(verts.begin(), verts.end(), std::inserter(this->verts, this->verts.end()));
+  this->verts_.clear();
+  copy(verts.begin(), verts.end(), std::inserter(this->verts_, this->verts_.end()));
 
-  this->tris.clear();
-  copy(tris.begin(), tris.end(), std::inserter(this->tris, this->tris.end()));
+  this->tris_.clear();
+  copy(tris.begin(), tris.end(), std::inserter(this->tris_, this->tris_.end()));
 
   if (!has_normal)
     compute_normals();
 
-  this->has_tex = has_tex;
+  this->has_tex_ = has_tex;
   return RawModelLoadStatus{.success=true, .has_normals=true, .has_tex=has_tex};
 }
 
@@ -142,20 +142,24 @@ RawModelLoadStatus RawModel::load_obj_model(string filename)
     {
       string part;
       int sidx = ref_list.size();
-      int num_verts = 0;
+      int num_verts_ = 0;
       while (true)
       {
 	ss >> part;
         if (!ss)
           break;
 	ref_list.push_back(parse_obj_vertex_ref(part));
-	++num_verts;
+	++num_verts_;
       }
-      for (int i = 0; i < num_verts - 2; ++i)
+      for (int i = 0; i < num_verts_ - 2; ++i)
       {
 	tri_ref tri{sidx, sidx+i+1, sidx+i+2};
 	tri_list.emplace_back(tri);
       }
+    }
+    else if (line_type == "")
+    {
+      continue;
     }
     else
     {
@@ -173,7 +177,7 @@ RawModelLoadStatus RawModel::load_obj_model(string filename)
     compute_normals();
     mls.has_normals = true;
   }
-  has_tex = mls.has_tex;
+  has_tex_ = mls.has_tex;
   return mls;
 }
 
@@ -255,7 +259,7 @@ RawModelLoadStatus RawModel::load_stl_model(string filename)
     compute_normals();
     mls.has_normals = true;
   }
-  has_tex = mls.has_tex;
+  has_tex_ = mls.has_tex;
   return mls;
 }
 
@@ -295,12 +299,12 @@ RawModelLoadStatus RawModel::load_from_parts(const vector<Vec3>& vertex_list, co
 	{
 	  v.normal = normal_list[vr.n];
 	}
-	verts.push_back(v);
+	verts_.push_back(v);
       }
 
       tri.v[j] = ref_map[vr];
     }
-    tris.push_back(tri);
+    tris_.push_back(tri);
   }
 
   return mls;
@@ -308,18 +312,18 @@ RawModelLoadStatus RawModel::load_from_parts(const vector<Vec3>& vertex_list, co
 
 void RawModel::clear()
 {
-  verts.clear();
-  tris.clear();
-  has_tex = false;
+  verts_.clear();
+  tris_.clear();
+  has_tex_ = false;
 }
 
 bounds::AABB RawModel::bounding_box() const
 {
   Vec3 min{std::numeric_limits<scalar>::max()};
   Vec3 max{std::numeric_limits<scalar>::min()};
-  min = accumulate(verts.begin(), verts.end(), min,
+  min = accumulate(verts_.begin(), verts_.end(), min,
                    [] (const Vec3& v, const Vertex& w) { return ::min(v, w.position); });
-  max = accumulate(verts.begin(), verts.end(), max,
+  max = accumulate(verts_.begin(), verts_.end(), max,
                    [] (const Vec3& v, const Vertex& w) { return ::max(v, w.position); });
 
   return bounds::AABB{min, max};
@@ -327,11 +331,11 @@ bounds::AABB RawModel::bounding_box() const
 
 bounds::Sphere RawModel::bounding_sphere() const
 {
-  Vec3 p1 = verts[0].position;
+  Vec3 p1 = verts_[0].position;
 
   Vec3 p2;
   scalar max_dist2 = 0;
-  for (const auto& v: verts)
+  for (const auto& v: verts_)
   {
     scalar dist2 = (v.position - p1).norm2();
     if (max_dist2 < dist2)
@@ -343,7 +347,7 @@ bounds::Sphere RawModel::bounding_sphere() const
 
   Vec3 p3;
   max_dist2 = 0;
-  for (const auto& v: verts)
+  for (const auto& v: verts_)
   {
     scalar dist2 = (v.position - p2).norm2();
     if (max_dist2 < dist2)
@@ -356,7 +360,7 @@ bounds::Sphere RawModel::bounding_sphere() const
   // Take the midpoint as the center, and find the best radius
   Vec3 mid = (p2 + p3) * 0.5;
 
-  scalar radius = sqrt(accumulate(verts.begin(), verts.end(), (mid - p2).norm2(),
+  scalar radius = sqrt(accumulate(verts_.begin(), verts_.end(), (mid - p2).norm2(),
                                   [&mid](scalar r2, const Vertex& v) {
                                     return std::max(r2, (mid - v.position).norm2());
                                   }));
@@ -364,22 +368,30 @@ bounds::Sphere RawModel::bounding_sphere() const
   return bounds::Sphere(mid, radius);
 }
 
+void RawModel::invert_normals()
+{
+  for (auto& vert: verts_)
+  {
+    vert.normal = -vert.normal;
+  }
+}
+
 void RawModel::compute_normals()
 {
-  vector<Vec3> normal_sum( verts.size() );
-  vector<scalar> normal_weight( verts.size() );
+  vector<Vec3> normal_sum( verts_.size() );
+  vector<scalar> normal_weight( verts_.size() );
 
-  for (const auto& tri: tris)
+  for (const auto& tri: tris_)
   {
     // compute the normal, and compute the angle
-    auto p1 = verts[tri.v[1]].position - verts[tri.v[0]].position;
-    auto p2 = verts[tri.v[2]].position - verts[tri.v[0]].position;
+    auto p1 = verts_[tri.v[1]].position - verts_[tri.v[0]].position;
+    auto p2 = verts_[tri.v[2]].position - verts_[tri.v[0]].position;
     Vec3 face_normal = p1.cross(p2).normal();
     for (int i: tri.v)
       normal_sum[i] += face_normal;
   }
-  for (size_t i = 0; i < verts.size(); ++i)
-    verts[i].normal = normal_sum[i].normal();
+  for (size_t i = 0; i < verts_.size(); ++i)
+    verts_[i].normal = normal_sum[i].normal();
 }
 
 void RawModel::rescale(const bounds::AABB& new_bb)
@@ -392,7 +404,7 @@ void RawModel::rescale(const bounds::AABB& new_bb)
 
   auto scale = new_bb.size().elem_div(w);
 
-  for (auto& v: verts)
+  for (auto& v: verts_)
   {
     v.position = (v.position - bb.min()).elem_mult(scale) + new_bb.min();
     v.normal = v.normal.elem_div(scale).normal();
@@ -404,7 +416,7 @@ void RawModel::rescale(const bounds::Sphere& new_bs)
   const auto bs = bounding_sphere();
 
   auto scale = new_bs.radius / bs.radius;
-  for (auto& v: verts)
+  for (auto& v: verts_)
   {
     v.position = (v.position - bs.center) * scale + new_bs.center;
   }
