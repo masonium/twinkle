@@ -15,6 +15,7 @@ using std::move;
 using std::make_pair;
 using std::make_tuple;
 using std::cout;
+using std::cerr;
 using std::endl;
 
 namespace kd
@@ -49,9 +50,10 @@ namespace kd
       if (num_boxes > opt.hybrid_one_axis_limit && ai != longest_axis)
         continue;
 
-      auto x = best_plane_adaptive(ai, boxes, total_bound, sa, opt);
+      auto x = num_boxes <= opt.exact_evaluation_limit ? best_plane_exhaustive(ai, boxes, total_bound, sa, opt) : best_plane_adaptive(ai, boxes, total_bound, sa, opt);
       best_split = min(x, best_split);
     }
+
 
     // Compare the best split found to not splitting at all
     if (best_split.first < num_boxes)
@@ -92,8 +94,36 @@ namespace kd
       return make_pair(x.cost, x.split);
   }
 
+  template <typename T>
+  pair<scalar, split_plane> Node<T>::best_plane_exhaustive(int axis, const vector<bounds::AABB>& boxes,
+                                                           const bounds::AABB& bound, scalar surface_area,
+                                                           const TreeOptions& opt) const
+  {
+    vector<scalar> splits;
+    transform(boxes.begin(), boxes.end(), std::inserter(splits, splits.end()),
+              [=](const auto& b) { return b.bounds[0][axis];});
+    transform(boxes.begin(), boxes.end(), std::inserter(splits, splits.end()),
+              [=](const auto& b) { return b.bounds[1][axis];});
+
+    scalar best_split = -1;
+    scalar best_split_cost = SCALAR_MAX;
+
+    for (scalar split: splits)
+    {
+      auto eval = evaluate_split(split_plane{split, kd::NodeAxis(axis)}, boxes, bound, surface_area, opt);
+      if (best_split_cost > eval.cost)
+      {
+        best_split_cost = eval.cost;
+        best_split = split;
+      }
+    }
+
+    return make_pair(best_split_cost, split_plane{best_split, kd::NodeAxis(axis)});
+  }
+
   /**
-   *
+   * Evaluate splits at specifically-chosen points to determine an approximation
+   * to the best possible split.
    */
   template <typename T>
   pair<scalar, split_plane> Node<T>::best_plane_adaptive(int axis, const vector<bounds::AABB>& boxes,

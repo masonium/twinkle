@@ -1,7 +1,10 @@
 #pragma once
 
-#include "twinkle.h"
 #include <cstdint>
+#include <iostream>
+#include "twinkle.h"
+
+using std::ostream;
 
 namespace kd
 {
@@ -13,6 +16,8 @@ namespace kd
     scalar self_traversal_cost = 1.0;
 
     uint32_t hybrid_one_axis_limit = 1024;
+
+    uint32_t exact_evaluation_limit = 36;
 
     uint32_t max_elements_per_leaf = 4;
   };
@@ -39,4 +44,5 @@ namespace kd
     NodeAxis axis;
   };
 
+  ostream& operator <<(ostream&, const split_plane&);
 }

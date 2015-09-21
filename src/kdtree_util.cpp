@@ -10,4 +10,9 @@ namespace kd
   {
     return split < rhs.split;
   }
+
+  ostream& operator <<(ostream& out, const split_plane& sp)
+  {
+    return out << "SPLIT(" << (sp.axis == X ? "X" : (sp.axis == Y ? "Y" : "Z")) << " = " << sp.split << ")";
+  }
 }
