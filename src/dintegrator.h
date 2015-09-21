@@ -3,6 +3,9 @@
 #include <unordered_map>
 #include "integrator.h"
 
+#define FEATURE_DEBUG_TRACER 1
+#ifdef FEATURE_DEBUG_TRACER
+
 using ShapeColorMap = std::unordered_map<Shape const*, spectrum>;
 
 class DebugIntegrator : public RectIntegrator
@@ -31,3 +34,5 @@ private:
   std::unordered_map<Shape const*, int> shape_ids;
   Type type;
 };
+
+#endif

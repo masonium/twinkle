@@ -2,6 +2,8 @@
 #include "mat33.h"
 #include <unordered_map>
 
+#ifdef FEATURE_DEBUG_TRACER
+
 using std::make_pair;
 
 const int NUM_DISTINCT_ID_COLORS = 20;
@@ -89,3 +91,5 @@ spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene, ShapeCol
 
   return spectrum::zero;
 }
+
+#endif
