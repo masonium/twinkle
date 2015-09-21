@@ -29,6 +29,8 @@ namespace bounds
      */
     Vec3 size() const { return bounds[1] - bounds[0]; }
 
+    Vec3 center() const { return (bounds[0] + bounds[1]) * 0.5; }
+
     /**
      * Return the smallest boudning box containing both boxes.
      */
@@ -40,6 +42,13 @@ namespace bounds
     const Vec3& max() const { return bounds[1]; }
     Vec3& max() { return bounds[1]; }
 
+    bool operator ==(const AABB&) const;
+
+    /**
+     * Return true iff all of the compenents are bounded. A component is
+     * unbounded iff it is equal to scalar_max or scalar_min
+     */
+    bool is_bounded() const;
 
     /**
      * Return the surface area of this box.
@@ -60,6 +69,8 @@ namespace bounds
      */
     scalar intersect(const Ray& r, scalar max_t = SCALAR_MAX) const;
     bool intersect(const Ray& r, scalar& t0, scalar& t1) const;
+
+    static const AABB infinite;
 
     Vec3 bounds[2];
   };

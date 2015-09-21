@@ -1,12 +1,27 @@
 #include "bounds.h"
 #include "math_util.h"
+#include <limits>
+
+using std::numeric_limits;
 
 namespace bounds
 {
+  const AABB AABB::infinite(Vec3{numeric_limits<scalar>::min()}, Vec3{numeric_limits<scalar>::max()});
+
   scalar AABB::surface_area() const
   {
     auto s = size();
     return 2*(s.x * s.y + s.y * s.z + s.z * s.x);
+  }
+
+  bool AABB::operator ==(const AABB& a) const
+  {
+    return bounds[0] == a.bounds[0] && bounds[1] == a.bounds[1];
+  }
+
+  bool AABB::is_bounded() const
+  {
+    return bounds[0].is_bounded() && bounds[1].is_bounded();
   }
 
   AABB AABB::box_union(const AABB& a, const AABB& b)

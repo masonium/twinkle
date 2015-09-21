@@ -117,6 +117,17 @@ public:
     return static_cast<vec_type>(x /= a); 
   }
 
+  bool operator==(const vec_type& other) const
+  {
+    return x == other.x && y == other.y && z == other.z;
+  }
+
+  bool is_bounded() const
+  {
+    return x != SCALAR_MAX && x != SCALAR_MIN && y != SCALAR_MAX &&
+      y != SCALAR_MIN && z != SCALAR_MAX && z != SCALAR_MIN;
+  }
+
   scalar dot(const vec_type& other) const
   {
     return x * other.x + y*other.y + z * other.z;
