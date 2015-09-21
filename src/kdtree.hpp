@@ -54,10 +54,16 @@ namespace kd
       best_split = min(x, best_split);
     }
 
+    const scalar no_split_cost = opt.empty_side_discount * num_boxes;
 
     // Compare the best split found to not splitting at all
-    if (best_split.first < num_boxes)
+    if (best_split.first < no_split_cost)
+    {
+      // std::cerr << "cost of best split " << best_split.second << " = "
+      // << best_split.first << " beats no split cost of "
+      //           << no_split_cost << std::endl;
       make_split(objects, boxes, total_bound, best_split.second, opt);
+    }
     else
     {
       // cout << "cost " << best_split.first << " exceeds number of boxes "
@@ -233,7 +239,7 @@ namespace kd
     auto bb_size = bound.size();
     const auto s1 = bb_size[(sp.axis+1) % 3];
     const auto s2 = bb_size[(sp.axis+2) % 3];
-    const auto perp_area = 2 * (s1 + s2);
+    const auto perp_area = 2 * (s1 + s2) * bb_size[sp.axis];
     const auto split_area = 2 * s1 * s2;
 
     const auto left_p = (sp.split - bound.min()[sp.axis]) / bb_size[sp.axis];
@@ -322,6 +328,9 @@ namespace kd
         right_boxes.push_back(right);
       }
     }
+
+    // std::cerr << "Making split on " << sp << " (" << bound.min()[sp.axis] << ", " << bound.max()[sp.axis] << "): " << boxes.size() << ", "
+    //           << left_boxes.size() << ", " << right_boxes.size() << std::endl;
 
     if (!left_objects.empty())
       left = new Node(left_objects, left_boxes, left_bound, opt);
