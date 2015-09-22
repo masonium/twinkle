@@ -45,6 +45,6 @@ void Sphere::texture_coord(SubGeo geo, const Vec3& pos, const Vec3& normal,
 
 bounds::AABB Sphere::get_bounding_box() const
 {
-  auto vr = Vec3(radius * 0.5);
+  auto vr = Vec3(radius);
   return bounds::AABB(position - vr, position + vr);
 }
