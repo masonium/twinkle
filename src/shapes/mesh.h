@@ -3,7 +3,6 @@
 #include "geometry.h"
 #include "model.h"
 #include "bounds.h"
-#include "kdtree.h"
 
 class MeshTri;
 
@@ -23,6 +22,13 @@ public:
 
   void texture_coord(SubGeo, const Vec3& pos, const Vec3& normal,
                      scalar& u, scalar& v) const override;
+
+  bool is_bounded() const override
+  {
+    return true;
+  }
+
+  bounds::AABB get_bounding_box() const;
 
   const Vec3& pos(int i) const
   {
@@ -62,7 +68,12 @@ public:
   virtual void texture_coord(SubGeo subgeo, const Vec3& pos, const Vec3& normal,
                              scalar& u, scalar& v) const override;
 
-  bounds::AABB get_bounding_box() const;
+  bool is_bounded() const override
+  {
+    return true;
+  }
+
+  virtual bounds::AABB get_bounding_box() const;
 
   virtual ~MeshTri() {}
 
