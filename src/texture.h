@@ -72,3 +72,13 @@ private:
   const spectrum solid, border;
   const scalar grid_size, border_pct;
 };
+
+class NormalTexture : public Texture
+{
+public:
+  spectrum at_point(const Intersection& isect) const override
+  {
+    const auto& normal = 0.5 * (isect.normal + Vec3(1.0));
+    return spectrum{normal.x, normal.y, normal.z};
+  }
+};
