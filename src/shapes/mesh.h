@@ -48,7 +48,7 @@ protected:
   vector<MeshTri> tris;
 };
 
-class MeshTri : public SimpleGeometry, public Bounded
+class MeshTri : public SimpleGeometry
 {
 public:
   MeshTri(const Mesh* m, const int v[3]);

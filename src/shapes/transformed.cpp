@@ -33,6 +33,26 @@ void Transformed::texture_coord(SubGeo subgeo, const Vec3& pos, const Vec3& norm
                           u, v);
 }
 
+bounds::AABB Transformed::get_bounding_box() const
+{
+  const auto& ob = geometry->get_bounding_box();
+
+  auto new_min = ob.center();
+  auto new_max = new_min;
+  for (auto i = 0; i < 2; ++i)
+    for (int j = 0; j < 2; ++j)
+      for (int k = 0; k < 2; ++k)
+      {
+        Vec3 transformed_corner = tform.transform_point(
+          Vec3(ob.bounds[i].x, ob.bounds[j].y, ob.bounds[k].z));
+
+        new_min = min(new_min, transformed_corner);
+        new_max = max(new_max, transformed_corner);
+
+      }
+  return bounds::AABB{new_min, new_max};
+}
+
 Transform Transformed::transformation() const
 {
   return tform;

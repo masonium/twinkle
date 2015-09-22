@@ -5,31 +5,31 @@ using std::move;
 using std::numeric_limits;
 using std::min;
 
-Scene::Scene()
+BasicScene::BasicScene()
 {
 }
 
-void Scene::add(shared_ptr<const Shape> shape)
+void BasicScene::add(shared_ptr<const Shape> shape)
 {
   shapes_.push_back(shape);
 }
 
-void Scene::add(shared_ptr<const Light> light)
+void BasicScene::add(shared_ptr<const Light> light)
 {
   lights_.push_back(light);
 }
-void Scene::add(shared_ptr<const EnvironmentalLight> env_light_)
+void BasicScene::add(shared_ptr<const EnvironmentalLight> env_light_)
 {
   this->env_light_ = env_light_;
 }
 
-const vector<shared_ptr<const Light>>& Scene::lights() const
+const vector<shared_ptr<const Light>>& BasicScene::lights() const
 {
   return lights_;
 }
 
 
-Light const* Scene::sample_light(scalar r1, scalar& light_prob) const
+Light const* BasicScene::sample_light(scalar r1, scalar& light_prob) const
 {
   if (lights_.size() == 0)
   {
@@ -44,7 +44,7 @@ Light const* Scene::sample_light(scalar r1, scalar& light_prob) const
 }
 
 
-Intersection Scene::intersect(const Ray& ray) const
+Intersection BasicScene::intersect(const Ray& ray) const
 {
   shared_ptr<const Shape> best_shape{nullptr};
   SubGeo best_geom;
@@ -66,7 +66,7 @@ Intersection Scene::intersect(const Ray& ray) const
   return Intersection(nullptr, 0, ray, -1);
 }
 
-spectrum Scene::environment_light_emission(const Vec3& dir) const
+spectrum BasicScene::environment_light_emission(const Vec3& dir) const
 {
   return env_light_ ?  env_light_->emission(dir) : spectrum{0.0};
 }

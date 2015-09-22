@@ -33,6 +33,16 @@ public:
   {
     return material->emission(isect);
   }
+
+  bool is_bounded() const
+  {
+    return geometry->is_bounded();
+  }
+
+  bounds::AABB get_bounding_box() const
+  {
+    return geometry->get_bounding_box();
+  }
   
   shared_ptr<Geometry> geometry;
   shared_ptr<Material> material;

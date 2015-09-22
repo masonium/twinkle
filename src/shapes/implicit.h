@@ -13,6 +13,7 @@ ImplicitGradFunc gradient_from_sdf(ImplicitEvalFunc);
 
 class ImplicitSurface : public SimpleGeometry, public Bounded
 {
+
 public:
   ImplicitSurface(ImplicitEvalFunc, ImplicitGradFunc, scalar lipschitz_const = 1);
 

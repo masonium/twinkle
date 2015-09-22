@@ -41,6 +41,8 @@ namespace kd
 
     scalar intersect(const Ray& ray, scalar max_t, T& geom, SubGeo& subgeo) const;
 
+    auto get_bounding_box() const { return bound; }
+
     int count_leaves() const
     {
       return root->count_leaves();

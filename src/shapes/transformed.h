@@ -28,6 +28,10 @@ public:
   virtual void texture_coord(SubGeo subgeo, const Vec3& pos, const Vec3& normal,
                              scalar& u, scalar& v) const override;
 
+  bool is_bounded() const override { return geometry->is_bounded(); }
+
+  bounds::AABB get_bounding_box() const override;
+
   Transform transformation() const;
 
 private:

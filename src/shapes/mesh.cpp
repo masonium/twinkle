@@ -47,11 +47,11 @@ void MeshTri::texture_coord(SubGeo subgeo, const Vec3& pos, const Vec3& normal,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Mesh::Mesh(const RawModel& model) : is_diff(model.has_tex)
+Mesh::Mesh(const RawModel& model) : is_diff(model.has_tex())
 {
-  verts.resize(model.verts.size());
-  copy(model.verts.begin(), model.verts.end(), verts.begin());
-  for (const auto& a: model.tris)
+  verts.resize(model.verts().size());
+  copy(model.verts().begin(), model.verts().end(), verts.begin());
+  for (const auto& a: model.tris())
   {
     tris.emplace_back(this, a.v);
   }
@@ -97,7 +97,7 @@ KDMesh::KDMesh(const RawModel& model) : Mesh(model)
 
   kd::TreeOptions opt;
   opt.max_elements_per_leaf = 10;
-  kd_tree = std::make_shared<tri_tree>(tri_addresses, opt);
+  kd_tree = std::make_unique<tri_tree>(tri_addresses, opt);
 }
 
 scalar KDMesh::intersect(const Ray& r, scalar max_t, SubGeo& geo) const

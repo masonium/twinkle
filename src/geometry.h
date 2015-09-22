@@ -1,14 +1,17 @@
 #pragma once
 
+#include <limits>
 #include <memory>
 #include "vec3.h"
 #include "ray.h"
-#include <limits>
+#include "bounds.h"
+
 
 using std::shared_ptr;
 using std::numeric_limits;
 
 using SubGeo = uint64_t;
+#define SUBGEO_NONE -1
 
 class Geometry
 {
@@ -26,6 +29,10 @@ public:
                              scalar& u, scalar& v) const
   {
   }
+
+  virtual bool is_bounded() const { return false; }
+
+  virtual bounds::AABB get_bounding_box() const { return bounds::AABB::infinite; }
 
   virtual ~Geometry() {}
 };
