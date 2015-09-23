@@ -11,7 +11,6 @@ const scalar PI = 4.0 * atan(1.0);
 const scalar INV_PI = 1 / PI;
 const scalar INV_2PI = 1 / (2 * PI);
 
-
 #define SCALAR_EPSILON 0.00001
 
 class Vec3;
@@ -66,13 +65,6 @@ scalar p5_interp(scalar x);
 scalar unitize(scalar x);
 
 scalar clamp(scalar x, scalar m, scalar M);
-
-/***
- * Intersection of a triangle with a ray
- */
-scalar ray_triangle_intersection(const Ray& ray,
-                                 const Vec3& v1, const Vec3& v2, const Vec3& v3,
-                                 scalar max_t = SCALAR_MAX);
 
 Vec3 interpolate_quadratic(scalar x1, scalar y1, scalar x2, scalar y2, scalar x3, scalar y3);
 

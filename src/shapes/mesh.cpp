@@ -1,6 +1,7 @@
 #include <algorithm>
 #include "kdmesh.h"
 #include "mesh.h"
+#include "shapes/isect_util.h"
 
 using std::copy;
 
@@ -17,7 +18,8 @@ MeshTri::MeshTri(const Mesh* m, const int v[3]) :
 
 scalar MeshTri::intersect(const Ray& ray, scalar max_t, SubGeo& geo) const
 {
-  return ray_triangle_intersection(ray, _p(0), _p(1), _p(2), max_t);
+  auto rti = ray_triangle_intersection(ray, _p(0), _p(1), _p(2), max_t);
+  return rti.get(-1);
 }
 
 Vec3 MeshTri::normal(SubGeo geo, const Vec3& point) const

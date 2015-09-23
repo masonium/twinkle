@@ -1,11 +1,12 @@
 #pragma once
 
 #include <memory>
-#include "math_util.h"
+#include "shapes/isect_util.h"
 #include "spectrum.h"
 #include "ray.h"
 #include "material.h"
 #include "geometry.h"
+#include "util/optional.h"
 
 using std::shared_ptr;
 
