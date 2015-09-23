@@ -54,6 +54,11 @@ public:
   void rescale(const bounds::AABB& new_bb);
   void rescale(const bounds::Sphere& new_bs);
 
+  /***
+   * center the model on the origin
+   */
+  void translate_to_origin();
+
   bounds::AABB bounding_box( ) const;
   bounds::Sphere bounding_sphere( ) const;
 

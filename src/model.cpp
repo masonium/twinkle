@@ -394,6 +394,17 @@ void RawModel::compute_normals()
     verts_[i].normal = normal_sum[i].normal();
 }
 
+void RawModel::translate_to_origin()
+{
+  Vec3 vsum = Vec3::zero;
+  for (const auto& v: verts_)
+    vsum += v.position;
+
+  auto center = vsum / verts_.size();
+  for (auto& v: verts_)
+    v.position -= center;
+}
+
 void RawModel::rescale(const bounds::AABB& new_bb)
 {
   auto bb = bounding_box();
