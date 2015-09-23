@@ -50,7 +50,7 @@ namespace
     {
       scene.add(shape);
     }
-    Scene scene;
+    BasicScene scene;
     shared_ptr<Sphere> sphere;
     Ray ray;
     shared_ptr<Shape> shape;

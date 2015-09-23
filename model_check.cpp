@@ -50,7 +50,7 @@ void kdtree_test()
 {
   auto mat = make_shared<RoughColorMaterial>(0.0, spectrum{1.0});
 
-  auto shapes = vector<shared_ptr<Bounded>>();
+  auto shapes = vector<shared_ptr<Sphere>>();
 
   UniformSampler s;
 
@@ -62,7 +62,7 @@ void kdtree_test()
 
   kd::TreeOptions opt;
   opt.self_traversal_cost = 1.0;
-  auto tree = make_shared<kd::Tree<shared_ptr<Bounded>>>(shapes, opt);
+  auto tree = make_shared<kd::Tree<shared_ptr<Sphere>>>(shapes, opt);
   cout << "built tree with " << tree->count_leaves() << " leaves and " << tree->count_objs() << " obj refs.\n";
 }
 
