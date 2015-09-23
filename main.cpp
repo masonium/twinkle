@@ -6,6 +6,7 @@
 #include "integrator.h"
 #include "dintegrator.h"
 #include "scene.h"
+#include "kdscene.h"
 #include "bsdf.h"
 #include "path_tracer.h"
 #include "directlightingintegrator.h"
@@ -104,9 +105,11 @@ PerspectiveCamera box_scene(Scene& scene, scalar ar, scalar angle)
                            PI/2.0, ar);
 }
 
-PerspectiveCamera many_sphere_scene(Scene& scene, scalar ar)
+shared_ptr<Camera> many_sphere_scene(Scene& scene, scalar ar, int angle = 0)
 {
-  const int SPHERES_PER_SIDE = 10;
+  const int SPHERES_PER_SIDE = 12;
+  const scalar SW = 6.0;
+
   for (int y = 0; y < SPHERES_PER_SIDE; ++y)
   {
     for (int x = 0; x < SPHERES_PER_SIDE; ++x)
@@ -114,59 +117,62 @@ PerspectiveCamera many_sphere_scene(Scene& scene, scalar ar)
       auto color = spectrum::from_hsv(360.0 * y / SPHERES_PER_SIDE,
 				      0.5 + 0.5 * x / SPHERES_PER_SIDE,
 				      1.0);
-      auto pos = Vec3{lerp<scalar>(-5, 5, x/(SPHERES_PER_SIDE-1.0)),
-		      lerp<scalar>(-5, 5, y/(SPHERES_PER_SIDE-1.0)), 0.0};
+      auto pos = Vec3{lerp<scalar>(-SW, SW, x/(SPHERES_PER_SIDE-1.0)),
+		      lerp<scalar>(-SW, SW, y/(SPHERES_PER_SIDE-1.0)), 0.0};
 
       scene.add(make_shared<Shape>(make_shared<Sphere>(pos, 10.0/(2.1*SPHERES_PER_SIDE)),
                                    make_shared<RoughColorMaterial>(1.0, color)));
     }
   }
 
-  scene.add(make_shared<Shape>(make_shared<Plane>(Vec3::y_axis, 6.0),
-                               make_shared<MirrorMaterial>()));
-  // scene.add(make_shared<Shape>(make_shared<Plane>(Vec3{-1, 0, 1}, 10.0),
-  //                     make_shared<MirrorMaterial>()));
+  // scene.add(make_shared<Shape>(make_shared<Plane>(Vec3::y_axis, 6.0),
+  //                              make_shared<MirrorMaterial>()));
+  scene.add(make_shared<Shape>(make_shared<Plane>(Vec3{-1, 0, 1}, 10.0),
+                      make_shared<MirrorMaterial>()));
 
   const scalar LP = 4.0;
 
-  scene.add( make_shared<PointLight>( Vec3{-5, -5, -5}, spectrum{LP}) );
-  scene.add( make_shared<PointLight>( Vec3{-5, 5, -5}, spectrum{LP}) );
-  scene.add( make_shared<PointLight>( Vec3{5, -5, -5}, spectrum{LP}) );
-  scene.add( make_shared<PointLight>( Vec3{5, 5, -5}, spectrum{LP}) );
+  scene.add( make_shared<PointLight>( Vec3{-SW, -SW, -SW}, spectrum{LP}) );
+  scene.add( make_shared<PointLight>( Vec3{-SW, SW, -SW}, spectrum{LP}) );
+  scene.add( make_shared<PointLight>( Vec3{SW, -SW, -SW}, spectrum{LP}) );
+  scene.add( make_shared<PointLight>( Vec3{SW, SW, -SW}, spectrum{LP}) );
 
-  return PerspectiveCamera(Vec3{0,0,-7}, Vec3::zero, Vec3::y_axis, PI/2, ar);
+  return make_shared<PerspectiveCamera>(
+    12.0 * Vec3(sin(angle * PI/180), 0, -cos(angle*PI/180)), 
+    Vec3::zero, Vec3::y_axis, PI/2, ar);
 }
 
-PerspectiveCamera model_scene(Scene& scene, scalar aspect_ratio)
+shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio)
 {
   RawModel m;
-  if (!m.load_stl_model("cube.stl").success)
+  if (!m.load_obj_model("/home/mason/workspace/twinkle/teapot.obj").success)
     exit(1);
-  cerr << "Loaded model with " << m.verts.size() << " verts and " <<
-    m.tris.size() << " tris." << endl;
+  cerr << "Loaded model with " << m.verts().size() << " verts and " <<
+    m.tris().size() << " tris." << endl;
 
-
-  //m.rescale(bounds::AABB(Vec3(-2, 0, -2), Vec3(2, 2, 2)));
+  m.translate_to_origin();
+  m.rescale(bounds::Sphere(Vec3(0, 0, 0), 4.0));
+  //m.invert_normals();
 
   //auto mesh = rotate(make_shared<KDMesh>(m), Vec3::y_axis, PI/4);;
-  auto mesh = translate(make_quad(), Vec3{0.0, 0.0, 0.0});
+  auto mesh = make_shared<KDMesh>(m);
+  //auto mesh = make_shared<Sphere>(Vec3::zero, 3.0);
+  //auto mesh = translate(make_quad(), Vec3{0.0, 0.0, 0.0});
 
-  // cerr << "Created kdmesh with " << kdmesh->kd_tree->count_leaves() << " leaves and "
-  //      << kdmesh->kd_tree->count_objs() << " objects.\n";
+  cerr << "Created kdmesh with " << mesh->kd_tree->count_leaves() << " leaves and "
+       << mesh->kd_tree->count_objs() << " objects.\n";
 
   auto rcm = make_shared<RoughColorMaterial>(0.0, spectrum{1.0, 0.5, 0.0});
-  auto mc = make_shared<RoughMaterial>(
-    0.0, make_shared<Gradient2D>());
-  auto mirror = make_shared<MirrorMaterial>();
-  scene.add(make_shared<Shape>(mesh, mc));
+  auto nmc = make_shared<RoughMaterial>(0.0, make_shared<NormalTexture>());
+
+  scene.add(make_shared<Shape>(mesh, nmc));
   
   auto green = make_shared<RoughColorMaterial>(0.0, spectrum{0.2, 0.7, 0.0});
-  scene.add(make_shared<Shape>(make_shared<Plane>(Vec3::y_axis, 1.01), green));
+  scene.add(make_shared<Shape>(make_shared<Plane>(Vec3::y_axis, 2), green));
   
-  auto check = make_shared<Checkerboard2D>(spectrum{1.0}, spectrum{0.0}, 2, 1);
-  scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{1.0})));
+  scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{5.0})));
 
-  return PerspectiveCamera(Vec3{0.0, 3.0, -4.0}, Vec3::zero, Vec3::y_axis,
+  return make_shared<PerspectiveCamera>(Vec3{2.0, 0.0, 5.0}, Vec3::zero, Vec3::y_axis,
                            PI/2.0, aspect_ratio);
 }
 
@@ -201,7 +207,8 @@ shared_ptr<Camera> default_scene(Scene& scene, scalar aspect_ratio, int angle)
   auto impf = sphere_sdf;
   auto implicit = make_shared<ImplicitSurface>(impf, gradient_from_sdf(impf), 1.0);
   auto sphere = make_shared<Sphere>(Vec3{0.0, 0.0, 0.0}, 1.0);
-  //scene.add(make_shared<Shape>(implicit, glass));
+  
+  scene.add(make_shared<Shape>(sphere, make_shared<RoughMaterial>(0.0, make_shared<NormalTexture>())));
 
   scalar distance_from_center = 5.0;
   scalar sphere_radius = 1.0;
@@ -260,34 +267,42 @@ int main(int argc, char** args)
     exit(1);
   }
 
-  Scene scene;
-  int angle = atoi(args[4]);
-  auto cam = default_scene(scene, scalar(WIDTH)/scalar(HEIGHT), angle);
+  shared_ptr<Scene> scene;
+  if (atoi(args[4]))
+    scene = make_shared<KDScene>();
+  else
+    scene = make_shared<BasicScene>();
+
+  int angle = atoi(args[5]);
+
+  auto cam = model_scene(*scene, scalar(WIDTH)/scalar(HEIGHT));
 
   auto bf = make_shared<BoxFilter>();
   Film f(WIDTH, HEIGHT, bf);
 
-//#define MAIN_PT
+#define RENDER_ALGO 2
 
-#ifdef MAIN_PT
+#if RENDER_ALGO == 0
   PathTracerIntegrator::Options opt;
   opt.samples_per_pixel = per_pixel;
   opt.num_threads = 0;
   opt.max_depth = 10;
   PathTracerIntegrator igr(opt);
-#else
+#elif RENDER_ALGO == 1
   DirectLightingIntegrator::Options opt;
   opt.samples_per_pixel = 4;
   opt.lighting_samples = per_pixel / 4;
   opt.subdivision = 4;
   opt.num_threads = 0;
   DirectLightingIntegrator igr(opt);
+#else
+  DebugIntegrator igr(DebugIntegrator::DI_NORMAL);
 #endif
 
   // cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, "
   //      << per_pixel << " samples per pixel\n";
-
-  igr.render(*cam, scene, f);
+  scene->prepare();
+  igr.render(*cam, *scene, f);
 
   // auto mapper = make_shared<LinearToneMapper>();
   auto mapper = make_shared<ReinhardGlobal>();
