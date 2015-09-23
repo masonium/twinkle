@@ -45,7 +45,7 @@ Output Formats
 * PPM
 Multithreading
 ToneMaps
-* RSSF
+* RSSF (local and global)
 Textures
 * Grid
 * Checker
@@ -57,11 +57,6 @@ Textures
 Shapes
 * Various built-in shapes based on implicits (torus, cylinder)
 * generic quadrics...?
-
-Tonemapping
-* Reinhard global tone mapper
-
-Scripting system (guile ?!)
 
 Surface integrators
 * Bidirectional path tracing
@@ -75,10 +70,18 @@ Textures
 * arbitrary function-based
 * worley noise
 
-Automatic Differentiation for implicit surface rendering
-* implemented in CL?
 
 ## Priorities
+box primitive
+heightmap primitive
+lua integration (basic)
+- scene
+- camera
+- integrator (path tracer)
+- shapes (sphere, box, transformations)
+Task abstraction (films, lua state)
+
+
 new sky texture
 other procedural textures
 building scene
@@ -88,3 +91,4 @@ multi-dome
 random box building
 Small library of rendered scenes
 bi-directional path tracing
+
