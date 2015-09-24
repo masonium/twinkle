@@ -380,7 +380,7 @@ namespace kd
     t0 = std::max<scalar>(t0, 0);
     if (max_t.is())
       t1 = std::min(t1, max_t.get());
-    assert(0 < t0 && t0 <= t1 && t1 <= max_t);
+    assert((0 < t0) && (t0 <= t1) && (t1 <= max_t));
 
     using stack_elem = std::tuple<const Node<T>*, scalar, scalar>;
 
