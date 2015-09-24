@@ -76,7 +76,7 @@ void grid_render(const T& renderer, const Camera& cam, const Scene& scene, Film&
   using std::for_each;
   using std::transform;
 
-  num_threads = num_threads || num_system_procs();
+  num_threads = num_threads ? num_threads : num_system_procs();
 
   LocalThreadScheduler lts{num_threads};
 
