@@ -33,23 +33,21 @@ namespace bounds
   {
     return ray_box_intersection(r, bounds, t0, t1);
   }
-  scalar AABB::intersect(const Ray& r, scalar max_t) const
+
+  scalar_fp AABB::intersect(const Ray& r, scalar_fp max_t) const
   {
     scalar t0, t1;
     if (!ray_box_intersection(r, bounds, t0, t1))
-        return -1;;
+      return scalar_fp{};;
 
     if (t0 > 0)
     {
-      if (t0 < max_t)
-        return t0;
-      else
-        return -1;
+      return t0 < max_t ? scalar_fp{t0} : scalar_fp{};
     }
     else if (0 < t1 && t1 < max_t)
-      return t1;
+      return scalar_fp{t1};
     else
-      return -1;
+      return scalar_fp{};
   }
 
   using std::ostream;

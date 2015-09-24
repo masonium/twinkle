@@ -11,7 +11,7 @@ public:
   {
   }
   
-  scalar intersect(const Ray& r) const override;
+  scalar_fp intersect(const Ray& r) const override;
   
   Vec3 normal(SubGeo, const Vec3& point) const override;
 

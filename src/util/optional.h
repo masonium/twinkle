@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <cstdint>
 #include <exception>
 #include <stdexcept>
@@ -11,6 +12,7 @@
 using std::string;
 using std::logic_error;
 using std::enable_if;
+using std::ostream;
 
 struct optional_error : public logic_error
 {
@@ -29,7 +31,9 @@ public:
   optional(const T& r) :  _value(r), _init(true) {
   }
 
-  operator bool() const { return _init; }
+  bool is() const {
+    return _init;
+  }
 
   const T& get() const {
 #ifndef NDEBUG
@@ -43,7 +47,17 @@ public:
     return _init ? _value : default_value;
   }
 
-private:
+
+  bool operator ==(const optional<T>& rhs)
+  {
+    if (_init != rhs._init)
+      return false;
+    return !_init || (_value == rhs._values);
+  }
+
+protected:
+  void clear() { _init = false; }
+
   T _value;
   bool _init;
 };
@@ -54,12 +68,69 @@ class forced_positive : public optional<T>
 public:
   forced_positive() { }
 
-  forced_positive(const T& r) : optional<T>(r) {
-    assert(r > 0);
+  explicit forced_positive(const T& r) : optional<T>(r)
+  {
+#ifndef NDEBUG
+    if (r <= 0)
+      this->clear();
+#endif
   }
+
+  /*
+   * This operator is specifically designed to make finding the 'best'
+   * intersection easier. In generally, 'less' is overriding result.
+   */
+  bool operator <(const forced_positive<T>& fp) const
+  {
+    if (!this->is())
+      return false;
+
+    return !fp.is() || (this->_value < fp._value);
+  }
+
+  bool operator <=(const forced_positive<T>& fp) const
+  {
+    if (!fp.is())
+      return true;
+
+    return this->is() && (this->_value < fp._value);
+  }
+
+  bool operator <(const T& f) const
+  {
+    return *this < forced_positive<T>{f};
+  }
+
+  bool operator <=(const T& f) const
+  {
+    return *this <= forced_positive<T>{f};
+  }
+
   static forced_positive<T> none;
 };
 
 template <typename T>
 forced_positive<T> forced_positive<T>::none;
 
+template <typename T>
+bool operator <(const T& t, const forced_positive<T>& fp)
+{
+  return forced_positive<T>{t} < fp;
+}
+
+template <typename T>
+bool operator <=(const T& t, const forced_positive<T>& fp)
+{
+  return forced_positive<T>{t} <= fp;
+}
+
+template <typename T>
+ostream& operator <<(ostream& out, const forced_positive<T>& fp)
+{
+  if (fp.is())
+    out << fp.get();
+  else
+    out << "NONE";
+
+  return out;
+}

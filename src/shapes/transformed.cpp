@@ -12,7 +12,7 @@ Transformed::Transformed(shared_ptr<Transformed> ptr, Transform tr)
 {
 }
 
-scalar Transformed::intersect(const Ray& r, scalar max_t, SubGeo& geom) const
+scalar_fp Transformed::intersect(const Ray& r, scalar_fp max_t, SubGeo& geom) const
 {
   return geometry->intersect(tform.inv_transform_ray(r), max_t, geom);
 }

@@ -16,12 +16,12 @@ bounds::AABB KDMesh::get_bounding_box() const
   return kd_tree->get_bounding_box();
 }
 
-scalar KDMesh::intersect(const Ray& r, scalar max_t, SubGeo& geo) const
+scalar_fp KDMesh::intersect(const Ray& r, scalar_fp max_t, SubGeo& geo) const
 {
   MeshTri const* tri = nullptr;
   SubGeo dummy;
-  scalar t = kd_tree->intersect(r, max_t, tri, dummy);
-  if (t > 0)
+  scalar_fp t = kd_tree->intersect(r, max_t, tri, dummy);
+  if (t.is())
     geo = tri - &tris[0];
   return t;
 }

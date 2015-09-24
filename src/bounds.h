@@ -2,6 +2,7 @@
 
 #include "vec3.h"
 #include "ray.h"
+#include "shapes/isect_util.h"
 #include <iostream>
 
 bool ray_box_intersection(const Ray& ray, const Vec3 bounds[2],
@@ -67,7 +68,7 @@ namespace bounds
     /**
      * Intersection of this box with a ray.
      */
-    scalar intersect(const Ray& r, scalar max_t = SCALAR_MAX) const;
+    scalar_fp intersect(const Ray& r, scalar_fp max_t) const;
     bool intersect(const Ray& r, scalar& t0, scalar& t1) const;
 
     static const AABB infinite;

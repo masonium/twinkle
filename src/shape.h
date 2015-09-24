@@ -20,7 +20,7 @@ public:
   {
   }
   
-  scalar intersect(const Ray& r, scalar max_t, SubGeo& subgeo) const
+  scalar_fp intersect(const Ray& r, scalar_fp max_t, SubGeo& subgeo) const
   {
     return geometry->intersect(r, max_t, subgeo);
   }

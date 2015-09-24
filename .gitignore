@@ -1,6 +1,8 @@
 *#
 obj/
 bin/
+Debug/
+Release/
 twinkle
 test_twinkle
 fresnel_test

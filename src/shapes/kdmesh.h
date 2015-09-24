@@ -9,7 +9,7 @@ class KDMesh : public Mesh
 public:
   KDMesh(const RawModel& model);
 
-  scalar intersect(const Ray& r, scalar max_t, SubGeo& geom) const override;
+  scalar_fp intersect(const Ray& r, scalar_fp max_t, SubGeo& geom) const override;
 
   bounds::AABB get_bounding_box() const override;
 

@@ -16,10 +16,9 @@ MeshTri::MeshTri(const Mesh* m, const int v[3]) :
   copy(v, v+3, vi);
 }
 
-scalar MeshTri::intersect(const Ray& ray, scalar max_t, SubGeo& geo) const
+scalar_fp MeshTri::intersect(const Ray& ray, scalar_fp max_t, SubGeo& geo) const
 {
-  auto rti = ray_triangle_intersection(ray, _p(0), _p(1), _p(2), max_t);
-  return rti.get(-1);
+  return ray_triangle_intersection(ray, _p(0), _p(1), _p(2), max_t);
 }
 
 Vec3 MeshTri::normal(SubGeo geo, const Vec3& point) const
@@ -69,22 +68,20 @@ bounds::AABB Mesh::get_bounding_box() const
                     });
 }
 
-scalar Mesh::intersect(const Ray& r, scalar max_t, SubGeo& subgeo) const
+scalar_fp Mesh::intersect(const Ray& r, scalar_fp max_t, SubGeo& subgeo) const
 {
-  scalar best_t = numeric_limits<scalar>::max();
-  bool found_isect = false;
+  scalar_fp best_t = max_t;
   for (auto i = 0u; i < tris.size(); ++i)
   {
     auto& tri = tris[i];
-    scalar t = tri.intersect(r, best_t, subgeo);
-    if (t > 0)
+    auto t = tri.intersect(r, best_t, subgeo);
+    if (t < best_t)
     {
-      found_isect = true;
       best_t = t;
       subgeo = i;
     }
   }
-  return found_isect ? best_t : -1;
+  return best_t;
 }
 
 Vec3 Mesh::normal(SubGeo subgeo, const Vec3& point) const

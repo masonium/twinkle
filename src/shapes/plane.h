@@ -8,7 +8,7 @@ public:
   // N*p + d = 0;
   Plane(const Vec3& normal, scalar offset);
 
-  scalar intersect(const Ray& r) const override;
+  scalar_fp intersect(const Ray& r) const override;
   Vec3 normal(SubGeo geo, const Vec3& point) const override;
 
   bool is_differential() const override { return true; }

@@ -2,6 +2,7 @@
 
 #include <limits>
 #include <memory>
+#include "shapes/isect_util.h"
 #include "vec3.h"
 #include "ray.h"
 #include "bounds.h"
@@ -16,7 +17,7 @@ using SubGeo = uint64_t;
 class Geometry
 {
 public:
-  virtual scalar intersect(const Ray& r, scalar max_t, SubGeo& geom) const = 0;
+  virtual scalar_fp intersect(const Ray& r, scalar_fp max_t, SubGeo& geom) const = 0;
 
   virtual Vec3 normal(SubGeo sub_geo, const Vec3& point) const = 0;
 
@@ -44,20 +45,20 @@ public:
    * Subclasses can override this method and have the max_t aspect taken care of
    * by the following method. 
    */
-  virtual scalar intersect(const Ray& r) const {
-    return static_cast<scalar>(-1.0);
+  virtual scalar_fp intersect(const Ray& r) const {
+    return scalar_fp::none;
   }
 
   /**
    * Alternatively, subclasses can override the max_t version
    * directly. Typcially, only one of these two needs to be overriden.
    */
-  virtual scalar intersect(const Ray& r, scalar max_t) const {
-    scalar x = intersect(r);
-    return x > max_t ? -1 : x;
+  virtual scalar_fp intersect(const Ray& r, scalar_fp max_t) const {
+    auto x = intersect(r);
+    return x < max_t ? x : scalar_fp{};
   }
 
-  scalar intersect(const Ray& r, scalar max_t, SubGeo& geom) const override
+  scalar_fp intersect(const Ray& r, scalar_fp max_t, SubGeo& geom) const override
   {
     return intersect(r, max_t);
   }

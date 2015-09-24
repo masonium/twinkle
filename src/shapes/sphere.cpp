@@ -2,7 +2,7 @@
 
 using std::move;
 
-scalar Sphere::intersect(const Ray& r) const
+scalar_fp Sphere::intersect(const Ray& r) const
 {
   const Vec3 to = r.position - position;
 
@@ -13,9 +13,9 @@ scalar Sphere::intersect(const Ray& r) const
   scalar res = qf(a, b, c);
 
   if (res > -0.0001)
-    return max<scalar>(res, 0.0001);
+    return scalar_fp{max<scalar>(res, 0.0001)};
   else
-    return res;
+    return scalar_fp::none;
 }
 
 Vec3 Sphere::normal(SubGeo geo, const Vec3& point) const

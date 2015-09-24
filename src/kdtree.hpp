@@ -366,15 +366,21 @@ namespace kd
   }
 
   template <typename T>
-  scalar Tree<T>::intersect(const Ray& ray, scalar max_t, T& obj, SubGeo& geo) const
+  scalar_fp Tree<T>::intersect(const Ray& ray, scalar_fp max_t, T& obj, SubGeo& geo) const
   {
     scalar t0, t1;
     if (!bound.intersect(ray, t0, t1))
-      return -1;
-    if (t1 <= 0 || t0 >= max_t)
-      return -1;
+      return scalar_fp{};
+
+    assert(t0 <= t1);
+
+    if (t1 <= 0 || max_t <= t0)
+      return scalar_fp{};
+
     t0 = std::max<scalar>(t0, 0);
-    t1 = std::min(t1, max_t);
+    if (max_t.is())
+      t1 = std::min(t1, max_t.get());
+    assert(0 < t0 && t0 <= t1 && t1 <= max_t);
 
     using stack_elem = std::tuple<const Node<T>*, scalar, scalar>;
 
@@ -396,14 +402,14 @@ namespace kd
        **/
       if (active->is_leaf())
       {
-        scalar best_t = SCALAR_MAX, t;
+        scalar_fp best_t = max_t, t;
         T best_obj{nullptr};
-        SubGeo best_geo, leaf_geo = 0;
+        SubGeo best_geo = 0, leaf_geo = 0;
 
         for (const auto& shape: active->shapes)
         {
           t = shape->intersect(ray, best_t, leaf_geo);
-          if (t > 0)
+          if (t < best_t)
           {
             best_t = t;
             best_obj = shape;
@@ -446,6 +452,6 @@ namespace kd
       }
     }
 
-    return -1;
+    return scalar_fp{};
   }
 }

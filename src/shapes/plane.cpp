@@ -15,12 +15,12 @@ Plane::Plane(const Vec3& normal, scalar offset) : N(normal), d(offset)
   V = N.cross(U).normal();
 }
 
-scalar Plane::intersect(const Ray& r) const
+scalar_fp Plane::intersect(const Ray& r) const
 {
   scalar s = N.dot(r.direction);
   if (fabs(s) < 0.0001)
-    return -1;
-  return -(d + N.dot(r.position)) / s;
+    return scalar_fp::none;
+  return scalar_fp{-(d + N.dot(r.position)) / s};
 }
 
 Vec3 Plane::normal(SubGeo geo, const Vec3& point) const

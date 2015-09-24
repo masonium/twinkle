@@ -28,13 +28,13 @@ TEST(sphere_implicit)
 
     scalar angle = acos(n.dot(Vec3::z_axis));
 
-    scalar imp_t = imp.intersect(ray);
-    scalar sp_t = sp.intersect(ray);
+    auto imp_t = imp.intersect(ray);
+    auto sp_t = sp.intersect(ray);
 
     if (angle > crit_angle+0.001)
     {
-      CHECK(imp_t < 0);
-      CHECK(sp_t < 0);
+      CHECK(!imp_t.is());
+      CHECK(!sp_t.is());
     }
     if (angle < crit_angle - 0.001)
     {
@@ -43,8 +43,8 @@ TEST(sphere_implicit)
 
       scalar t_analytic = qf(a, b, c);
 
-      CHECK_CLOSE(t_analytic, imp_t, EPS);
-      CHECK_CLOSE(t_analytic, sp_t, EPS);
+      CHECK_CLOSE(t_analytic, imp_t.get(), EPS);
+      CHECK_CLOSE(t_analytic, sp_t.get(), EPS);
     }
   }
 }

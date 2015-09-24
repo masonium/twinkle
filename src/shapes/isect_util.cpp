@@ -2,7 +2,7 @@
 
 scalar_fp ray_triangle_intersection(const Ray& ray,
                                    const Vec3& v1, const Vec3& v2, const Vec3& v3,
-                                   scalar max_t)
+                                   scalar_fp max_t)
 {
   Vec3 e1 = v2 - v1, e2 = v3 - v1;
   Vec3 p = ray.direction.cross(e2);
@@ -16,7 +16,7 @@ scalar_fp ray_triangle_intersection(const Ray& ray,
   Vec3 q = corner_to_ray.cross(e1);
 
   scalar t = q.dot(e2) * inv_det;
-  if (t > max_t || t < EPSILON)
+  if (max_t < t || t < EPSILON)
     return scalar_fp::none;
 
   scalar u = corner_to_ray.dot(p) * inv_det;
@@ -27,6 +27,6 @@ scalar_fp ray_triangle_intersection(const Ray& ray,
   if (v < 0 || u + v > 1)
     return scalar_fp::none;
 
-  return t;
+  return scalar_fp{t};
 }
 

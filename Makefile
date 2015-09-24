@@ -12,17 +12,17 @@ BINDIR = $(CONFIG)/bin
 OBJDIR = $(CONFIG)/obj
 LIBDIR = $(CONFIG)/lib
 
-CXX = ccache g++
+CXX = g++
 CXX_VERSION = -std=c++1y
 COMMON_FLAGS = -Wall -Wextra -Wno-unused-parameter $(CXX_VERSION)
-CXXFLAGS := $(COMMON_FLAGS) -Isrc/ -Iextlib/
+CXXFLAGS := $(COMMON_FLAGS) -Isrc/ -Iextlib/ -ggdb
 SFLAGS =  -fsyntax-only $(CXXFLAGS)
 LFLAGS = -pthread -lm  -lUnitTest++ -L$(LIBDIR) -ltwinkle
 
 ifeq (${CONFIG}, Debug)
-CXXFLAGS += -g
+CXXFLAGS += -Og
 else ifeq (${CONFIG}, Release)
-CXXFLAGS += -O3
+CXXFLAGS += -O3 # -Ofast
 else
 echo "CONFIG must be one of (Debug, Release)"
 endif

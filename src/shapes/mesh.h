@@ -11,7 +11,7 @@ class Mesh : public Geometry
 public:
   Mesh(const RawModel& model);
 
-  virtual scalar intersect(const Ray& r, scalar max_t, SubGeo& geom) const override;
+  virtual scalar_fp intersect(const Ray& r, scalar_fp max_t, SubGeo& geom) const override;
 
   Vec3 normal(SubGeo, const Vec3& point) const override;
 
@@ -59,7 +59,7 @@ class MeshTri : public SimpleGeometry
 public:
   MeshTri(const Mesh* m, const int v[3]);
 
-  scalar intersect(const Ray& r, scalar max_t, SubGeo& geo) const override;
+  scalar_fp intersect(const Ray& r, scalar_fp max_t, SubGeo& geo) const override;
 
   Vec3 normal(SubGeo, const Vec3& point) const override;
 

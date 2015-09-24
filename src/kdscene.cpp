@@ -62,7 +62,6 @@ Light const* KDScene::sample_light(scalar r1, scalar& light_prob) const
   return lights_[min(max_light_idx, decltype(max_light_idx)(r1 * lights_.size()))].get();
 }
 
-
 Intersection KDScene::intersect(const Ray& ray) const
 {
   /*
@@ -71,19 +70,15 @@ Intersection KDScene::intersect(const Ray& ray) const
    */
 
   SubGeo best_geom = SUBGEO_NONE;
-  const scalar max_t = numeric_limits<double>::max();
   shared_ptr<const Shape> best_shape{nullptr};
 
-  scalar best_t = shape_tree_->intersect(ray, max_t, best_shape, best_geom);
-
-  if (best_t < 0)
-    best_t = max_t;
+  auto best_t = scalar_fp::none;
 
   for (auto s: unbounded_shapes_)
   {
     SubGeo g = -1;
-    scalar t = s->intersect(ray, best_t, g);
-    if (t > 0 && t < best_t)
+    auto t = s->intersect(ray, best_t, g);
+    if (t < best_t)
     {
       best_t = t;
       best_shape = s;
@@ -91,7 +86,20 @@ Intersection KDScene::intersect(const Ray& ray) const
     }
   }
 
-  return Intersection(best_shape.get(), best_geom, ray, best_t);
+  {
+  SubGeo geom = SUBGEO_NONE;
+  shared_ptr<const Shape> shape{nullptr};
+
+    auto t = shape_tree_->intersect(ray, best_t, shape, geom);
+    if (t < best_t)
+    {
+      best_t = t;
+      best_shape = shape;
+      best_geom = geom;
+    }
+
+  }
+  return Intersection(best_shape.get(), best_geom, ray, best_t.get(SCALAR_MAX));
 }
 
 spectrum KDScene::environment_light_emission(const Vec3& dir) const

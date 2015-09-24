@@ -23,7 +23,7 @@ scalar Lambertian::reflectance(const Vec3& incoming, const Vec3& outgoing) const
 }
 
 OrenNayar::OrenNayar(scalar refl, scalar rough) :
-  A(1 - 0.5 * rough * rough / (rough * rough + 0.33)), 
+  A(1 - 0.5 * rough * rough / (rough * rough + 0.57)), 
   B(0.45 * rough * rough / (rough * rough + 0.09)),
   rpi(refl / PI)
 {

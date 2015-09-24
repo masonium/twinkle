@@ -47,14 +47,14 @@ Light const* BasicScene::sample_light(scalar r1, scalar& light_prob) const
 Intersection BasicScene::intersect(const Ray& ray) const
 {
   shared_ptr<const Shape> best_shape{nullptr};
-  SubGeo best_geom;
-  scalar best_t = numeric_limits<double>::max();
+  SubGeo best_geom = 0;
+  scalar_fp best_t{};
 
   for (auto s: shapes_)
   {
     SubGeo g = -1;
-    scalar t = s->intersect(ray, best_t, g);
-    if (t > 0 && t < best_t)
+    scalar_fp t = s->intersect(ray, best_t, g);
+    if (t < best_t)
     {
       best_t = t;
       best_shape = s;
@@ -62,7 +62,7 @@ Intersection BasicScene::intersect(const Ray& ray) const
     }
   }
   if (best_shape != nullptr)
-    return Intersection(best_shape.get(), best_geom, ray, best_t);
+    return Intersection(best_shape.get(), best_geom, ray, best_t.get());
   return Intersection(nullptr, 0, ray, -1);
 }
 

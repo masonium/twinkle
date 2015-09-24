@@ -21,23 +21,25 @@ Vec3 ImplicitSurface::normal(SubGeo subgeo, const Vec3& point) const
 /*
  * intersectino using a basic sphere-tracing algorithm
  */
-scalar ImplicitSurface::intersect(const Ray& r, scalar max_t) const
+scalar_fp ImplicitSurface::intersect(const Ray& r, scalar_fp max_t) const
 {
   scalar t0, t1;
   if (!bbox.intersect(r, t0, t1))
-    return -1;
-  if (max_t < t0 || t1 < 0)
-    return -1;
+    return scalar_fp{};
 
-  t1 = std::min(max_t, t1);
+  if (max_t < t0 || max_t < MIN_STEP || t1 < MIN_STEP)
+    return scalar_fp{};
 
-  scalar t = 0;
+  if (max_t.is())
+    t1 = std::min(max_t.get(), t1);
+
+  scalar t = MIN_STEP;
 
   scalar rdn = r.direction.norm();
   scalar dist = f(r.evaluate(t));
 
   if (fabs(dist) < MIN_STEP)
-    return t;
+    return scalar_fp{t};
 
   do
   {
@@ -48,14 +50,14 @@ scalar ImplicitSurface::intersect(const Ray& r, scalar max_t) const
     {
       // If we find a near-enough surface point, use the secant approximation to
       // find the zero-point.
-      return t + (dist - 0) / (dist - new_dist) * t_diff;
+      return scalar_fp{t + (dist - 0) / (dist - new_dist) * t_diff};
     }
 
     t = new_t;
     dist = new_dist;
   } while (t < t1);
 
-  return -1;
+  return scalar_fp{};
 }
 
 class GradFromEval

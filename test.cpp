@@ -68,7 +68,7 @@ namespace
     Intersection isect = scene.intersect(ray);
 
     CHECK_CLOSE(isect.t, 2.0, EPS);
-    CHECK_CLOSE(sphere->intersect(ray), 2.0, EPS);
+    CHECK_CLOSE(sphere->intersect(ray).get(), 2.0, EPS);
   }
 
   TEST(cross_product)
@@ -142,17 +142,17 @@ namespace
     TEST (isect)
     {
       {
-        scalar t = ray_triangle_intersection(Ray(Vec3(0.25, 0.25, 1), Vec3(0, 0, -1)),
+        auto t = ray_triangle_intersection(Ray(Vec3(0.25, 0.25, 1), Vec3(0, 0, -1)),
                                              Vec3(0, 0, 0), Vec3(1, 0, 0), Vec3(0, 1, 0));
 
-        CHECK_CLOSE(1.0, t, PRECISE_EPS);
+        CHECK_CLOSE(1.0, t.get(), PRECISE_EPS);
       }
       {
         Vec3 target_dir = Vec3(-2.25, -0.25, 0);
-        scalar t = ray_triangle_intersection(Ray(Vec3(2, 0.5, 0), target_dir.normal()),
+        auto t = ray_triangle_intersection(Ray(Vec3(2, 0.5, 0), target_dir.normal()),
                                              Vec3(0, 0, 1.0), Vec3(0, 0, -1.0), Vec3(-0.5, 0.5, 0));
 
-        CHECK_CLOSE(target_dir.norm(), t, PRECISE_EPS);
+        CHECK_CLOSE(target_dir.norm(), t.get(), PRECISE_EPS);
       }
     }
   }

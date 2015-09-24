@@ -146,24 +146,21 @@ shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio)
 {
   RawModel m;
   if (!m.load_obj_model("/home/mason/workspace/twinkle/teapot.obj").success)
+  {
+    cerr << "could not load model." << endl;
     exit(1);
-  cerr << "Loaded model with " << m.verts().size() << " verts and " <<
-    m.tris().size() << " tris." << endl;
-
+  }
   m.translate_to_origin();
   m.rescale(bounds::Sphere(Vec3(0, 0, 0), 4.0));
   //m.invert_normals();
 
   //auto mesh = rotate(make_shared<KDMesh>(m), Vec3::y_axis, PI/4);;
-  auto mesh = make_shared<KDMesh>(m);
-  //auto mesh = make_shared<Sphere>(Vec3::zero, 3.0);
+  //auto mesh = make_shared<KDMesh>(m);
+  auto mesh = translate(make_shared<Sphere>(Vec3::zero, 3.1), Vec3{0.0, 1.0, 0.0});
   //auto mesh = translate(make_quad(), Vec3{0.0, 0.0, 0.0});
 
-  cerr << "Created kdmesh with " << mesh->kd_tree->count_leaves() << " leaves and "
-       << mesh->kd_tree->count_objs() << " objects.\n";
-
   auto rcm = make_shared<RoughColorMaterial>(0.0, spectrum{1.0, 0.5, 0.0});
-  auto nmc = make_shared<RoughMaterial>(0.0, make_shared<NormalTexture>());
+  auto nmc = make_shared<RoughMaterial>(0.00, make_shared<NormalTexture>());
 
   scene.add(make_shared<Shape>(mesh, nmc));
   
@@ -243,7 +240,6 @@ shared_ptr<Camera> default_scene(Scene& scene, scalar aspect_ratio, int angle)
   return make_shared<PerspectiveCamera>(cam_pos, look_at, Vec3{0, 0, 1}, PI/2, aspect_ratio);
 }
 
-
 int main(int argc, char** args)
 {
   if (argc < 5)
@@ -273,14 +269,14 @@ int main(int argc, char** args)
   else
     scene = make_shared<BasicScene>();
 
-  int angle = atoi(args[5]);
+  //int angle = atoi(args[5]);
 
   auto cam = model_scene(*scene, scalar(WIDTH)/scalar(HEIGHT));
 
   auto bf = make_shared<BoxFilter>();
   Film f(WIDTH, HEIGHT, bf);
 
-#define RENDER_ALGO 2
+#define RENDER_ALGO 0
 
 #if RENDER_ALGO == 0
   PathTracerIntegrator::Options opt;

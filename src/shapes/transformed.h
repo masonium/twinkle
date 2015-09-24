@@ -16,7 +16,7 @@ public:
   Transformed(shared_ptr<Transformed> ptr, Transform tr);
   Transformed(shared_ptr<Geometry> ptr, Transform tr);
 
-  virtual scalar intersect(const Ray& r, scalar max_t, SubGeo& geo) const override;
+  virtual scalar_fp intersect(const Ray& r, scalar_fp max_t, SubGeo& geo) const override;
 
   virtual Vec3 normal(SubGeo sub_geo, const Vec3& point) const override;
 

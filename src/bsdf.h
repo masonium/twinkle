@@ -27,7 +27,7 @@ public:
 class Lambertian : public BRDF
 {
 public:
-  explicit Lambertian( scalar r_) : r(r_ / PI)
+  explicit Lambertian(scalar r_) : r(r_ / PI)
   {
   }
 

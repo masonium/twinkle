@@ -39,7 +39,7 @@ namespace kd
 
     Tree(const vector<T>& objects, const TreeOptions& opt);
 
-    scalar intersect(const Ray& ray, scalar max_t, T& geom, SubGeo& subgeo) const;
+    scalar_fp intersect(const Ray& ray, scalar_fp max_t, T& geom, SubGeo& subgeo) const;
 
     auto get_bounding_box() const { return bound; }
 
