@@ -15,7 +15,7 @@ scalar_fp Sphere::intersect(const Ray& r) const
   if (res > -0.0001)
     return scalar_fp{max<scalar>(res, 0.0001)};
   else
-    return scalar_fp::none;
+    return sfp_none;
 }
 
 Vec3 Sphere::normal(SubGeo geo, const Vec3& point) const

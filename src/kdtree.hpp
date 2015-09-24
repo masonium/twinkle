@@ -366,21 +366,23 @@ namespace kd
   }
 
   template <typename T>
-  scalar_fp Tree<T>::intersect(const Ray& ray, scalar_fp max_t, T& obj, SubGeo& geo) const
+  scalar_fp Tree<T>::intersect(const Ray& ray, const scalar_fp max_t, T& obj, SubGeo& geo) const
   {
     scalar t0, t1;
     if (!bound.intersect(ray, t0, t1))
-      return scalar_fp{};
+      return sfp_none;
 
     assert(t0 <= t1);
 
     if (t1 <= 0 || max_t <= t0)
-      return scalar_fp{};
+      return sfp_none;
 
     t0 = std::max<scalar>(t0, 0);
     if (max_t.is())
       t1 = std::min(t1, max_t.get());
-    assert((0 < t0) && (t0 <= t1) && (t1 <= max_t));
+    assert(0 <= t0);
+    assert(t0 <= t1);
+    assert(t1 <= max_t);
 
     using stack_elem = std::tuple<const Node<T>*, scalar, scalar>;
 
@@ -439,19 +441,19 @@ namespace kd
         if (t0 < t_split && t_split < t1)
         {
           node_stack.emplace(second, t_split, t1);
-          node_stack.push(make_tuple(first, t0, t_split));
+          node_stack.emplace(first, t0, t_split);
         }
         else if (t_split < t0)
         {
-          node_stack.push(make_tuple(second, t0, t1));
+          node_stack.emplace(second, t0, t1);
         }
         else
         {
-          node_stack.push(make_tuple(first, t0, t1));
+          node_stack.emplace(first, t0, t1);
         }
       }
     }
 
-    return scalar_fp{};
+    return sfp_none;
   }
 }

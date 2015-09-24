@@ -25,10 +25,10 @@ scalar_fp ImplicitSurface::intersect(const Ray& r, scalar_fp max_t) const
 {
   scalar t0, t1;
   if (!bbox.intersect(r, t0, t1))
-    return scalar_fp{};
+    return sfp_none;
 
   if (max_t < t0 || max_t < MIN_STEP || t1 < MIN_STEP)
-    return scalar_fp{};
+    return sfp_none;
 
   if (max_t.is())
     t1 = std::min(max_t.get(), t1);
@@ -57,7 +57,7 @@ scalar_fp ImplicitSurface::intersect(const Ray& r, scalar_fp max_t) const
     dist = new_dist;
   } while (t < t1);
 
-  return scalar_fp{};
+  return sfp_none;
 }
 
 class GradFromEval

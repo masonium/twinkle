@@ -46,7 +46,7 @@ public:
    * by the following method. 
    */
   virtual scalar_fp intersect(const Ray& r) const {
-    return scalar_fp::none;
+    return sfp_none;
   }
 
   /**
@@ -55,7 +55,7 @@ public:
    */
   virtual scalar_fp intersect(const Ray& r, scalar_fp max_t) const {
     auto x = intersect(r);
-    return x < max_t ? x : scalar_fp{};
+    return x < max_t ? x : sfp_none;
   }
 
   scalar_fp intersect(const Ray& r, scalar_fp max_t, SubGeo& geom) const override

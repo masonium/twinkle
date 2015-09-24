@@ -72,7 +72,7 @@ Intersection KDScene::intersect(const Ray& ray) const
   SubGeo best_geom = SUBGEO_NONE;
   shared_ptr<const Shape> best_shape{nullptr};
 
-  auto best_t = scalar_fp::none;
+  auto best_t = sfp_none;
 
   for (auto s: unbounded_shapes_)
   {

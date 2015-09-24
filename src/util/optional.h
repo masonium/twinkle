@@ -20,9 +20,9 @@ struct optional_error : public logic_error
 };
 
 /*
- *
+ * Basic optional type, for representing a value or "none".
  */
-template <typename T, typename =  enable_if<std::is_pod<T>::value> >
+template <typename T>
 class optional
 {
 public:
@@ -56,36 +56,47 @@ public:
   }
 
 protected:
+  // return the value,
+  const T& value() const { return _value; }
+  bool init() const { return _init; }
   void clear() { _init = false; }
 
+private:
   T _value;
   bool _init;
 };
 
-template <typename T>
+/**
+ * forced_positive is like an optional type, but specifically forces its
+ * contained value, when existent, to have a positive value. Any non-positive
+ * values are treated as 'none' in the constructor.
+ */
+template <typename T, typename =  enable_if<std::is_arithmetic<T>::value> >
 class forced_positive : public optional<T>
 {
 public:
   forced_positive() { }
 
+  /*
+   * The minor convenience of a non-explicit constructor is not worth the
+   * trouble. The comparison operators also help with this.
+   */
   explicit forced_positive(const T& r) : optional<T>(r)
   {
-#ifndef NDEBUG
     if (r <= 0)
       this->clear();
-#endif
   }
 
   /*
    * This operator is specifically designed to make finding the 'best'
-   * intersection easier. In generally, 'less' is overriding result.
+   * intersection easier.
    */
   bool operator <(const forced_positive<T>& fp) const
   {
     if (!this->is())
       return false;
 
-    return !fp.is() || (this->_value < fp._value);
+    return !fp.is() || (this->value() < fp.value());
   }
 
   bool operator <=(const forced_positive<T>& fp) const
@@ -93,35 +104,37 @@ public:
     if (!fp.is())
       return true;
 
-    return this->is() && (this->_value < fp._value);
+    return this->is() && (this->value() <= fp.value());
   }
 
+  /*
+   * The semantics of comparisons with normal values is more subtle than I
+   * initially thought. The obvious solution is to wrap the scalar as a
+   * forced_positive and then perform the comparison. However, this is wrong in
+   * the case of negative values, since they incorrectly get wrapped to none,
+   * when they should actually just be compared as a negative.
+   */
   bool operator <(const T& f) const
   {
-    return *this < forced_positive<T>{f};
+    return this->is() && this->value() < f;
   }
 
   bool operator <=(const T& f) const
   {
-    return *this <= forced_positive<T>{f};
+    return this->is() && this->value() <= f;
   }
-
-  static forced_positive<T> none;
 };
-
-template <typename T>
-forced_positive<T> forced_positive<T>::none;
 
 template <typename T>
 bool operator <(const T& t, const forced_positive<T>& fp)
 {
-  return forced_positive<T>{t} < fp;
+  return !fp.is() || (t < fp.get());
 }
 
 template <typename T>
 bool operator <=(const T& t, const forced_positive<T>& fp)
 {
-  return forced_positive<T>{t} <= fp;
+  return !fp.is() || (t <= fp.get());
 }
 
 template <typename T>

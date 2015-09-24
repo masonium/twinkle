@@ -78,7 +78,7 @@ void grid_render(const T& renderer, const Camera& cam, const Scene& scene, Film&
 
   num_threads = num_threads ? num_threads : num_system_procs();
 
-  auto scheduler = make_scheduler(4);
+  auto scheduler = make_scheduler(num_threads);
 
   vector<Film> films;
   for (auto i = 0u; i < num_threads; ++i)

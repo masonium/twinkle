@@ -19,7 +19,7 @@ public:
 
   Vec3 normal(SubGeo geo, const Vec3& point) const override;
 
-  scalar_fp intersect(const Ray& r, scalar_fp max_t = scalar_fp::none) const override;
+  scalar_fp intersect(const Ray& r, scalar_fp max_t = sfp_none) const override;
 
   bounds::AABB get_bounding_box() const override
   {

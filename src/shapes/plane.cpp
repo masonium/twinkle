@@ -19,7 +19,7 @@ scalar_fp Plane::intersect(const Ray& r) const
 {
   scalar s = N.dot(r.direction);
   if (fabs(s) < 0.0001)
-    return scalar_fp::none;
+    return sfp_none;
   return scalar_fp{-(d + N.dot(r.position)) / s};
 }
 

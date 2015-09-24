@@ -38,16 +38,16 @@ namespace bounds
   {
     scalar t0, t1;
     if (!ray_box_intersection(r, bounds, t0, t1))
-      return scalar_fp{};;
+      return sfp_none;;
 
     if (t0 > 0)
     {
-      return t0 < max_t ? scalar_fp{t0} : scalar_fp{};
+      return t0 < max_t ? scalar_fp{t0} : sfp_none;
     }
     else if (0 < t1 && t1 < max_t)
       return scalar_fp{t1};
     else
-      return scalar_fp{};
+      return sfp_none;
   }
 
   using std::ostream;
