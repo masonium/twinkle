@@ -12,8 +12,6 @@
 using std::vector;
 using std::shared_ptr;
 
-const optional<Intersection> isect_none{};
-
 class Scene
 {
 public:

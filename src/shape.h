@@ -15,7 +15,7 @@ class Intersection;
 class Shape
 {
 public:
-  Shape(shared_ptr<Geometry> prim, shared_ptr<Material> mat)
+  Shape(shared_ptr<const Geometry> prim, shared_ptr<const Material> mat)
     : geometry(prim), material(mat)
   {
   }
@@ -45,6 +45,6 @@ public:
     return geometry->get_bounding_box();
   }
   
-  shared_ptr<Geometry> geometry;
-  shared_ptr<Material> material;
+  shared_ptr<const Geometry> geometry;
+  shared_ptr<const Material> material;
 };
