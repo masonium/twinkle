@@ -52,6 +52,9 @@ public:
 
   Mat33 operator+(const Mat33& mat) const;
 
+  static Mat33 from_diagonal(const Vec3& diag);
+  Vec3 diagonal() const;
+
   /*
    * input axis must be normalized.
    */
