@@ -46,3 +46,6 @@ shared_ptr<Transformed> rotate(shared_ptr<Geometry>, Vec3 axis, scalar angle);
 
 shared_ptr<Transformed> translate(shared_ptr<Transformed>, Vec3 displacement);
 shared_ptr<Transformed> translate(shared_ptr<Geometry>, Vec3 displacement);
+
+shared_ptr<Transformed> scale(shared_ptr<Transformed>, Vec3 sf);
+shared_ptr<Transformed> scale(shared_ptr<Geometry>, Vec3 sf);

@@ -59,10 +59,17 @@ Transform Transformed::transformation() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+/*
+ * FIX: This specification was originally setup to merge flatten
+ * transformations at construction. It's useful with auto or chaining, but
+ * basically useless once scripiting is implemented. At that point, this should
+ * be cleaned up.
+ */
 shared_ptr<Transformed> rotate(shared_ptr<Transformed> geom, Vec3 axis, scalar angle)
 {
   auto rot = Transform{Mat33::from_axis_angle(axis.normal(), angle), Vec3::zero};
-  return make_shared<Transformed>(geom, rot);
+  return make_shared<Transformed>(geom->underlying(), rot * geom->transformation() );
 }
 
 shared_ptr<Transformed> rotate(shared_ptr<Geometry> geom, Vec3 axis, scalar angle)
@@ -73,11 +80,23 @@ shared_ptr<Transformed> rotate(shared_ptr<Geometry> geom, Vec3 axis, scalar angl
 shared_ptr<Transformed> translate(shared_ptr<Transformed> geom, Vec3 displacement)
 {
   auto trans = Transform{Mat33::identity, displacement};
-  return make_shared<Transformed>(geom, trans);
+  return make_shared<Transformed>(geom->underlying(), trans * geom->transformation());
 
 }
 
 shared_ptr<Transformed> translate(shared_ptr<Geometry> geom, Vec3 displacement)
 {
   return translate(make_shared<Transformed>(geom, Transform()), displacement);
+}
+
+shared_ptr<Transformed> scale(shared_ptr<Transformed> geom, Vec3 scale_factors)
+{
+  auto scale = Transform{Mat33::from_diagonal(scale_factors), Vec3::zero};
+  return make_shared<Transformed>(geom->underlying(), scale * geom->transformation());
+
+}
+
+shared_ptr<Transformed> scale(shared_ptr<Geometry> geom, Vec3 scale_factors)
+{
+  return scale(make_shared<Transformed>(geom, Transform()), scale_factors);
 }
