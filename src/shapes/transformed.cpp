@@ -2,7 +2,7 @@
 
 using std::make_shared;
 
-Transformed::Transformed(shared_ptr<Geometry> ptr, Transform tr)
+Transformed::Transformed(shared_ptr<const Geometry> ptr, Transform tr)
   : geometry(ptr), tform(tr)
 {
 }

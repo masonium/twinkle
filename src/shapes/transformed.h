@@ -14,7 +14,7 @@ class Transformed : public Geometry
 {
 public:
   Transformed(shared_ptr<Transformed> ptr, Transform tr);
-  Transformed(shared_ptr<Geometry> ptr, Transform tr);
+  Transformed(shared_ptr<const Geometry> ptr, Transform tr);
 
   virtual scalar_fp intersect(const Ray& r, scalar_fp max_t, SubGeo& geo) const override;
 
@@ -34,8 +34,10 @@ public:
 
   Transform transformation() const;
 
+  shared_ptr<const Geometry> underlying() const { return geometry; }
+
 private:
-  shared_ptr<Geometry> geometry;
+  shared_ptr<const Geometry> geometry;
   Transform tform;
 };
 
