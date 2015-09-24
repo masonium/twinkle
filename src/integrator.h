@@ -78,7 +78,7 @@ void grid_render(const T& renderer, const Camera& cam, const Scene& scene, Film&
 
   num_threads = num_threads ? num_threads : num_system_procs();
 
-  LocalThreadScheduler lts{num_threads};
+  auto scheduler = make_scheduler(4);
 
   vector<Film> films;
   for (auto i = 0u; i < num_threads; ++i)
@@ -99,9 +99,9 @@ void grid_render(const T& renderer, const Camera& cam, const Scene& scene, Film&
                                                      rect, total_spp); });
 
   for_each(render_tasks.begin(), render_tasks.end(),
-           [&](auto& task) { lts.add_task(task); });
+           [&](auto& task) { scheduler->add_task(task); });
 
-  lts.complete_pending();
+  scheduler->complete_pending();
 
   for (const auto& f: films)
     film.merge(f);

@@ -18,8 +18,6 @@ void quad_test()
 
 void scheduler_test()
 {
-  LocalThreadScheduler lts;
-
   class SleepTask : public LocalTask
   {
   public:
@@ -33,17 +31,19 @@ void scheduler_test()
     }
   };
 
+  auto scheduler = make_scheduler(4);
+
   int j = 0;
   for (auto i = 0; i < 9; ++i)
-    lts.add_task(make_shared<SleepTask>(++j), SCHEDULE_HINT_NONE);
+    scheduler->add_task(make_shared<SleepTask>(++j));
 
-  lts.complete_pending();
+  scheduler->complete_pending();
   cout << "Round 2:" << endl;
 
   for (auto i = 0; i < 9; ++i)
-    lts.add_task(make_shared<SleepTask>(++j), SCHEDULE_HINT_NONE);
+    scheduler->add_task(make_shared<SleepTask>(++j));
 
-  lts.complete_pending();
+  scheduler->complete_pending();
 }
 
 void kdtree_test()

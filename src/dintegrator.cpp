@@ -17,7 +17,7 @@ DebugIntegrator::DebugIntegrator(DebugIntegrator::Type t) : type(t)
 
 void DebugIntegrator::render(const Camera& cam, const Scene& scene, Film& film)
 {
-  grid_render(*this, cam, scene, film, 0, 4, 1);
+  grid_render(*this, cam, scene, film, 1, 4, 1);
 }
 
 void DebugIntegrator::render_rect(const Camera& cam, const Scene& scene, Film& film,
