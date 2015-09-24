@@ -51,7 +51,7 @@ public:
 
   RawModel merge_vertices(scalar eps = EPSILON) const;
   
-  void rescale(const bounds::AABB& new_bb);
+  void rescale(const bounds::AABB& new_bb, bool preserve_aspect_ratio = true);
   void rescale(const bounds::Sphere& new_bs);
 
   /***

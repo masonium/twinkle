@@ -405,7 +405,7 @@ void RawModel::translate_to_origin()
     v.position -= center;
 }
 
-void RawModel::rescale(const bounds::AABB& new_bb)
+void RawModel::rescale(const bounds::AABB& new_bb, bool par)
 {
   auto bb = bounding_box();
   auto w = bb.size();
@@ -414,6 +414,8 @@ void RawModel::rescale(const bounds::AABB& new_bb)
       f = 1;
 
   auto scale = new_bb.size().elem_div(w);
+  if (par)
+    scale = Vec3{scale.min()};
 
   for (auto& v: verts_)
   {

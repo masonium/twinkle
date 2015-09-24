@@ -151,12 +151,12 @@ shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio)
     exit(1);
   }
   m.translate_to_origin();
-  m.rescale(bounds::Sphere(Vec3(0, 0, 0), 4.0));
-  //m.invert_normals();
+  m.rescale(bounds::AABB(Vec3(-2.0), Vec3(2.0)), true);
 
   //auto mesh = rotate(make_shared<KDMesh>(m), Vec3::y_axis, PI/4);;
-  //auto mesh = make_shared<KDMesh>(m);
-  auto mesh = translate(make_shared<Sphere>(Vec3::zero, 3.1), Vec3{0.0, 1.0, 0.0});
+  auto mesh = rotate(make_shared<KDMesh>(m), Vec3::y_axis, PI/4);
+  //auto mesh = make_shared<Sphere>(Vec3{0.0, 1.0, 0.0}, 3.1);
+  //auto mesh2 = make_shared<Sphere>(Vec3{0.0, 1.0, 8.0}, 3.1);
   //auto mesh = translate(make_quad(), Vec3{0.0, 0.0, 0.0});
 
   auto rcm = make_shared<RoughColorMaterial>(0.0, spectrum{1.0, 0.5, 0.0});
@@ -169,7 +169,7 @@ shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio)
   
   scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{5.0})));
 
-  return make_shared<PerspectiveCamera>(Vec3{2.0, 0.0, 5.0}, Vec3::zero, Vec3::y_axis,
+  return make_shared<PerspectiveCamera>(Vec3{2.0, 1.0, 5.0}, Vec3::zero, Vec3::y_axis,
                            PI/2.0, aspect_ratio);
 }
 
@@ -292,7 +292,7 @@ int main(int argc, char** args)
   opt.num_threads = 0;
   DirectLightingIntegrator igr(opt);
 #else
-  DebugIntegrator igr(DebugIntegrator::DI_NORMAL);
+  DebugIntegrator igr(DebugIntegrator::DI_FIRST_ENV);
 #endif
 
   // cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, "

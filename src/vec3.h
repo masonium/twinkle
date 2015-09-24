@@ -29,6 +29,8 @@ public:
   using VectorT3<Vec3>::operator+;
   using VectorT3<Vec3>::operator/;
 
+  scalar min() const { return std::min(x, std::min(y, z)); }
+
   Vec3 elem_div(const Vec3& rhs) const
   {
     return Vec3{x / rhs.x, y / rhs.y, z / rhs.z};
