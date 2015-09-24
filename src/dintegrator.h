@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include "integrator.h"
+#include "sampler.h"
 
 #define FEATURE_DEBUG_TRACER 1
 #ifdef FEATURE_DEBUG_TRACER
@@ -17,7 +18,8 @@ public:
     DI_OBJECT_ID,
     DI_NORMAL,
     DI_DEPTH,
-    DI_SPECULAR
+    DI_SPECULAR,
+    DI_FIRST_ENV
   };
 
   DebugIntegrator(Type type);
@@ -29,7 +31,8 @@ public:
                    uint samples_per_pixel) const override;
 
 private:
-  spectrum trace_ray(const Ray& ray, const Scene& scene, ShapeColorMap& scm) const;
+  spectrum trace_ray(const Ray& ray, const Scene& scene,
+                     ShapeColorMap& scm, Sampler& sampler) const;
 
   std::unordered_map<Shape const*, int> shape_ids;
   Type type;

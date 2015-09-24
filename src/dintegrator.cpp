@@ -36,7 +36,7 @@ void DebugIntegrator::render_rect(const Camera& cam, const Scene& scene, Film& f
       {
         PixelSample ps = cam.sample_pixel(film.width, film.height, px, py, sampler);
 
-        spectrum s = trace_ray(ps.ray, scene, scm);
+        spectrum s = trace_ray(ps.ray, scene, scm, sampler);
         film.add_sample(ps, s);
       }
     }
@@ -49,7 +49,8 @@ spectrum dir_to_spectrum(const Vec3& dir)
    return 0.5 * (c + spectrum{1.0});
 }
 
-spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene, ShapeColorMap& scm) const
+spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene, 
+                                    ShapeColorMap& scm, Sampler& sampler) const
 {
   Intersection isect = scene.intersect(ray);
   
@@ -87,6 +88,21 @@ spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene, ShapeCol
     ConstSampler s{1.0, 0.0};
     auto dir = isect.sample_bsdf(-ray.direction.normal(), s, brdf_p, reflectance);
     return dir_to_spectrum(dir);
+  }
+
+  if (type == DI_FIRST_ENV)
+  {
+    if (!isect.valid())
+      return spectrum{0.3, 0.02, 0.05};
+
+    scalar brdf_p = 0, brdf_r = 0;
+    auto brdf_dir = isect.sample_bsdf(-ray.direction.normal(), sampler, brdf_p, brdf_r);
+
+    if (brdf_p > 0)
+    {
+      return spectrum(scene.intersect(Ray{isect.position, brdf_dir}.nudge()).valid() ? 0.0 : 1.0);
+    }
+    return spectrum{0.0};
   }
 
   return spectrum::zero;
