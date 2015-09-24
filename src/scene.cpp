@@ -44,7 +44,7 @@ Light const* BasicScene::sample_light(scalar r1, scalar& light_prob) const
 }
 
 
-Intersection BasicScene::intersect(const Ray& ray) const
+optional<Intersection> BasicScene::intersect(const Ray& ray) const
 {
   shared_ptr<const Shape> best_shape{nullptr};
   SubGeo best_geom = 0;
@@ -63,7 +63,7 @@ Intersection BasicScene::intersect(const Ray& ray) const
   }
   if (best_shape != nullptr)
     return Intersection(best_shape.get(), best_geom, ray, best_t.get());
-  return Intersection(nullptr, 0, ray, -1);
+  return none_tag;
 }
 
 spectrum BasicScene::environment_light_emission(const Vec3& dir) const

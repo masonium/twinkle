@@ -58,17 +58,22 @@ namespace
 
   TEST_FIXTURE(SingleSphereFixture, scene_test)
   {
-    Intersection isect = scene.intersect(ray);
+    auto isect = scene.intersect(ray);
 
-    CHECK(isect.valid());
+    CHECK(isect.is());
   }
 
   TEST_FIXTURE(SingleSphereFixture, sphere)
   {
-    Intersection isect = scene.intersect(ray);
+    auto isect = scene.intersect(ray);
 
-    CHECK_CLOSE(isect.t, 2.0, EPS);
-    CHECK_CLOSE(sphere->intersect(ray).get(), 2.0, EPS);
+    CHECK(isect.is());
+
+    if (isect.is())
+    {
+      CHECK_CLOSE(isect.get().t, 2.0, EPS);
+      CHECK_CLOSE(sphere->intersect(ray).get(), 2.0, EPS);
+    }
   }
 
   TEST(cross_product)

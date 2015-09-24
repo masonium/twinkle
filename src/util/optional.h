@@ -19,6 +19,10 @@ struct optional_error : public logic_error
   optional_error(const string& what) : logic_error(what) { }
 };
 
+struct none_tag_t {};
+
+extern none_tag_t none_tag;
+
 /*
  * Basic optional type, for representing a value or "none".
  */
@@ -28,7 +32,10 @@ class optional
 public:
   optional() : _init(false) {}
 
-  optional(const T& r) :  _value(r), _init(true) {
+  optional(none_tag_t) : _init(false) { }
+
+  optional(const T& r) : _init(true) {
+    memcpy(reinterpret_cast<void*>(_data), reinterpret_cast<const void*>(&r), sizeof(T));
   }
 
   bool is() const {
@@ -40,11 +47,11 @@ public:
     if (!_init)
       throw optional_error("Optional value has no data.");
 #endif
-    return _value;
+    return value();
   }
 
   const T& get(const T& default_value) const noexcept {
-    return _init ? _value : default_value;
+    return _init ? value() : default_value;
   }
 
 
@@ -52,17 +59,17 @@ public:
   {
     if (_init != rhs._init)
       return false;
-    return !_init || (_value == rhs._values);
+    return !_init || (value() == rhs._values);
   }
 
 protected:
   // return the value,
-  const T& value() const { return _value; }
+  const T& value() const { return *reinterpret_cast<const T*>(_data); }
   bool init() const { return _init; }
   void clear() { _init = false; }
 
 private:
-  T _value;
+  uint8_t _data[sizeof(T)];
   bool _init;
 };
 

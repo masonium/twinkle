@@ -7,9 +7,12 @@
 #include "light.h"
 #include "env_light.h"
 #include "kdtree.h"
+#include "util/optional.h"
 
 using std::vector;
 using std::shared_ptr;
+
+const optional<Intersection> isect_none{};
 
 class Scene
 {
@@ -24,7 +27,7 @@ public:
 
   virtual Light const* sample_light(scalar r1, scalar&) const = 0;
 
-  virtual Intersection intersect(const Ray& ray) const = 0;
+  virtual optional<Intersection> intersect(const Ray& ray) const = 0;
 
   virtual spectrum environment_light_emission(const Vec3& dir) const = 0;
 
@@ -47,7 +50,7 @@ public:
   Light const* sample_light(scalar r1, scalar&) const override;
   Ray sample_light_ray(Sampler& sample, spectrum& emit) const;
 
-  Intersection intersect(const Ray& ray) const override;
+  optional<Intersection> intersect(const Ray& ray) const override;
 
   spectrum environment_light_emission(const Vec3& dir) const override;
 

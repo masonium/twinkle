@@ -17,12 +17,12 @@ bool LightSample::is_occluded(const Scene& scene) const
   switch (occ_type)
   {
   case OCCLUSION_RAY:
-    return scene.intersect(ray);
+    return scene.intersect(ray).is();
     
   case OCCLUSION_POINTS:
     {
       auto isect = scene.intersect(ray);
-      return isect.valid() && approx_gt(1.0, isect.t);
+      return isect.is() && approx_gt(1.0, isect.get().t);
     }
     
   default:

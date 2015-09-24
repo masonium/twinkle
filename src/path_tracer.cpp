@@ -43,10 +43,12 @@ spectrum PathTracerIntegrator::trace_ray(const Scene& scene, const Ray& ray,
   if (depth == 1)
     ++primary_rays_traced;
   
-  Intersection isect = scene.intersect(ray);
+  auto isect_opt = scene.intersect(ray);
   const Vec3 ray_dir_origin = -ray.direction.normal();
-  if (!isect.valid())
+  if (!isect_opt.is())
     return scene.environment_light_emission(-ray_dir_origin);
+
+  auto isect = isect_opt.get();
   if (isect.is_emissive())
     return isect.emission();
 

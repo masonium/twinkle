@@ -20,7 +20,7 @@ public:
 
   Light const* sample_light(scalar r1, scalar&) const override;
 
-  Intersection intersect(const Ray& ray) const override;
+  optional<Intersection> intersect(const Ray& ray) const override;
 
   spectrum environment_light_emission(const Vec3& dir) const override;
 

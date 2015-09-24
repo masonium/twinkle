@@ -31,10 +31,11 @@ void DirectLightingIntegrator::render(const Camera& cam, const Scene& scene, Fil
 spectrum DirectLightingIntegrator::trace_ray(const Scene& scene, const Ray& ray,
                                              Sampler& shading_sampler) const
 {
-  auto isect = scene.intersect(ray);
-  if (!isect)
+  auto isect_opt = scene.intersect(ray);
+  if (!isect_opt.is())
     return scene.environment_light_emission(ray.direction.normal());
 
+  auto isect = isect_opt.get();
   auto view_vector = -ray.direction.normal();
   const auto isect_normal = isect.normal;
 
@@ -92,7 +93,7 @@ spectrum DirectLightingIntegrator::trace_ray(const Scene& scene, const Ray& ray,
     scalar refl = isect.reflectance(l_dir, view_vector);
 
     auto light_ray = Ray{new_pos, l_dir};
-    if (!scene.intersect(light_ray))
+    if (!scene.intersect(light_ray).is())
       total += l_dir.dot(isect_normal) * (refl / l_p) * scene.environment_light_emission(l_dir);
   }
 

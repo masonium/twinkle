@@ -52,19 +52,24 @@ spectrum dir_to_spectrum(const Vec3& dir)
 spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene, 
                                     ShapeColorMap& scm, Sampler& sampler) const
 {
-  Intersection isect = scene.intersect(ray);
-  
+  auto isect_opt = scene.intersect(ray);
+
   if (type == DI_ISECT)
-    return spectrum{scalar(isect.valid() ? 1.0 : 0.0)};
+    return spectrum{scalar(isect_opt.is() ? 1.0 : 0.0)};
 
   if (type == DI_DEPTH)
-    return spectrum(1.0 / max<scalar>((isect.position - ray.position).norm(), 1.0));
-
+  {
+    if (isect_opt.is())
+      return spectrum(1.0 / max<scalar>((isect_opt.get().position - ray.position).norm(), 1.0));
+    else
+      return spectrum{0.0};
+  }
   if (type == DI_OBJECT_ID)
   {
-    if (!isect.valid())
+    if (!isect_opt.is())
       return spectrum::zero;
     
+    auto isect = isect_opt.get();
     auto shape = isect.get_shape_for_id();
     if (scm.find(shape) == scm.end())
       scm.insert(make_pair(shape, color_list[scm.size() % NUM_DISTINCT_ID_COLORS]));
@@ -74,33 +79,32 @@ spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene,
 
   if (type == DI_NORMAL)
   {
-    if (!isect.valid())
-      return spectrum::zero;
-    return dir_to_spectrum(isect.normal);
+    return isect_opt.is() ? dir_to_spectrum(isect_opt.get().normal) : spectrum::zero;
   }
 
   if (type == DI_SPECULAR)
   {
-    if (!isect.valid())
+    if (!isect_opt.is())
       return spectrum::zero;
 
     scalar brdf_p, reflectance;
     ConstSampler s{1.0, 0.0};
-    auto dir = isect.sample_bsdf(-ray.direction.normal(), s, brdf_p, reflectance);
+    auto dir = isect_opt.get().sample_bsdf(-ray.direction.normal(), s, brdf_p, reflectance);
     return dir_to_spectrum(dir);
   }
 
   if (type == DI_FIRST_ENV)
   {
-    if (!isect.valid())
+    if (!isect_opt.is())
       return spectrum{0.3, 0.02, 0.05};
 
+    auto isect = isect_opt.get();
     scalar brdf_p = 0, brdf_r = 0;
     auto brdf_dir = isect.sample_bsdf(-ray.direction.normal(), sampler, brdf_p, brdf_r);
 
     if (brdf_p > 0)
     {
-      return spectrum(scene.intersect(Ray{isect.position, brdf_dir}.nudge()).valid() ? 0.0 : 1.0);
+      return spectrum(scene.intersect(Ray{isect.position, brdf_dir}.nudge()).is() ? 0.0 : 1.0);
     }
     return spectrum{0.0};
   }

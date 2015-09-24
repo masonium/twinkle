@@ -12,7 +12,7 @@ BINDIR = $(CONFIG)/bin
 OBJDIR = $(CONFIG)/obj
 LIBDIR = $(CONFIG)/lib
 
-CXX = g++
+CXX = ccache g++
 CXX_VERSION = -std=c++1y
 COMMON_FLAGS = -Wall -Wextra -Wno-unused-parameter $(CXX_VERSION)
 CXXFLAGS := $(COMMON_FLAGS) -Isrc/ -Iextlib/ -ggdb
@@ -30,6 +30,7 @@ endif
 SRCS := $(wildcard src/*.cpp)
 -include src/shapes/Makefile
 -include src/textures/Makefile
+-include src/util/Makefile
 -include src/tests/Makefile
 
 OBJSTMP := $(SRCS:.cpp=.o)

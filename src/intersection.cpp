@@ -5,25 +5,14 @@
 Intersection::Intersection(const Shape* s, const SubGeo subgeo_, const Ray& r, scalar t_) :
   t(t_), position(r.evaluate(t)), subgeo(subgeo_), shape(s)
 {
-  if (s != nullptr)
-  {
-    normal = s->geometry->normal(subgeo, position);
-    if (s->geometry->is_differential())
-      s->geometry->texture_coord(subgeo, position, normal, tc.u, tc.v);
-    to_z = Mat33::rotate_to_z(normal);
-    from_z = to_z.transpose();
-  }
+  assert(s != nullptr);
+  assert(t >= 0);
 
-}
-
-Intersection::operator bool() const 
-{
-  return valid();
-}
-  
-bool Intersection::valid() const
-{
-  return shape != nullptr;
+  normal = s->geometry->normal(subgeo, position);
+  if (s->geometry->is_differential())
+    s->geometry->texture_coord(subgeo, position, normal, tc.u, tc.v);
+  to_z = Mat33::rotate_to_z(normal);
+  from_z = to_z.transpose();
 }
 
 scalar Intersection::reflectance(const Vec3& incoming, const Vec3& outgoing) const

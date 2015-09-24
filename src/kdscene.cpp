@@ -62,7 +62,7 @@ Light const* KDScene::sample_light(scalar r1, scalar& light_prob) const
   return lights_[min(max_light_idx, decltype(max_light_idx)(r1 * lights_.size()))].get();
 }
 
-Intersection KDScene::intersect(const Ray& ray) const
+optional<Intersection> KDScene::intersect(const Ray& ray) const
 {
   /*
    * In most scenes, you expect the infinite objects to behind the finite
@@ -99,7 +99,10 @@ Intersection KDScene::intersect(const Ray& ray) const
     }
 
   }
-  return Intersection(best_shape.get(), best_geom, ray, best_t.get(SCALAR_MAX));
+  if (best_t.is())
+    return Intersection(best_shape.get(), best_geom, ray, best_t.get());
+
+  return none_tag;
 }
 
 spectrum KDScene::environment_light_emission(const Vec3& dir) const

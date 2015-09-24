@@ -9,13 +9,15 @@
 
 class Shape;
 
+/**
+ * An intersection represents the results of intersection a ray with the
+ * scene. It stores relevant local information about the intersection, in
+ * addition to the shape and sub-shape.
+ */
 class Intersection
 {
 public:
   Intersection(const Shape* s, const SubGeo subgeo, const Ray& r, scalar t_);
-  operator bool() const;
-  
-  bool valid() const;
 
   scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const;
   
