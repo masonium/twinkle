@@ -16,6 +16,7 @@ CXX = ccache g++
 CXX_VERSION = -std=c++1y
 COMMON_FLAGS = -Wall -Wextra -Wno-unused-parameter $(CXX_VERSION)
 CXXFLAGS := $(COMMON_FLAGS) -Isrc/ -Iextlib/ -ggdb
+NOTESTFLAGS := -fno-exceptions -fno-rtti
 SFLAGS =  -fsyntax-only $(CXXFLAGS)
 LFLAGS = -pthread -lm  -lUnitTest++ -L$(LIBDIR) -ltwinkle
 
@@ -72,11 +73,11 @@ $(OBJDIR)/%.o: %.cpp
 
 $(BINDIR)/twinkle: $(OBJDIR)/main.o $(LIBDIR)/libtwinkle.a
 	@mkdir -p $(dir $@)
-	$(CXX) -o $@ $< $(CXXFLAGS) $(LFLAGS)
+	$(CXX) -o $@ $< $(CXXFLAGS) $(NOTESTFLAGS) $(LFLAGS)
 
 $(BINDIR)/tonemap: $(OBJDIR)/tonemap_main.o $(LIBDIR)/libtwinkle.a
 	@mkdir -p $(dir $@)
-	$(CXX) -o $@ $< $(CXXFLAGS) $(LFLAGS)
+	$(CXX) -o $@ $< $(CXXFLAGS) $(NOTESTFLAGS) $(LFLAGS)
 
 $(BINDIR)/test_twinkle: $(OBJDIR)/test.o $(LIBDIR)/libtwinkle.a
 	@mkdir -p $(dir $@)
@@ -84,11 +85,11 @@ $(BINDIR)/test_twinkle: $(OBJDIR)/test.o $(LIBDIR)/libtwinkle.a
 
 $(BINDIR)/model_check: $(OBJDIR)/model_check.o $(LIBDIR)/libtwinkle.a
 	@mkdir -p $(dir $@)
-	$(CXX) -o $@ $< $(CXXFLAGS) $(LFLAGS)
+	$(CXX) -o $@ $< $(CXXFLAGS) $(NOTESTFLAGS) $(LFLAGS)
 
 $(BINDIR)/texture_check: $(OBJDIR)/texture_check.o $(LIBDIR)/libtwinkle.a
 	@mkdir -p $(dir $@)
-	$(CXX) -o $@ $< $(CXXFLAGS) $(LFLAGS)
+	$(CXX) -o $@ $< $(CXXFLAGS) $(NOTESTFLAGS) $(LFLAGS)
 
 test: $(BINDIR)/test_twinkle
 	$(BINDIR)/test_twinkle

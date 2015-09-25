@@ -41,10 +41,7 @@ public:
   }
 
   const T& get() const {
-#ifndef NDEBUG
-    if (!_init)
-      throw optional_error("Optional value has no data.");
-#endif
+    assert(_init);
     return value();
   }
 
