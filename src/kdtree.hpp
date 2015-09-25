@@ -404,13 +404,13 @@ namespace kd
        **/
       if (active->is_leaf())
       {
-        scalar_fp best_t = max_t, t;
+        scalar_fp best_t = max_t;
         T best_obj{nullptr};
         SubGeo best_geo = 0, leaf_geo = 0;
 
         for (const auto& shape: active->shapes)
         {
-          t = shape->intersect(ray, best_t, leaf_geo);
+          auto t = shape->intersect(ray, best_t, leaf_geo);
           if (t < best_t)
           {
             best_t = t;

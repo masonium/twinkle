@@ -26,16 +26,14 @@ extern none_tag_t none_tag;
 /*
  * Basic optional type, for representing a value or "none".
  */
-template <typename T>
+template <typename T, typename = typename enable_if<std::is_trivially_destructible<T>::value >::type >
 class optional
 {
 public:
-  optional() : _init(false) {}
-
   optional(none_tag_t) : _init(false) { }
 
   optional(const T& r) : _init(true) {
-    memcpy(reinterpret_cast<void*>(_data), reinterpret_cast<const void*>(&r), sizeof(T));
+    memcpy(reinterpret_cast<void*>(&_val), reinterpret_cast<const void*>(&r), sizeof(T));
   }
 
   bool is() const {
@@ -64,12 +62,16 @@ public:
 
 protected:
   // return the value,
-  const T& value() const { return *reinterpret_cast<const T*>(_data); }
+  const T& value() const { return *reinterpret_cast<const T*>(&_val); }
   bool init() const { return _init; }
   void clear() { _init = false; }
 
 private:
-  uint8_t _data[sizeof(T)];
+  union __attribute__((may_alias)) val
+  {
+    uint8_t _data[sizeof(T)];
+  };
+  val _val;
   bool _init;
 };
 
@@ -78,11 +80,11 @@ private:
  * contained value, when existent, to have a positive value. Any non-positive
  * values are treated as 'none' in the constructor.
  */
-template <typename T, typename =  enable_if<std::is_arithmetic<T>::value> >
+template <typename T, typename =  typename enable_if<std::is_arithmetic<T>::value>::type >
 class forced_positive : public optional<T>
 {
 public:
-  forced_positive() { }
+  forced_positive(none_tag_t nt) : optional<T>{nt} { }
 
   /*
    * The minor convenience of a non-explicit constructor is not worth the

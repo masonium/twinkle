@@ -48,7 +48,7 @@ optional<Intersection> BasicScene::intersect(const Ray& ray) const
 {
   shared_ptr<const Shape> best_shape{nullptr};
   SubGeo best_geom = 0;
-  scalar_fp best_t{};
+  scalar_fp best_t = sfp_none;
 
   for (auto s: shapes_)
   {
