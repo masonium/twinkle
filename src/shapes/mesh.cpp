@@ -21,7 +21,7 @@ scalar_fp MeshTri::intersect(const Ray& ray, scalar_fp max_t, SubGeo& geo) const
   return ray_triangle_intersection(ray, _p(0), _p(1), _p(2), max_t);
 }
 
-Vec3 MeshTri::normal(SubGeo geo, const Vec3& point) const
+Vec3 MeshTri::normal(const Vec3& point) const
 {
   return n;
 }
@@ -33,8 +33,8 @@ bounds::AABB MeshTri::get_bounding_box() const
 }
 
 
-void MeshTri::texture_coord(SubGeo subgeo, const Vec3& pos, const Vec3& normal,
-                   scalar& u, scalar& v) const
+void MeshTri::texture_coord(const Vec3& pos, const Vec3& normal,
+                            scalar& u, scalar& v) const
 {
   const Vec3 P = pos - _p(0);
   const Vec3 n1 = e1.cross(P), n2 = P.cross(e2);
@@ -86,13 +86,13 @@ scalar_fp Mesh::intersect(const Ray& r, scalar_fp max_t, SubGeo& subgeo) const
 
 Vec3 Mesh::normal(SubGeo subgeo, const Vec3& point) const
 {
-  return tris[subgeo].normal(subgeo, point);
+  return tris[subgeo].normal(point);
 }
 
 void Mesh::texture_coord(SubGeo subgeo, const Vec3& pos, const Vec3& normal,
                          scalar& u, scalar& v) const
 {
-  return tris[subgeo].texture_coord(subgeo, pos, normal, u, v);
+  return tris[subgeo].texture_coord(pos, normal, u, v);
 }
 
 

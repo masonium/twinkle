@@ -54,21 +54,21 @@ protected:
   vector<MeshTri> tris;
 };
 
-class MeshTri : public SimpleGeometry
+class MeshTri
 {
 public:
   MeshTri(const Mesh* m, const int v[3]);
 
-  scalar_fp intersect(const Ray& r, scalar_fp max_t, SubGeo& geo) const override;
+  scalar_fp intersect(const Ray& r, scalar_fp max_t, SubGeo&) const ;
 
-  Vec3 normal(SubGeo, const Vec3& point) const override;
+  Vec3 normal(const Vec3& point) const ;
 
   // void texture_coord(SubGeo, const Vec3& pos, const Vec3& normal,
-  //                    scalar& u, scalar& v) const override;
-  virtual void texture_coord(SubGeo subgeo, const Vec3& pos, const Vec3& normal,
-                             scalar& u, scalar& v) const override;
+  //                    scalar& u, scalar& v) const ;
+  virtual void texture_coord(const Vec3& pos, const Vec3& normal,
+                             scalar& u, scalar& v) const ;
 
-  bool is_bounded() const override
+  bool is_bounded() const
   {
     return true;
   }
