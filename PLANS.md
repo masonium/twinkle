@@ -33,5 +33,6 @@
 
 
 ## scenes
+* 'showcase-scene': all available shapes
 * building scene (large tower made of random blocks, two or three large ones primary-colored, smaller in background
 * water-scene (height map with caustics)

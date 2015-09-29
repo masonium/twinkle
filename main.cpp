@@ -28,6 +28,8 @@ using std::endl;
 using std::cout;
 using std::make_shared;
 
+using PShape = shared_ptr<Shape>;
+
 void usage(char** args)
 {
   cerr << args[0] << ": WIDTH HEIGHT SAMPLES-PER-PIXEL\n";
@@ -154,7 +156,7 @@ shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio)
   m.rescale(bounds::AABB(Vec3(-2.0), Vec3(2.0)), true);
 
   //auto mesh = rotate(make_shared<KDMesh>(m), Vec3::y_axis, PI/4);;
-  auto mesh = rotate(make_shared<KDMesh>(m), Vec3::y_axis, PI/4);
+  auto mesh = make_shared<KDMesh>(m);
   //auto mesh = make_shared<Sphere>(Vec3{0.0, 1.0, 0.0}, 3.1);
   //auto mesh2 = make_shared<Sphere>(Vec3{0.0, 1.0, 8.0}, 3.1);
   //auto mesh = translate(make_quad(), Vec3{0.0, 0.0, 0.0});
@@ -187,13 +189,14 @@ scalar torus_sdf(Vec3 v)
 }
 scalar capsule_sdf(Vec3 v)
 {
-  Vec3 a{0.0, 0.0, -1.0};
-  Vec3 b{0.0, 0.0, 1.0};
+  Vec3 a{0.0, 0.0, -0.35};
+  Vec3 b{0.0, 0.0, 0.35};
+  scalar r = 0.15;
   
   Vec3 va  = v - a, ba = b - a;
   scalar s = clamp( va.dot(ba) / ba.norm2(), 0, 1);
   
-  return ( va - ba * s ).norm() - 0.1;
+  return ( va - ba * s ).norm() - r;
 }
 
 shared_ptr<Camera> default_scene(Scene& scene, scalar aspect_ratio, int angle)
@@ -240,6 +243,51 @@ shared_ptr<Camera> default_scene(Scene& scene, scalar aspect_ratio, int angle)
   return make_shared<PerspectiveCamera>(cam_pos, look_at, Vec3{0, 0, 1}, PI/2, aspect_ratio);
 }
 
+shared_ptr<Camera> showcase_scene(Scene& scene, scalar ar, int angle)
+{
+  vector<shared_ptr<Geometry>> geoms;
+  
+  auto cmat = make_shared<RoughMaterial>(0.0, make_shared<NormalTexture>());
+  geoms.push_back(make_shared<Sphere>(Vec3::zero, 0.5));
+
+  RawModel model;
+  auto filename = "/home/mason/workspace/twinkle/tak-cube.obj";
+  if (!model.load_obj_model(filename).success)
+  {
+    cerr << "could not load " << filename << endl;
+    exit(1);
+  }
+
+  model.rescale(bounds::AABB(Vec3{-0.5}, Vec3{0.5}), true);
+
+  geoms.push_back(make_shared<KDMesh>(model));
+  geoms.push_back(make_shared<Mesh>(model));
+  
+  geoms.push_back(make_quad(Vec3::x_axis * 0.5, Vec3::z_axis * 0.5));
+  geoms.push_back(make_shared<ImplicitSurface>(torus_sdf, gradient_from_sdf(torus_sdf), 1.0));
+  geoms.push_back(make_shared<ImplicitSurface>(capsule_sdf, gradient_from_sdf(capsule_sdf), 1.0));
+  
+  const scalar spacing = 2.0;
+  int grid_size = ceil(sqrtf(geoms.size()));
+
+  UniformSampler sampler;
+
+  
+  for (auto i = 0u, x = 0u, z = 0u; i < geoms.size(); ++i, x = i % grid_size, z = i / grid_size)
+  {
+    auto r = rotate(geoms[i], uniform_hemisphere_sample(sampler.sample_2d()), sampler.sample_1d() * 2 * PI);
+    scene.add(SHAPE(translate(r, spacing * Vec3{scalar(x), 0, scalar(z)}), cmat));
+  }
+
+  auto gray = make_shared<RoughColorMaterial>(0.0, spectrum{0.8});
+  scene.add(SHAPE(make_shared<Plane>(Vec3::y_axis, 1.0), gray));
+
+  scene.add(make_shared<EnvironmentalLight>( make_shared<SolidColor>(spectrum{3.0})));
+
+  scalar gs = (grid_size - 1) * spacing;
+  return make_shared<PerspectiveCamera>(Vec3(gs * 0.5, gs, -gs), Vec3::zero, Vec3::y_axis, PI/2.0, ar);
+}
+
 int main(int argc, char** args)
 {
   if (argc < 5)
@@ -271,17 +319,17 @@ int main(int argc, char** args)
 
   //int angle = atoi(args[5]);
 
-  auto cam = model_scene(*scene, scalar(WIDTH)/scalar(HEIGHT));
+  auto cam = showcase_scene(*scene, scalar(WIDTH)/scalar(HEIGHT), 0);
 
   auto bf = make_shared<BoxFilter>();
   Film f(WIDTH, HEIGHT, bf);
 
-#define RENDER_ALGO 0
+#define RENDER_ALGO 2
 
 #if RENDER_ALGO == 0
   PathTracerIntegrator::Options opt;
   opt.samples_per_pixel = per_pixel;
-  opt.num_threads = 0;
+  opt.num_threads = 4;
   opt.max_depth = 10;
   PathTracerIntegrator igr(opt);
 #elif RENDER_ALGO == 1
@@ -292,7 +340,7 @@ int main(int argc, char** args)
   opt.num_threads = 0;
   DirectLightingIntegrator igr(opt);
 #else
-  DebugIntegrator igr(DebugIntegrator::DI_FIRST_ENV);
+  DebugIntegrator igr(DebugIntegrator::DI_NORMAL);
 #endif
 
   // cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, "
