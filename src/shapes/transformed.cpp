@@ -66,37 +66,20 @@ Transform Transformed::transformation() const
  * basically useless once scripiting is implemented. At that point, this should
  * be cleaned up.
  */
-shared_ptr<Transformed> rotate(shared_ptr<const Transformed> geom, Vec3 axis, scalar angle)
-{
-  auto rot = Transform{Mat33::from_axis_angle(axis.normal(), angle), Vec3::zero};
-  return make_shared<Transformed>(geom->underlying(), rot * geom->transformation() );
-}
 
 shared_ptr<Transformed> rotate(shared_ptr<const Geometry> geom, Vec3 axis, scalar angle)
 {
-  return rotate(make_shared<const Transformed>(geom, Transform()), axis, angle);
-}
-
-shared_ptr<Transformed> translate(shared_ptr<const Transformed> geom, Vec3 displacement)
-{
-  auto trans = Transform{Mat33::identity, displacement};
-  return make_shared<Transformed>(geom->underlying(), trans * geom->transformation());
-
+  auto rot = Transform{Mat33::from_axis_angle(axis.normal(), angle), Vec3::zero};
+  return make_shared<Transformed>(geom, rot);
 }
 
 shared_ptr<Transformed> translate(shared_ptr<const Geometry> geom, Vec3 displacement)
 {
-  return translate(make_shared<const Transformed>(geom, Transform()), displacement);
-}
-
-shared_ptr<Transformed> scale(shared_ptr<const Transformed> geom, Vec3 scale_factors)
-{
-  auto scale = Transform{Mat33::from_diagonal(scale_factors), Vec3::zero};
-  return make_shared<Transformed>(geom->underlying(), scale * geom->transformation());
-
+  return make_shared<Transformed>(geom, Transform{Mat33::identity, displacement});
 }
 
 shared_ptr<Transformed> scale(shared_ptr<const Geometry> geom, Vec3 scale_factors)
 {
-  return scale(make_shared<const Transformed>(geom, Transform()), scale_factors);
+  auto scale = Transform{Mat33::from_diagonal(scale_factors), Vec3::zero};
+  return make_shared<Transformed>(geom, scale);
 }
