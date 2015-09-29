@@ -1,10 +1,14 @@
+#include <random>
+#include <lua.hpp>
+
 #include "texture.h"
 #include "perlin.h"
 #include "film.h"
 #include "tonemap.h"
 #include "reinhard.h"
 #include "textures/skytexture.h"
-#include <random>
+
+#define LUA_TEX
 
 using std::make_shared;
 using std::cerr;
@@ -13,7 +17,7 @@ using std::endl;
 
 int main(int argc, char** args)
 {
-  assert(argc > 2);
+  assert(argc > 3);
 
   int width = atoi(args[1]);
   int height = atoi(args[2]);
@@ -22,10 +26,19 @@ int main(int argc, char** args)
   auto filter = make_shared<BoxFilter>();
   Film f(width, height, filter);
 
-  auto pn = PerlinNoise::get_instance();
-  auto sky = ShirleySkyTexture(Vec3::from_euler(3*PI/4, angle * PI / 180), 8);
-  // auto eng = std::mt19937();
-  // auto unf = std::uniform_real_distribution<scalar>(0, 256);
+
+#ifdef LUA_TEX
+  lua_State* L = luaL_newstate();
+  luaL_openlibs(L);
+
+  if (luaL_dofile(L, "test.lua"))
+  {
+    cerr << "error loading lua file" << endl;
+    exit(1);
+  }
+#else
+  auto check_tex = Checkerboard2D(spectrum{1.0, 0.0, 0.0}, spectrum{0.0, 0.0, 1.0}, 4);
+#endif
 
   Ray r(Vec3::zero, Vec3::zero);
 
@@ -37,10 +50,19 @@ int main(int argc, char** args)
   {
     for (int x = 0; x < width; ++x)
     {
-      //scalar z = 0.2;
-      auto uv = Vec2{x / sw, 0.5 - (y / sh) * 0.5};
+      auto uv = Vec2{x / sw, y / sh};
 
-      auto s = sky.at_coord(uv);
+#ifdef LUA_TEX
+      lua_getglobal(L, "check");
+      lua_pushnumber(L, uv[0]);
+      lua_pushnumber(L, uv[1]);
+      lua_call(L, 2, 3);
+
+      auto s = spectrum(lua_tonumber(L, -1), lua_tonumber(L, -2), lua_tonumber(L, -3));
+      lua_pop(L, 3);
+#else
+      auto s = check_tex.at_coord(uv);
+#endif
       f.add_sample(PixelSample(x, y, 0.5, 0.5, r), s);
 
 /*
@@ -68,6 +90,7 @@ int main(int argc, char** args)
         max = p;
     }
   }
+
   cerr << min << ", " << max << endl;
   auto mapper = ReinhardLocal{ReinhardLocal::Options()};
   f.render_to_ppm(cout, mapper);
