@@ -23,7 +23,6 @@ using std::stack;
  * It uses the SAH heuristic, empty-node cost discounts, and an adpative
  * sampling method for quickly choosing the near-optimal splitting plane heuristic.
  */
-
 namespace kd
 {
   template <typename T>
@@ -43,18 +42,24 @@ namespace kd
 
     auto get_bounding_box() const { return bound; }
 
+    int height() const
+    {
+      return root ? root->heigh() : 0;
+    }
+
     int count_leaves() const
     {
-      return root->count_leaves();
+      return root ? root->count_leaves() : 0;
     }
     int count_objs() const
     {
-      return root->count_objs();
+      return root ? root->count_objs() : 0;
     }
 
   private:
-    bounds::AABB bound;
     shared_ptr<Node<T>> root;
+    bounds::AABB bound;
+    uint _height;
   };
 
   template <typename T>
@@ -104,9 +109,16 @@ namespace kd
       return left == nullptr && right == nullptr;
     }
 
+    scalar_fp leaf_intersect(const Ray& ray, scalar_fp max_t, T& obj, SubGeo& geo) const;
+
     /**
      * statistic methods
      */
+    int height() const
+    {
+      return 1 + (left ? left->height() : 0) + (right ? right->height() : 0);
+    }
+
     int count_leaves() const
     {
       if (!(left || right))

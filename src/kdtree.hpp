@@ -339,6 +339,36 @@ namespace kd
       right = new Node(right_objects, right_boxes, right_bound, opt);
   }
 
+
+
+  template <typename T>
+  scalar_fp Node<T>::leaf_intersect(const Ray& ray, scalar_fp max_t, T& obj, SubGeo& geo) const
+  {
+    scalar_fp best_t = max_t;
+    T best_obj{nullptr};
+    SubGeo best_geo = 0, leaf_geo = 0;
+
+    for (const auto& shape: shapes)
+    {
+      auto t = shape->intersect(ray, best_t, leaf_geo);
+      if (t < best_t)
+      {
+        best_t = t;
+        best_obj = shape;
+        best_geo = leaf_geo;
+      }
+    }
+
+    if (best_obj != nullptr)
+    {
+      obj = best_obj;
+      geo = best_geo;
+      return best_t;
+    }
+
+    return none_tag;
+  }
+
   template <typename T>
   Node<T>::~Node()
   {
@@ -350,7 +380,8 @@ namespace kd
 
 ////////////////////////////////////////////////////////////////////////////////
   template<typename T>
-  Tree<T>::Tree(const vector<T>& objects, const TreeOptions& opt) : root(nullptr)
+  Tree<T>::Tree(const vector<T>& objects, const TreeOptions& opt) :
+    root(nullptr), bound(Vec3::zero, Vec3::zero), _height(0)
   {
     if (!objects.empty())
     {
@@ -361,7 +392,7 @@ namespace kd
       bound = accumulate(boxes.begin() + 1, boxes.end(), boxes[0], bounds::AABB::box_union);
 
       root = shared_ptr<node_type>(new node_type(objects, boxes, bound, opt));
-      //root = make_shared<node_type>(objects, boxes, bound, opt);
+      _height = root->height();
     }
   }
 
@@ -386,45 +417,26 @@ namespace kd
 
     using stack_elem = std::tuple<const Node<T>*, scalar, scalar>;
 
-    std::stack<stack_elem> node_stack;
+    std::vector<stack_elem> stack_source(_height);
+    std::stack<stack_elem, std::vector<stack_elem> > node_stack(stack_source);
 
     const Node<T>* active = root.get();
-    node_stack.emplace(active, t0, t1);
-    while (!node_stack.empty() && t0 < max_t)
+
+    while (t0 < max_t)
     {
-      tie(active, t0, t1) = node_stack.top();
-      node_stack.pop();
-
+      // if we push an empty node, just continue
       if (active == nullptr)
-        continue;
-
+      {
+      }
       /**
        * When we hit a leaf, pick the best intersection of objects within the
        * leaf, if any.
        **/
-      if (active->is_leaf())
+      else if (active->is_leaf())
       {
-        scalar_fp best_t = max_t;
-        T best_obj{nullptr};
-        SubGeo best_geo = 0, leaf_geo = 0;
-
-        for (const auto& shape: active->shapes)
-        {
-          auto t = shape->intersect(ray, best_t, leaf_geo);
-          if (t < best_t)
-          {
-            best_t = t;
-            best_obj = shape;
-            best_geo = leaf_geo;
-          }
-        }
-
-        if (best_obj != nullptr)
-        {
-          obj = best_obj;
-          geo = best_geo;
+        auto best_t = active->leaf_intersect(ray, max_t, obj, geo);
+        if (best_t.is())
           return best_t;
-        }
       }
       /**
        * Otherwise, use the split position to find which children, if any, to
@@ -441,17 +453,26 @@ namespace kd
         if (t0 < t_split && t_split < t1)
         {
           node_stack.emplace(second, t_split, t1);
-          node_stack.emplace(first, t0, t_split);
+          active = first;
+          t1 = t_split;
+          continue;
         }
         else if (t_split < t0)
         {
-          node_stack.emplace(second, t0, t1);
+          active = second;
+          continue;
         }
         else
         {
-          node_stack.emplace(first, t0, t1);
+          active = first;
+          continue;
         }
       }
+      if (node_stack.empty())
+        break;
+
+      tie(active, t0, t1) = node_stack.top();
+      node_stack.pop();
     }
 
     return sfp_none;

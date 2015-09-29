@@ -84,7 +84,6 @@ void grid_render(const T& renderer, const Camera& cam, const Scene& scene, Film&
   for (auto i = 0u; i < num_threads; ++i)
     films.emplace_back(film.width, film.height, film.filter);
 
-
   RenderInfo ri{cam, scene, film.rect()};
 
   grid_subtask_options opt;
