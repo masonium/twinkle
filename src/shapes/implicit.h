@@ -8,14 +8,15 @@
 using ImplicitEvalFunc = std::function<scalar(const Vec3&)>;
 using ImplicitGradFunc = std::function<Vec3(const Vec3&)>;
 
-
 ImplicitGradFunc gradient_from_sdf(ImplicitEvalFunc);
 
 class ImplicitSurface : public SimpleGeometry, public Bounded
 {
 
 public:
-  ImplicitSurface(ImplicitEvalFunc, ImplicitGradFunc, scalar lipschitz_const = 1);
+  ImplicitSurface(ImplicitEvalFunc, ImplicitGradFunc,
+                  scalar lipschitz_const,
+                  const bounds::AABB& box);
 
   Vec3 normal(SubGeo geo, const Vec3& point) const override;
 
@@ -33,3 +34,5 @@ private:
 
   bounds::AABB bbox;
 };
+
+shared_ptr<Geometry> make_torus(Vec3 normal, scalar outer_radius, scalar inner_radius);

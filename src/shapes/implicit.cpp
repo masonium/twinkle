@@ -1,4 +1,5 @@
 #include "implicit.h"
+#include "transformed.h"
 #include <memory>
 
 static const scalar MIN_STEP = 0.0001;
@@ -6,8 +7,8 @@ static const scalar MIN_STEP = 0.0001;
 using std::make_shared;
 
 ImplicitSurface::ImplicitSurface(ImplicitEvalFunc f_, ImplicitGradFunc g_,
-                                 scalar lipschitz_const)
-  : f(f_), g(g_), L(lipschitz_const), bbox(Vec3{-1.1}, Vec3{1.1})
+                                 scalar lipschitz_const, const bounds::AABB& bounds)
+  : f(f_), g(g_), L(lipschitz_const), bbox(bounds)
 {
 
 }
@@ -41,9 +42,11 @@ scalar_fp ImplicitSurface::intersect(const Ray& r, scalar_fp max_t) const
   if (fabs(dist) < MIN_STEP)
     return scalar_fp{t};
 
+
+  const auto rdnl = rdn * L;
   do
   {
-    scalar t_diff = std::max(dist, MIN_STEP) / (rdn * L);
+    scalar t_diff = std::max(dist, MIN_STEP) / rdnl;
     scalar new_t = t + t_diff;
     scalar new_dist = f(r.evaluate(new_t));
     if (fabs(new_dist) < MIN_STEP)
@@ -84,4 +87,25 @@ ImplicitGradFunc gradient_from_sdf(ImplicitEvalFunc f)
 {
   auto grad = make_shared<GradFromEval>(f);
   return [=](const Vec3& v) { return grad->grad(v); };
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+shared_ptr<Geometry> make_torus(Vec3 normal, scalar outer_radius, scalar inner_radius)
+{
+  auto sdf = [=](const Vec3& v) {
+    scalar xz = sqrt(v.x*v.x + v.z*v.z);
+    scalar a = xz - inner_radius;
+    scalar b = v.y;
+    return sqrt(a*a + b*b) - outer_radius;
+  };
+
+  auto gsdf = gradient_from_sdf(sdf);
+
+  const auto Rxz = outer_radius + inner_radius;
+  const auto lb = Vec3{-Rxz, -inner_radius, -Rxz};
+
+  return make_shared<Transformed>(
+    make_shared<ImplicitSurface>(sdf, gsdf, 1.0, bounds::AABB{lb, -lb}),
+    Transform{Mat33::rotate_match(Vec3::y_axis, normal), Vec3::zero});
 }

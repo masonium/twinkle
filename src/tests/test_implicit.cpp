@@ -12,7 +12,8 @@ auto sphere_grad = gradient_from_sdf(sphere_sdf);
 
 TEST(sphere_implicit)
 {
-  ImplicitSurface imp(sphere_sdf, sphere_grad, 1.0);
+  auto bbox = bounds::AABB(Vec3{-1.1}, Vec3{1.1});
+  ImplicitSurface imp(sphere_sdf, sphere_grad, 1.0, bbox);
   Sphere sp(Vec3::zero, 1.0);
 
   UniformSampler samp;

@@ -182,7 +182,7 @@ scalar sphere_sdf(Vec3 v)
 
 scalar torus_sdf(Vec3 v)
 {
-  scalar xz = sqrt(v.x*v.x + v.y*v.y);
+  scalar xz = sqrt(v.x*v.x + v.z*v.z);
   scalar x = xz - 0.2;
   scalar y = v.y;
   return sqrt(x*x+y*y) - 1.0;
@@ -205,7 +205,8 @@ shared_ptr<Camera> default_scene(Scene& scene, scalar aspect_ratio, int angle)
   auto mirror = make_shared<MirrorMaterial>();
 
   auto impf = sphere_sdf;
-  auto implicit = make_shared<ImplicitSurface>(impf, gradient_from_sdf(impf), 1.0);
+  auto implicit = make_shared<ImplicitSurface>(impf, gradient_from_sdf(impf), 1.0,
+                                               bounds::AABB(Vec3{-1.1}, Vec3{1.1}));
   auto sphere = make_shared<Sphere>(Vec3{0.0, 0.0, 0.0}, 1.0);
   
   scene.add(make_shared<Shape>(sphere, make_shared<RoughMaterial>(0.0, make_shared<NormalTexture>())));
@@ -264,8 +265,10 @@ shared_ptr<Camera> showcase_scene(Scene& scene, scalar ar, int angle)
   geoms.push_back(make_shared<Mesh>(model));
   
   geoms.push_back(make_quad(Vec3::x_axis * 0.5, Vec3::z_axis * 0.5));
-  geoms.push_back(make_shared<ImplicitSurface>(torus_sdf, gradient_from_sdf(torus_sdf), 1.0));
-  geoms.push_back(make_shared<ImplicitSurface>(capsule_sdf, gradient_from_sdf(capsule_sdf), 1.0));
+
+  auto bbox = bounds::AABB{Vec3{-1.1}, Vec3{1.1}};
+  geoms.push_back(make_shared<ImplicitSurface>(torus_sdf, gradient_from_sdf(torus_sdf), 1.0, bbox));
+  geoms.push_back(make_shared<ImplicitSurface>(capsule_sdf, gradient_from_sdf(capsule_sdf), 1.0, bbox));
   
   const scalar spacing = 2.0;
   int grid_size = ceil(sqrtf(geoms.size()));
