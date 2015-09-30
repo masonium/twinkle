@@ -1,8 +1,10 @@
 #include "geometry.h"
-#include "shapes/kdmesh.h"
-#include "shapes/mesh.h"
-#include "shapes/sphere.h"
-#include "shapes/plane.h"
-#include "shapes/implicit.h"
-#include "shapes/transformed.h"
-#include "shapes/quad.h"
+
+#include "geometry/transformed.h"
+#include "geometry/sphere.h"
+#include "geometry/plane.h"
+#include "geometry/kdmesh.h"
+#include "geometry/mesh.h"
+#include "geometry/quad.h"
+#include "geometry/implicit.h"
+

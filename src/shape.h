@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include "shapes/isect_util.h"
 #include "spectrum.h"
 #include "ray.h"
 #include "material.h"

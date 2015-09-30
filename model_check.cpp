@@ -4,8 +4,7 @@
 #include "material.h"
 #include "spectrum.h"
 #include "kdtree.h"
-#include "shapes/sphere.h"
-#include "shapes/quad.h"
+#include "geometries.h"
 
 using namespace std;
 

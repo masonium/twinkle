@@ -2,7 +2,7 @@
 
 #include "vec3.h"
 #include "ray.h"
-#include "shapes/isect_util.h"
+#include "geometry/isect_util.h"
 #include <iostream>
 
 bool ray_box_intersection(const Ray& ray, const Vec3 bounds[2],

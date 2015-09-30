@@ -2,7 +2,7 @@
 
 #include <limits>
 #include <memory>
-#include "shapes/isect_util.h"
+#include "geometry/isect_util.h"
 #include "vec3.h"
 #include "ray.h"
 #include "bounds.h"

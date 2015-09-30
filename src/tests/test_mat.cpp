@@ -4,7 +4,6 @@
 
 namespace
 {
-
   SUITE(Mat)
   {
     TEST(transpose)

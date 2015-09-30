@@ -1,7 +1,7 @@
 #include <iostream>
-#include "shapes/implicit.h"
+#include "geometry/implicit.h"
 #include "test_util.h"
-#include "shapes/sphere.h"
+#include "geometry/sphere.h"
 
 scalar sphere_sdf(const Vec3& p)
 {

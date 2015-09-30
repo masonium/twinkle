@@ -1,7 +1,7 @@
 #include <algorithm>
 #include "kdmesh.h"
 #include "mesh.h"
-#include "shapes/isect_util.h"
+#include "geometry/isect_util.h"
 
 using std::copy;
 

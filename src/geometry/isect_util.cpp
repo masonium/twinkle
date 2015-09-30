@@ -1,4 +1,4 @@
-#include "shapes/isect_util.h"
+#include "geometry/isect_util.h"
 
 scalar_fp ray_triangle_intersection(const Ray& ray,
                                     const Vec3& v1, const Vec3& v2, const Vec3& v3)
