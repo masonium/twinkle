@@ -30,6 +30,7 @@ public:
   using VectorT3<Vec3>::operator/;
 
   scalar min() const { return std::min(x, std::min(y, z)); }
+  scalar max() const { return std::max(x, std::max(y, z)); }
 
   Vec3 elem_div(const Vec3& rhs) const
   {

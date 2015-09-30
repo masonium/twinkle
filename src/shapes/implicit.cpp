@@ -1,4 +1,5 @@
 #include "implicit.h"
+#include "math_util.h"
 #include "transformed.h"
 #include <memory>
 
@@ -108,4 +109,35 @@ shared_ptr<Geometry> make_torus(Vec3 normal, scalar outer_radius, scalar inner_r
   return make_shared<Transformed>(
     make_shared<ImplicitSurface>(sdf, gsdf, 1.0, bounds::AABB{lb, -lb}),
     Transform{Mat33::rotate_match(Vec3::y_axis, normal), Vec3::zero});
+}
+
+shared_ptr<Geometry> make_capsule(Vec3 direction, scalar length, scalar radius)
+{
+  Vec3 a = direction.normal() * (length / 2);
+  Vec3 b = -a;
+
+  auto sdf = [=](const Vec3& v)
+  {
+    Vec3 va  = v - a, ba = b - a;
+    scalar s = clamp( va.dot(ba) / ba.norm2(), 0, 1);
+
+    return ( va - ba * s ).norm() - radius;
+  };
+
+  Vec3 r{radius};
+  Vec3 lb = -direction.abs() - r;
+
+  return make_shared<ImplicitSurface>(sdf, gradient_from_sdf(sdf), 1.0, bounds::AABB{lb, -lb});
+}
+
+shared_ptr<Geometry> make_rounded_box(Vec3 size, scalar radius)
+{
+  Vec3 hw = size.abs() * 0.5;
+  auto sdf = [=] (const Vec3& v)
+  {
+    return max(v.abs() - hw, Vec3::zero).norm() - radius;
+  };
+
+  auto ub = hw + Vec3{radius};
+  return make_shared<ImplicitSurface>(sdf, gradient_from_sdf(sdf), 1.0, bounds::AABB{-ub, ub});
 }

@@ -36,3 +36,5 @@ private:
 };
 
 shared_ptr<Geometry> make_torus(Vec3 normal, scalar outer_radius, scalar inner_radius);
+shared_ptr<Geometry> make_capsule(Vec3 direction, scalar length, scalar radius);
+shared_ptr<Geometry> make_rounded_box(Vec3 size, scalar radius);
