@@ -29,8 +29,6 @@ int main(int argc, char** args)
 
   Ray r(Vec3::zero, Vec3::zero);
 
-  scalar freq = 2;
-
   scalar min = 5, max = -5;
   scalar sw = width, sh = height;
   for (int y = 0; y < height; ++y)
@@ -38,7 +36,7 @@ int main(int argc, char** args)
     for (int x = 0; x < width; ++x)
     {
       //scalar z = 0.2;
-      auto uv = Vec2{x / sw, 0.5 - (y / sh) * 0.5};
+      auto uv = Vec2(x / sw, 0.5 - (y / sh) * 0.5);
 
       auto s = sky.at_coord(uv);
       f.add_sample(PixelSample(x, y, 0.5, 0.5, r), s);
