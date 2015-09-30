@@ -45,4 +45,4 @@ public:
   virtual ~Scheduler() { }
 };
 
-shared_ptr<Scheduler> make_scheduler(int num_threads);
+shared_ptr<Scheduler> make_scheduler(uint num_threads);

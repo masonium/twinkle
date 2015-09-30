@@ -3,6 +3,7 @@
 #include <future>
 #include <thread>
 #include <chrono>
+#include <cassert>
 
 using std::future;
 using std::unique_lock;
@@ -170,17 +171,15 @@ LocalThreadScheduler::~LocalThreadScheduler()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-shared_ptr<Scheduler> make_scheduler(int num_threads)
+shared_ptr<Scheduler> make_scheduler(uint num_threads)
 {
-  std::cerr << "num_threads == " << num_threads << std::endl;
+  assert(num_threads > 0);
   if (num_threads == 1)
   {
-    std::cerr << "creating blocking scheduler" << std::endl;
     return make_shared<BlockingScheduler>();
   }
   else
   {
-    std::cerr << "making local scheduler" << std::endl;
     return make_shared<LocalThreadScheduler>(num_threads);
   }
 }
