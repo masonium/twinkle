@@ -1,6 +1,8 @@
 #include "dintegrator.h"
 #include "mat33.h"
+#include "util/timer.h"
 #include <unordered_map>
+#include <chrono>
 
 #ifdef FEATURE_DEBUG_TRACER
 
@@ -9,7 +11,7 @@ using std::make_pair;
 const int NUM_DISTINCT_ID_COLORS = 20;
 spectrum color_list[NUM_DISTINCT_ID_COLORS];
 
-DebugIntegrator::DebugIntegrator(DebugIntegrator::Type t) : type(t)
+DebugIntegrator::DebugIntegrator(const DebugIntegrator::Options& opt_) : opt(opt_)
 {
   for (int i = 0; i < NUM_DISTINCT_ID_COLORS; ++i)
     color_list[i] = spectrum::from_hsv(i * 18, 0.8, 1.0);
@@ -17,7 +19,7 @@ DebugIntegrator::DebugIntegrator(DebugIntegrator::Type t) : type(t)
 
 void DebugIntegrator::render(const Camera& cam, const Scene& scene, Film& film)
 {
-  grid_render(*this, cam, scene, film, 1, 4, 1);
+  grid_render(*this, cam, scene, film, 1, 4, opt.samples_per_pixel);
 }
 
 void DebugIntegrator::render_rect(const Camera& cam, const Scene& scene, Film& film,
@@ -52,19 +54,26 @@ spectrum dir_to_spectrum(const Vec3& dir)
 spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene, 
                                     ShapeColorMap& scm, Sampler& sampler) const
 {
+  if (opt.type == DI_TIME_INTERSECT)
+  {
+    Timer timer;
+    scene.intersect(ray);
+    return spectrum{timer.since()};
+  }
+
   auto isect_opt = scene.intersect(ray);
 
-  if (type == DI_ISECT)
+  if (opt.type == DI_ISECT)
     return spectrum{scalar(isect_opt.is() ? 1.0 : 0.0)};
 
-  if (type == DI_DEPTH)
+  if (opt.type == DI_DEPTH)
   {
     if (isect_opt.is())
       return spectrum(1.0 / max<scalar>((isect_opt.get().position - ray.position).norm(), 1.0));
     else
       return spectrum{0.0};
   }
-  if (type == DI_OBJECT_ID)
+  if (opt.type == DI_OBJECT_ID)
   {
     if (!isect_opt.is())
       return spectrum::zero;
@@ -77,12 +86,12 @@ spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene,
     return scm[shape];
   }
 
-  if (type == DI_NORMAL)
+  if (opt.type == DI_NORMAL)
   {
     return isect_opt.is() ? dir_to_spectrum(isect_opt.get().normal) : spectrum::zero;
   }
 
-  if (type == DI_SPECULAR)
+  if (opt.type == DI_SPECULAR)
   {
     if (!isect_opt.is())
       return spectrum::zero;
@@ -93,7 +102,7 @@ spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene,
     return dir_to_spectrum(dir);
   }
 
-  if (type == DI_FIRST_ENV)
+  if (opt.type == DI_FIRST_ENV)
   {
     if (!isect_opt.is())
       return spectrum{0.3, 0.02, 0.05};

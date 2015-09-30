@@ -19,10 +19,17 @@ public:
     DI_NORMAL,
     DI_DEPTH,
     DI_SPECULAR,
-    DI_FIRST_ENV
+    DI_FIRST_ENV,
+    DI_TIME_INTERSECT
   };
 
-  DebugIntegrator(Type type);
+  struct Options
+  {
+    Type type;
+    int samples_per_pixel;
+  };
+
+  DebugIntegrator(const Options& opt_);
 
   void render(const Camera& cam, const Scene& scene, Film& film) override;
 
@@ -35,7 +42,7 @@ private:
                      ShapeColorMap& scm, Sampler& sampler) const;
 
   std::unordered_map<Shape const*, int> shape_ids;
-  Type type;
+  Options opt;
 };
 
 #endif
