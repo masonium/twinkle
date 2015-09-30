@@ -252,7 +252,7 @@ shared_ptr<Camera> showcase_scene(Scene& scene, scalar ar, int angle)
   geoms.push_back(make_shared<Sphere>(Vec3::zero, 0.5));
 
   RawModel model;
-  auto filename = "/home/mason/workspace/twinkle/tak-cube.obj";
+  auto filename = "/home/mason/workspace/twinkle/assets/models/tak-cube.obj";
   if (!model.load_obj_model(filename).success)
   {
     cerr << "could not load " << filename << endl;
@@ -266,22 +266,29 @@ shared_ptr<Camera> showcase_scene(Scene& scene, scalar ar, int angle)
   
   geoms.push_back(make_quad(Vec3::x_axis * 0.5, Vec3::z_axis * 0.5));
 
-  auto bbox = bounds::AABB{Vec3{-1.1}, Vec3{1.1}};
-  geoms.push_back(make_shared<ImplicitSurface>(torus_sdf, gradient_from_sdf(torus_sdf), 1.0, bbox));
-  geoms.push_back(make_shared<ImplicitSurface>(capsule_sdf, gradient_from_sdf(capsule_sdf), 1.0, bbox));
+  geoms.push_back(make_torus(Vec3::y_axis, 0.8, 0.2));
+  geoms.push_back(make_capsule(Vec3::x_axis, 0.35, 0.15));
+  geoms.push_back(make_rounded_box(Vec3{0.8}, 0.2));
   
   const scalar spacing = 2.0;
-  int grid_size = ceil(sqrtf(geoms.size()));
+  const auto total_shapes = geoms.size() * 2;
+  int grid_size = ceil(sqrtf(total_shapes));
 
   UniformSampler sampler;
-
-  
-  for (auto i = 0u, x = 0u, z = 0u; i < geoms.size(); ++i, x = i % grid_size, z = i / grid_size)
   {
-    auto r = rotate(geoms[i], uniform_hemisphere_sample(sampler.sample_2d()), sampler.sample_1d() * 2 * PI);
-    scene.add(SHAPE(translate(r, spacing * Vec3{scalar(x), 0, scalar(z)}), cmat));
-  }
+    auto i = 0u;
 
+    for (auto j = 0u, x = 0u, z = 0u; j < geoms.size(); ++j, ++i, x = i % grid_size, z = i / grid_size)
+    {
+      scene.add(SHAPE(translate(geoms[j], spacing * Vec3{scalar(x), 0, scalar(z)}), cmat));
+    }
+  
+    for (auto j = 0u, x = 0u, z = 0u; j < geoms.size(); ++j, ++i, x = i % grid_size, z = i / grid_size)
+    {
+      auto r = rotate(geoms[j], uniform_hemisphere_sample(sampler.sample_2d()), sampler.sample_1d() * 2 * PI);
+      scene.add(SHAPE(translate(r, spacing * Vec3{scalar(x), 0, scalar(z)}), cmat));
+    }
+  }
   auto gray = make_shared<RoughColorMaterial>(0.0, spectrum{0.8});
   scene.add(SHAPE(make_shared<Plane>(Vec3::y_axis, 1.0), gray));
 
