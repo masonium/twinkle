@@ -50,8 +50,16 @@ void MeshTri::texture_coord(const Vec3& pos, const Vec3& normal,
 
 Mesh::Mesh(const RawModel& model) : is_diff(model.has_tex())
 {
-  verts.resize(model.verts().size());
-  copy(model.verts().begin(), model.verts().end(), verts.begin());
+  verts = model.verts();
+  for (const auto& a: model.tris())
+  {
+    tris.emplace_back(this, a.v);
+  }
+}
+
+Mesh::Mesh(RawModel&& model) : is_diff(model.has_tex())
+{
+  verts = model.verts();
   for (const auto& a: model.tris())
   {
     tris.emplace_back(this, a.v);

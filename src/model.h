@@ -64,8 +64,10 @@ public:
 
   void invert_normals();
 
-  const vector<Vertex>& verts() const { return verts_; }
-  const vector<Triangle>& tris() const { return tris_; }
+  const vector<Vertex>& verts() const & { return verts_; }
+  vector<Vertex>&& verts() && { return std::move(verts_); }
+  const vector<Triangle>& tris() const & { return tris_; }
+  vector<Triangle>&& tris() && { return std::move(tris_); }
 
   bool has_tex() const { return has_tex_; }
 

@@ -10,6 +10,7 @@ class Mesh : public Geometry
 {
 public:
   Mesh(const RawModel& model);
+  Mesh(RawModel&& model);
 
   virtual scalar_fp intersect(const Ray& r, scalar_fp max_t, SubGeo& geom) const override;
 

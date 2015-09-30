@@ -15,6 +15,11 @@ shared_ptr<Mesh> make_quad()
 
 shared_ptr<Mesh> make_quad(const Vec3& xv, const Vec3& yv)
 {
+  return make_shared<Mesh>(make_quad_model(xv, yv));
+}
+
+RawModel make_quad_model(const Vec3& xv, const Vec3& yv)
+{
   vector<Vertex> vertices(4);
   Vec3 pos[4] = {-xv -  yv, xv - yv, -xv + yv, xv + yv};
   Vec2 uvs[4] = {{0, 0}, {1, 0}, {0, 1}, {1, 1}};
@@ -29,5 +34,6 @@ shared_ptr<Mesh> make_quad(const Vec3& xv, const Vec3& yv)
 
   RawModel model;
   model.load_raw_model(vertices, tris, true, true);
-  return make_shared<Mesh>(model);
+
+  return model;
 }
