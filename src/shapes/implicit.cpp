@@ -96,9 +96,9 @@ shared_ptr<Geometry> make_torus(Vec3 normal, scalar outer_radius, scalar inner_r
 {
   auto sdf = [=](const Vec3& v) {
     scalar xz = sqrt(v.x*v.x + v.z*v.z);
-    scalar a = xz - inner_radius;
+    scalar a = xz - outer_radius;
     scalar b = v.y;
-    return sqrt(a*a + b*b) - outer_radius;
+    return sqrt(a*a + b*b) - inner_radius;
   };
 
   auto gsdf = gradient_from_sdf(sdf);
