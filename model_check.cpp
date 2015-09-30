@@ -31,7 +31,7 @@ void scheduler_test()
     }
   };
 
-  auto scheduler = make_scheduler(4);
+  auto scheduler = make_scheduler(4u);
 
   int j = 0;
   for (auto i = 0; i < 9; ++i)

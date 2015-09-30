@@ -262,12 +262,11 @@ shared_ptr<Camera> showcase_scene(Scene& scene, scalar ar, int angle)
   model.rescale(bounds::AABB(Vec3{-0.5}, Vec3{0.5}), true);
 
   geoms.push_back(make_shared<KDMesh>(model));
-  geoms.push_back(make_shared<Mesh>(model));
   
-  geoms.push_back(make_quad(Vec3::x_axis * 0.5, Vec3::z_axis * 0.5));
+  geoms.push_back(make_quad(Vec3::z_axis * 0.5, Vec3::x_axis * 0.5));
 
   geoms.push_back(make_torus(Vec3::y_axis, 0.8, 0.2));
-  geoms.push_back(make_capsule(Vec3::x_axis, 0.35, 0.15));
+  geoms.push_back(make_capsule(Vec3::x_axis, 0.7, 0.15));
   geoms.push_back(make_rounded_box(Vec3{0.8}, 0.2));
   
   const scalar spacing = 2.0;
@@ -290,12 +289,15 @@ shared_ptr<Camera> showcase_scene(Scene& scene, scalar ar, int angle)
     }
   }
   auto gray = make_shared<RoughColorMaterial>(0.0, spectrum{0.8});
-  scene.add(SHAPE(make_shared<Plane>(Vec3::y_axis, 1.0), gray));
+  scene.add(SHAPE(make_shared<Plane>(Vec3::y_axis, 1.2), gray));
 
+  scalar gs = (grid_size - 1) * spacing ;
+
+  scene.add(make_shared<PointLight>( Vec3{0, gs, 0}, spectrum{2.0} ));
   scene.add(make_shared<EnvironmentalLight>( make_shared<SolidColor>(spectrum{3.0})));
 
-  scalar gs = (grid_size - 1) * spacing;
-  return make_shared<PerspectiveCamera>(Vec3(gs * 0.5, gs, -gs), Vec3::zero, Vec3::y_axis, PI/2.0, ar);
+
+  return make_shared<PerspectiveCamera>(Vec3(gs * 0.5, gs * .8, -gs * .4), Vec3{gs/2, 0, gs/4}, Vec3::y_axis, PI/2.0, ar);
 }
 
 int main(int argc, char** args)
@@ -327,14 +329,12 @@ int main(int argc, char** args)
   else
     scene = make_shared<BasicScene>();
 
-  //int angle = atoi(args[5]);
-
   auto cam = showcase_scene(*scene, scalar(WIDTH)/scalar(HEIGHT), 0);
 
   auto bf = make_shared<BoxFilter>();
   Film f(WIDTH, HEIGHT, bf);
 
-#define RENDER_ALGO 2
+#define RENDER_ALGO 0
 
 #if RENDER_ALGO == 0
   PathTracerIntegrator::Options opt;
@@ -350,7 +350,10 @@ int main(int argc, char** args)
   opt.num_threads = 0;
   DirectLightingIntegrator igr(opt);
 #else
-  DebugIntegrator igr(DebugIntegrator::DI_NORMAL);
+  DebugIntegrator::Options opt;
+  opt.type = DebugIntegrator::DI_TIME_INTERSECT;
+  opt.samples_per_pixel = per_pixel;
+  DebugIntegrator igr(opt);
 #endif
 
   // cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, "
