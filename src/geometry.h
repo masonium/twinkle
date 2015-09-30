@@ -7,7 +7,6 @@
 #include "ray.h"
 #include "bounds.h"
 
-
 using std::shared_ptr;
 using std::numeric_limits;
 

@@ -28,11 +28,7 @@ else
 echo "CONFIG must be one of (Debug, Release)"
 endif
 
-SRCS := $(wildcard src/*.cpp)
--include src/shapes/Makefile
--include src/textures/Makefile
--include src/util/Makefile
--include src/tests/Makefile
+-include src/Makefile
 
 OBJSTMP := $(SRCS:.cpp=.o)
 OBJS := $(OBJSTMP:src/%=$(OBJDIR)/%)
