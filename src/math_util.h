@@ -28,6 +28,15 @@ scalar norm(const T& s)
 
 scalar norm(const scalar& s);
 
+inline constexpr scalar square(scalar s)
+{
+  return s * s;
+}
+
+inline constexpr scalar sign(scalar val) {
+  return (static_cast<scalar>(0) < val) - (val < static_cast<scalar>(0));
+}
+
 /**
  * Computes the Fresnel coefficient for reflectance of dielectric
  * medium. Assumes that incoming and normal originate from the same point.
