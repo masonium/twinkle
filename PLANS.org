@@ -1,4 +1,7 @@
-* Visible Features
+* Absolute priority
++ [ ] refactor material so reflectance takes an intersection and returns a specturm (no separate texture-at-point)
+
+* TODO Visible Features
 ** Shapes
 - [ ] box primitive
 - [ ] heightmap (based on kd-mesh)
