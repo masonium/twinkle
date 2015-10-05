@@ -76,16 +76,3 @@ private:
   Vec3 position;
   spectrum emission;
 };
-
-/*
-class EnvLight : public Light
-{
-public:
-  EnvLight(shared_ptr<Texture2D> tex);
-
-  LightSample sample_emission(const Intersection& isect, Sampler&) const override;
-
-private:
-  shared_ptr<Texture2D> texture;
-};
-*/
