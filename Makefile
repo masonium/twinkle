@@ -33,6 +33,10 @@ endif
 OBJSTMP := $(SRCS:.cpp=.o)
 OBJS := $(OBJSTMP:src/%=$(OBJDIR)/%)
 
+TEST_SRCS = $(wildcard src/tests/*.cpp)
+TEST_OBJS := $(TEST_SRCS:.cpp=.o)
+TEST_OBJS := $(TEST_OBJS:src/%=$(OBJDIR)/%)
+
 EXE_NAMES = twinkle test_twinkle tonemap model_check texture_check
 EXES = $(addprefix $(BINDIR)/,$(EXE_NAMES))
 
@@ -75,9 +79,9 @@ $(BINDIR)/tonemap: $(OBJDIR)/tonemap_main.o $(LIBDIR)/libtwinkle.a
 	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $< $(CXXFLAGS) $(NOTESTFLAGS) $(LFLAGS)
 
-$(BINDIR)/test_twinkle: $(OBJDIR)/test.o $(LIBDIR)/libtwinkle.a
+$(BINDIR)/test_twinkle: $(OBJDIR)/test.o $(TEST_OBJS) $(LIBDIR)/libtwinkle.a
 	@mkdir -p $(dir $@)
-	$(CXX) -o $@ $< $(CXXFLAGS) $(LFLAGS)
+	$(CXX) -o $@ $? $(CXXFLAGS) $(LFLAGS)
 
 $(BINDIR)/model_check: $(OBJDIR)/model_check.o $(LIBDIR)/libtwinkle.a
 	@mkdir -p $(dir $@)

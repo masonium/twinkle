@@ -1,6 +1,6 @@
 SRCS := $(wildcard src/*.cpp)
--include src/util/Makefile
--include src/geometry/Makefile
--include src/textures/Makefile
--include src/scenes/Makefile
--include src/tests/Makefile
+SRCS += $(wildcard src/util/*.cpp)
+SRCS += $(wildcard src/geometry/*.cpp)
+SRCS += $(wildcard src/textures/*.cpp)
+SRCS += $(wildcard src/materials/*.cpp)
+SRCS += $(wildcard src/scenes/*.cpp)
