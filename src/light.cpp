@@ -22,7 +22,7 @@ bool LightSample::is_occluded(const Scene& scene) const
   case OCCLUSION_POINTS:
     {
       auto isect = scene.intersect(ray);
-      return isect.is() && approx_gt(1.0, isect.get().t);
+      return isect.is() && approx_gt(1.0, isect.get().t());
     }
     
   default:

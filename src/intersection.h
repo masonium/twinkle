@@ -17,6 +17,7 @@ class Shape;
 class Intersection
 {
 public:
+  Intersection(const Shape* s, const SubGeo subgeo, const Vec3& pos);
   Intersection(const Shape* s, const SubGeo subgeo, const Ray& r, scalar t_);
 
   scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const;
@@ -25,13 +26,17 @@ public:
   Vec3 sample_bsdf(const Vec3& incoming, Sampler& sampler,
                    scalar& p, scalar& reflectance) const;
 
+  scalar t() const
+  {
+    return t_;
+  }
+
   bool is_emissive() const;
 
   spectrum emission() const;
 
   const Shape* get_shape_for_id() const { return shape; }
 
-  const scalar t;
   Vec3 position, normal;
   Vec2 tc;
   Vec3 dpdu, dpdv;
@@ -41,4 +46,5 @@ private:
   const Shape* shape;
   Mat33 to_z;
   Mat33 from_z;
+  scalar t_;
 };
