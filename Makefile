@@ -81,7 +81,7 @@ $(BINDIR)/tonemap: $(OBJDIR)/tonemap_main.o $(LIBDIR)/libtwinkle.a
 
 $(BINDIR)/test_twinkle: $(OBJDIR)/test.o $(TEST_OBJS) $(LIBDIR)/libtwinkle.a
 	@mkdir -p $(dir $@)
-	$(CXX) -o $@ $? $(CXXFLAGS) $(LFLAGS)
+	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
 $(BINDIR)/model_check: $(OBJDIR)/model_check.o $(LIBDIR)/libtwinkle.a
 	@mkdir -p $(dir $@)
