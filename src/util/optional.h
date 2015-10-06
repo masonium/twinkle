@@ -32,20 +32,25 @@ class optional
 public:
   optional(none_tag_t) : _init(false) { }
 
-  optional(const T& r) : _init(true) {
-    memcpy(reinterpret_cast<void*>(&_val), reinterpret_cast<const void*>(&r), sizeof(T));
+  template <typename... Args>
+  optional(Args&&... args) : _init(true)
+  {
+    new(&_val) T(std::forward<Args>(args)...);
   }
 
-  bool is() const {
+  bool is() const
+  {
     return _init;
   }
 
-  const T& get() const {
+  const T& get() const
+  {
     assert(_init);
     return value();
   }
 
-  const T& get(const T& default_value) const noexcept {
+  const T& get(const T& default_value) const noexcept
+  {
     return _init ? value() : default_value;
   }
 
@@ -58,17 +63,13 @@ public:
   }
 
 protected:
-  // return the value,
   const T& value() const { return *reinterpret_cast<const T*>(&_val); }
   bool init() const { return _init; }
   void clear() { _init = false; }
 
 private:
-  union __attribute__((may_alias)) val
-  {
-    uint8_t _data[sizeof(T)];
-  };
-  val _val;
+  using raw = typename std::aligned_storage<sizeof(T)>::type;
+  raw _val;
   bool _init;
 };
 
