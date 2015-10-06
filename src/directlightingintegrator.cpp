@@ -90,14 +90,14 @@ spectrum DirectLightingIntegrator::trace_ray(const Scene& scene, const Ray& ray,
   {
     scalar l_p;
     Vec3 l_dir = normal_rotation * cosine_weighted_hemisphere_sample(shading_sampler.sample_2d(), l_p);
-    scalar refl = isect.reflectance(l_dir, view_vector);
+    auto refl = isect.reflectance(l_dir, view_vector);
 
     auto light_ray = Ray{new_pos, l_dir};
     if (!scene.intersect(light_ray).is())
-      total += l_dir.dot(isect_normal) * (refl / l_p) * scene.environment_light_emission(l_dir);
+      total += (l_dir.dot(isect_normal) / l_p) * refl * scene.environment_light_emission(l_dir);
   }
 
-  return total * isect.texture_at_point() / options.lighting_samples;
+  return total / options.lighting_samples;
 }
 
 void DirectLightingIntegrator::render_rect(

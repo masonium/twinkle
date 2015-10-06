@@ -96,9 +96,10 @@ spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene,
     if (!isect_opt.is())
       return spectrum::zero;
 
-    scalar brdf_p, reflectance;
+    scalar brdf_p;
+    spectrum bsdf_reflectance;
     ConstSampler s{1.0, 0.0};
-    auto dir = isect_opt.get().sample_bsdf(-ray.direction.normal(), s, brdf_p, reflectance);
+    auto dir = isect_opt.get().sample_bsdf(-ray.direction.normal(), s, brdf_p, bsdf_reflectance);
     return dir_to_spectrum(dir);
   }
 
@@ -108,7 +109,8 @@ spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene,
       return spectrum{0.3, 0.02, 0.05};
 
     auto isect = isect_opt.get();
-    scalar brdf_p = 0, brdf_r = 0;
+    scalar brdf_p = 0;
+    spectrum brdf_r;
     auto brdf_dir = isect.sample_bsdf(-ray.direction.normal(), sampler, brdf_p, brdf_r);
 
     if (brdf_p > 0)

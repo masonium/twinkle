@@ -10,30 +10,17 @@
 class Shape;
 
 /**
- * An intersection represents the results of intersection a ray with the
+ * An IntersectionView represents the results of intersection a ray with the
  * scene. It stores relevant local information about the intersection, in
  * addition to the shape and sub-shape.
  */
-class Intersection
+class IntersectionView
 {
 public:
-  Intersection(const Shape* s, const SubGeo subgeo, const Vec3& pos);
-  Intersection(const Shape* s, const SubGeo subgeo, const Ray& r, scalar t_);
-
-  scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const;
-  
-  spectrum texture_at_point() const;
-  Vec3 sample_bsdf(const Vec3& incoming, Sampler& sampler,
-                   scalar& p, scalar& reflectance) const;
-
   scalar t() const
   {
     return t_;
   }
-
-  bool is_emissive() const;
-
-  spectrum emission() const;
 
   const Shape* get_shape_for_id() const { return shape; }
 
@@ -41,10 +28,34 @@ public:
   Vec2 tc;
   Vec3 dpdu, dpdv;
 
-private:
+protected:
+  IntersectionView(const Shape* s, const SubGeo subgeo, const Vec3& pos);
+  IntersectionView(const Shape* s, const SubGeo subgeo, const Ray& r, scalar t_);
+
   const SubGeo subgeo;
   const Shape* shape;
   Mat33 to_z;
   Mat33 from_z;
   scalar t_;
+};
+
+/**
+ * An intersection also has member functions to evaluate local shading
+ * information.
+ */
+class Intersection : public IntersectionView
+{
+public:
+  Intersection(const Shape* s, const SubGeo subgeo, const Vec3& pos);
+  Intersection(const Shape* s, const SubGeo subgeo, const Ray& r, scalar t_);
+
+  spectrum reflectance(const Vec3& incoming, const Vec3& outgoing) const;
+
+  Vec3 sample_bsdf(const Vec3& incoming, Sampler& sampler,
+                   scalar& p, spectrum& reflectance) const;
+
+
+  bool is_emissive() const;
+
+  spectrum emission() const;
 };

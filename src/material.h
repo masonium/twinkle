@@ -13,30 +13,17 @@ using std::unique_ptr;
 class Material
 {
 public:
-  virtual scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const
-  {
-    return 0;
-  };
+  virtual spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing) const = 0;
   
-  virtual Vec3 sample_bsdf(const Vec3& incoming, Sampler& sampler,
-                           scalar& p, scalar& reflectance) const
-  {
-    p = 0;
-    reflectance = 0;
-    return Vec3::zero;
-  }
-  
-  virtual spectrum texture_at_point(const Intersection& isect) const
-  {
-    return spectrum::zero;
-  }
+  virtual Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
+                           scalar& p, spectrum& reflectance) const = 0;
 
-  virtual bool is_emissive() const
+  virtual bool is_emissive(const IntersectionView&) const
   {
     return false;
   }
   
-  virtual spectrum emission(const Intersection&) const
+  virtual spectrum emission(const IntersectionView&) const
   {
     return spectrum::zero;
   }
@@ -49,12 +36,10 @@ class RoughMaterial : public Material
 public:
   RoughMaterial(scalar roughness, shared_ptr<Texture> tex);
 
-  scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const override;
+  spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing) const override;
   
-  Vec3 sample_bsdf(const Vec3& incoming, Sampler& sampler,
-                   scalar& p, scalar& reflectance) const override;
-
-  spectrum texture_at_point(const Intersection& isect) const override;
+  Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
+                   scalar& p, spectrum& reflectance) const override;
 
 private:
   unique_ptr<BRDF> brdf;
@@ -72,18 +57,16 @@ public:
 class MirrorMaterial : public Material
 {
 public:
-  MirrorMaterial() : brdf(unique_ptr<BRDF>(new PerfectMirrorBRDF))
+  MirrorMaterial()
   {
   }
-  scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const override;
+  spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing) const override;
   
-  Vec3 sample_bsdf(const Vec3& incoming, Sampler& sampler,
-                   scalar& p, scalar& reflectance) const override;
-
-  spectrum texture_at_point(const Intersection& isect) const override;
+  Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
+                   scalar& p, spectrum& reflectance) const override;
 
 private:
-  unique_ptr<BRDF> brdf;
+  PerfectMirrorBRDF brdf;
 };
 
 class GlassMaterial : public Material
@@ -92,17 +75,16 @@ public:
   GlassMaterial(scalar ref_inside = refraction_index::CROWN_GLASS,
                 scalar ref_outside = refraction_index::AIR);
 
-  scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const override;
+  spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing) const override;
 
-  Vec3 sample_bsdf(const Vec3& incoming, Sampler& sampler,
-                   scalar& p, scalar& reflectance) const override;
-
-  spectrum texture_at_point(const Intersection& isect) const override;
+  Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
+                   scalar& p, spectrum& reflectance) const override;
 
 private:
   scalar nr_inside, nr_outside;
 };
 
+/*
 class EmissiveMaterial : public Material
 {
 public:
@@ -118,3 +100,4 @@ public:
 private:
   spectrum emit;
 };
+*/

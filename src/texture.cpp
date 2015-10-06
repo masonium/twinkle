@@ -1,6 +1,6 @@
 #include "texture.h"
 
-spectrum SolidColor::at_point(const Intersection& isect) const
+spectrum SolidColor::at_point(const IntersectionView& isect) const
 {
   return color;
 }

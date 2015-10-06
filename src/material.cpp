@@ -1,5 +1,6 @@
 #include "material.h"
 #include "bsdf.h"
+#include "util.h"
 #include <memory>
 
 using std::make_shared;
@@ -15,20 +16,19 @@ RoughMaterial::RoughMaterial(scalar roughness_, shared_ptr<Texture> tex_) :
     brdf = unique_ptr<BRDF>(new Lambertian(1.0));
 }
 
-scalar RoughMaterial::reflectance(const Vec3& incoming, const Vec3& outgoing) const
+spectrum RoughMaterial::reflectance(const IntersectionView& isect,
+                                    const Vec3& incoming, const Vec3& outgoing) const
 {
-  return brdf->reflectance(incoming, outgoing);
+  return brdf->reflectance(incoming, outgoing) * texture->at_point(isect);
 }
 
-Vec3 RoughMaterial::sample_bsdf(const Vec3& incoming, Sampler& sampler,
-                                scalar& p, scalar& reflectance) const
+Vec3 RoughMaterial::sample_bsdf(const IntersectionView& isect, const Vec3& incoming, Sampler& sampler,
+                                scalar& p, spectrum& reflectance) const
 {
-  return brdf->sample(incoming, sampler, p, reflectance);
-}
-
-spectrum RoughMaterial::texture_at_point(const Intersection& isect) const
-{
-  return texture->at_point(isect);
+  scalar refl;
+  const auto v = brdf->sample(incoming, sampler, p, refl);
+  reflectance = texture->at_point(isect) * refl;
+  return v;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,20 +41,19 @@ RoughColorMaterial::RoughColorMaterial(scalar roughness, const spectrum& color) 
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-scalar MirrorMaterial::reflectance(const Vec3& incoming, const Vec3& outgoing) const
+spectrum MirrorMaterial::reflectance(const IntersectionView&,
+                                     const Vec3& UNUSED(incoming), const Vec3& UNUSED(outgoing)) const
 {
-  return 0.0;
+  return spectrum::zero;
 }
 
-Vec3 MirrorMaterial::sample_bsdf(const Vec3& incoming, Sampler& sampler,
-                                scalar& p, scalar& reflectance) const
+Vec3 MirrorMaterial::sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
+                                scalar& p, spectrum& reflectance) const
 {
-  return brdf->sample(incoming, sampler, p, reflectance);
-}
-
-spectrum MirrorMaterial::texture_at_point(const Intersection& isect) const
-{
-  return spectrum{1.0};
+  scalar refl;
+  const auto v = brdf.sample(incoming, sampler, p, refl);
+  reflectance = spectrum{refl};
+  return v;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -65,13 +64,14 @@ GlassMaterial::GlassMaterial(scalar refr_in, scalar refr_out) :
   
 }
 
-scalar GlassMaterial::reflectance(const Vec3& incoming, const Vec3& outgoing) const
+spectrum GlassMaterial::reflectance(const IntersectionView&,
+                                    const Vec3& UNUSED(incoming), const Vec3& UNUSED(outgoing)) const
 {
-  return 0.0;
+  return spectrum::zero;
 }
 
-Vec3 GlassMaterial::sample_bsdf(const Vec3& incoming, Sampler& sampler,
-                                scalar& p, scalar& reflectance) const
+Vec3 GlassMaterial::sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
+                                scalar& p, spectrum& reflectance) const
 {
   scalar n1 = nr_outside;
   scalar n2 = nr_inside;
@@ -88,19 +88,15 @@ Vec3 GlassMaterial::sample_bsdf(const Vec3& incoming, Sampler& sampler,
   {
     // reflect
     p = frpdf;
-    reflectance = frpdf * fabs(1 / incoming.z);
+    reflectance = spectrum{frpdf * std::abs(1 / incoming.z)};
     return incoming.reflect_over(normal);
   }
   else
   {
     // transmit
     p = 1 - frpdf;
-    reflectance = (1 - frpdf) * fabs(1 / incoming.z);
+    reflectance = spectrum{(1 - frpdf) * std::abs(1 / incoming.z)};
     return refraction_direction(incoming, normal, n1, n2);
   }
 }
 
-spectrum GlassMaterial::texture_at_point(const Intersection& isect) const
-{
-  return spectrum{1.0};
-}

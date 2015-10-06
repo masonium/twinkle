@@ -1,5 +1,5 @@
 * Absolute priority
-+ [ ] refactor material so reflectance takes an intersection and returns a specturm (no separate texture-at-point)
++ [X] refactor material so reflectance takes an intersection and returns a specturm (no separate texture-at-point)
 
 * TODO Visible Features
 ** Shapes

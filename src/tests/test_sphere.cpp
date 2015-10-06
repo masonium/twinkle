@@ -35,7 +35,7 @@ namespace
 
     if (isect.is())
     {
-      CHECK_CLOSE(isect.get().t, 2.0, EPS);
+      CHECK_CLOSE(isect.get().t(), 2.0, EPS);
       CHECK_CLOSE(sphere->intersect(ray).get(), 2.0, EPS);
     }
   }

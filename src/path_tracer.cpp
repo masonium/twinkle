@@ -67,9 +67,9 @@ spectrum PathTracerIntegrator::trace_ray(const Scene& scene, const Ray& ray,
       if (!ls.is_occluded(scene))
       {
         scalar NL = max<scalar>(ls.direction().dot(isect.normal), 0.0);
-        scalar ca = isect.reflectance(ls.direction(), ray_dir_origin);
+        auto ca = isect.reflectance(ls.direction(), ray_dir_origin);
 
-        auto light_contrib = ls.emission() * spectrum{NL * ca / (light_prob * ls.p())};
+        auto light_contrib = ls.emission() * ca * spectrum{NL / (light_prob * ls.p())};
         total += light_contrib;
       }
     }
@@ -96,7 +96,7 @@ spectrum PathTracerIntegrator::trace_ray(const Scene& scene, const Ray& ray,
   if (continue_trace)
   {
     scalar brdf_p = 0;
-    scalar brdf_reflectance;
+    spectrum brdf_reflectance;
     Vec3 brdf_dir = isect.sample_bsdf(ray_dir_origin, sampler,
                                       brdf_p, brdf_reflectance);
 
@@ -105,11 +105,12 @@ spectrum PathTracerIntegrator::trace_ray(const Scene& scene, const Ray& ray,
     {
       total += trace_ray(scene, Ray{isect.position, brdf_dir}.nudge(),
                          sampler, depth + 1) *
-        spectrum{p_mult / brdf_p * nl * brdf_reflectance};
+        brdf_reflectance *
+        spectrum{p_mult / brdf_p * nl};
     }
   }
 
-  return total * isect.texture_at_point();
+  return total;
 }
 
 void PathTracerIntegrator::render_rect(const Camera& cam, const Scene& scene,

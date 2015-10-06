@@ -100,7 +100,7 @@ shared_ptr<Camera> many_sphere_scene(Scene& scene, scalar ar, int angle)
   // scene.add(make_shared<Shape>(make_shared<Plane>(Vec3::y_axis, 6.0),
   //                              make_shared<MirrorMaterial>()));
   scene.add(make_shared<Shape>(make_shared<Plane>(Vec3{-1, 0, 1}, 10.0),
-                      make_shared<MirrorMaterial>()));
+                               make_shared<MirrorMaterial>()));
 
   const scalar LP = 4.0;
 
@@ -148,7 +148,6 @@ shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio)
 
 shared_ptr<Camera> default_scene(Scene& scene, scalar aspect_ratio, int angle)
 {
-  auto glass = make_shared<GlassMaterial>();
   auto mirror = make_shared<MirrorMaterial>();
 
   auto sphere = make_shared<Sphere>(Vec3{0.0, 0.0, 0.0}, 1.0);

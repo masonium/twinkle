@@ -2,7 +2,7 @@
 #include "shape.h"
 #include "geometry.h"
 
-Intersection::Intersection(const Shape* s, const SubGeo subgeo_, const Vec3& pos) :
+IntersectionView::IntersectionView(const Shape* s, const SubGeo subgeo_, const Vec3& pos) :
   position(pos), subgeo(subgeo_), shape(s)
 {
   assert(s != nullptr);
@@ -14,35 +14,39 @@ Intersection::Intersection(const Shape* s, const SubGeo subgeo_, const Vec3& pos
   from_z = to_z.transpose();
 }
 
-Intersection::Intersection(const Shape* s, const SubGeo subgeo_, const Ray& r, scalar tval)
-  : Intersection(s, subgeo_, r.evaluate(tval))
+IntersectionView::IntersectionView(const Shape* s, const SubGeo subgeo_, const Ray& r, scalar tval)
+  : IntersectionView(s, subgeo_, r.evaluate(tval))
 {
   t_ = tval;
   assert(t_ >= 0);
 }
-
-scalar Intersection::reflectance(const Vec3& incoming, const Vec3& outgoing) const
+Intersection::Intersection(const Shape* s, const SubGeo subgeo, const Vec3& pos)
+  : IntersectionView(s, subgeo, pos)
 {
-  return shape->material->reflectance(to_z * incoming, to_z * outgoing);
+}
+Intersection::Intersection(const Shape* s, const SubGeo subgeo, const Ray& r, scalar t_)
+    : IntersectionView(s, subgeo, r, t_)
+{
 }
 
-spectrum Intersection::texture_at_point() const
+spectrum Intersection::reflectance(const Vec3& incoming, const Vec3& outgoing) const
 {
-  return shape->material->texture_at_point(*this);
+  return shape->material->reflectance(*this, to_z * incoming, to_z * outgoing);
 }
+
 
 Vec3 Intersection::sample_bsdf(const Vec3& incoming, Sampler& sampler,
-                               scalar& p, scalar& reflectance) const
+                               scalar& p, spectrum& reflectance) const
 {
   auto local_incoming = to_z * incoming;
-  auto local_outgoing = shape->material->sample_bsdf(local_incoming, sampler, p, reflectance);
+  auto local_outgoing = shape->material->sample_bsdf(*this, local_incoming, sampler, p, reflectance);
   auto outgoing = from_z * local_outgoing;
   return outgoing;
 }
 
 bool Intersection::is_emissive() const
 {
-  return shape->material->is_emissive();
+  return shape->material->is_emissive(*this);
 }
 
 spectrum Intersection::emission() const

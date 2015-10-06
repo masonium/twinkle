@@ -8,14 +8,14 @@
 class Texture
 {
 public:
-  virtual spectrum at_point(const Intersection& isect) const = 0;
+  virtual spectrum at_point(const IntersectionView& isect) const = 0;
   virtual ~Texture() { }
 };
 
 class Texture2D : public Texture
 {
 public:
-  virtual spectrum at_point(const Intersection& isect) const override
+  virtual spectrum at_point(const IntersectionView& isect) const override
   {
     return at_coord(isect.tc);
   }
@@ -28,7 +28,7 @@ class SolidColor : public Texture2D
 public:
   SolidColor(spectrum x = spectrum::zero) : color(x) {}
 
-  spectrum at_point(const Intersection& isect) const override;
+  spectrum at_point(const IntersectionView& isect) const override;
   spectrum at_coord(const Vec2& uv) const override;
 
 private:
@@ -76,7 +76,7 @@ private:
 class NormalTexture : public Texture
 {
 public:
-  spectrum at_point(const Intersection& isect) const override
+  spectrum at_point(const IntersectionView& isect) const override
   {
     const auto& normal = 0.5 * (isect.normal + Vec3(1.0));
     return spectrum{normal.x, normal.y, normal.z};
