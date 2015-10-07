@@ -268,7 +268,7 @@ namespace optparse {
     Option& choices(Container&& t) {
       return choices(std::begin(t), std::end(t));
     }
- 
+
     template<typename InputIterator>
     Option& choices(InputIterator begin, InputIterator end) {
       _choices.assign(begin, end); type("choice"); return *this;

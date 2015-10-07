@@ -1,3 +1,5 @@
+#include <string>
+#include <map>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -15,11 +17,14 @@
 #include "material.h"
 #include "scenes/basic_scenes.h"
 #include "reinhard.h"
-#include "textures/skytexture.h"
+#include "cpp-optparse/OptionParser.h"
 
 using std::cerr;
 using std::endl;
 using std::cout;
+using std::map;
+using std::vector;
+using std::make_unique;
 using std::make_shared;
 
 void usage(char** args)
@@ -29,29 +34,47 @@ void usage(char** args)
 
 int main(int argc, char** args)
 {
-  if (argc < 5)
-  {
-    usage(args);
-    exit(1);
-  }
-  const uint WIDTH = atoi(args[1]);
-  const uint HEIGHT = atoi(args[2]);
+  optparse::OptionParser parser;
 
-  if (WIDTH == 0 || HEIGHT == 0)
-  {
-    usage(args);
-    exit(1);
-  }
+  map<string, DebugIntegrator::Type> debug_map({
+      {"isect", DebugIntegrator::Type::DI_ISECT},
+      {"object_id", DebugIntegrator::Type::DI_OBJECT_ID},
+      {"normal", DebugIntegrator::Type::DI_NORMAL},
+      {"depth", DebugIntegrator::Type::DI_DEPTH},
+      {"specular", DebugIntegrator::Type::DI_SPECULAR},
+      {"first_env", DebugIntegrator::Type::DI_FIRST_ENV},
+      {"time_intersect", DebugIntegrator::Type::DI_TIME_INTERSECT}
+    });
 
-  const uint per_pixel = atoi(args[3]);
-  if (per_pixel == 0)
-  {
-    usage(args);
-    exit(1);
-  }
+  vector<string> debug_map_keys;
+  std::transform(debug_map.begin(), debug_map.end(), 
+                 std::inserter(debug_map_keys, debug_map_keys.end()), [](const auto& e) { return e.first; });
+
+  parser.add_option("-w", "--width").action("store").type("int").set_default(400);
+  parser.add_option("-h", "--height").action("store").type("int").set_default(300);
+  parser.add_option("-t", "--threads").action("store").type("int").set_default(0);
+  parser.add_option("-s", "--samples").action("store").type("int").set_default(1);
+  parser.add_option("-d", "--debug-type").action("store").choices(debug_map_keys).set_default("normal");
+  parser.add_option("-i", "--integrator").action("store").choices(std::vector<string>({"path", "direct", "debug"})).set_default("path");
+  parser.add_option("-m", "--mapper").action("store").choices(std::vector<string>({"linear", "cutoff"})).set_default("linear");
+  parser.add_option("--kd").action("store_const").dest("scene_container").set_const("kd");
+  parser.add_option("--basic").action("store_const").dest("scene_container").set_const("basic");
+
+  parser.set_defaults("scene_container", "kd");
+
+  auto& options = parser.parse_args(argc, args);
+
+  const uint WIDTH = options.get("width").as<int>();
+  const uint HEIGHT = options.get("height").as<int>();
+
+  assert(WIDTH > 0);
+  assert(HEIGHT > 0);
+
+  const uint per_pixel = options.get("samples").as<int>();
+  assert(per_pixel > 0);
 
   shared_ptr<Scene> scene;
-  if (atoi(args[4]))
+  if (options["scene_container"] == "kd")
     scene = make_shared<KDScene>();
   else
     scene = make_shared<BasicScene>();
@@ -61,41 +84,50 @@ int main(int argc, char** args)
   auto bf = make_shared<BoxFilter>();
   Film f(WIDTH, HEIGHT, bf);
 
-#define RENDER_ALGO 0
 
-#if RENDER_ALGO == 0
-  PathTracerIntegrator::Options opt;
-  opt.samples_per_pixel = per_pixel;
-  opt.num_threads = 1;
-  opt.max_depth = 10;
-  PathTracerIntegrator igr(opt);
-#elif RENDER_ALGO == 1
-  DirectLightingIntegrator::Options opt;
-  opt.samples_per_pixel = 4;
-  opt.lighting_samples = per_pixel / 4;
-  opt.subdivision = 4;
-  opt.num_threads = 0;
-  DirectLightingIntegrator igr(opt);
-#else
-  DebugIntegrator::Options opt;
-  opt.type = DebugIntegrator::DI_NORMAL;
-  opt.samples_per_pixel = per_pixel;
-  DebugIntegrator igr(opt);
-#endif
+  unique_ptr<Integrator> igr;
+  string igr_type = options["integrator"];
 
-  // cerr << "Rendering image at " << WIDTH << "x" << HEIGHT << " resolution, "
-  //      << per_pixel << " samples per pixel\n";
+  if (igr_type == "path")
+  {
+    PathTracerIntegrator::Options opt;
+    opt.samples_per_pixel = per_pixel;
+    opt.num_threads = options.get("threads").as<int>();
+    opt.max_depth = 10;
+    igr = make_unique<PathTracerIntegrator>(opt);
+  }
+  else if (igr_type == "direct")
+  {
+    DirectLightingIntegrator::Options opt;
+    opt.samples_per_pixel = 4;
+    opt.lighting_samples = per_pixel / 4;
+    opt.subdivision = 4;
+    opt.num_threads = 0;
+    igr = make_unique<DirectLightingIntegrator>(opt);
+  }
+  else // if (igr_type == "debug")
+  {
+    DebugIntegrator::Options opt;
+    opt.type = DebugIntegrator::Type::DI_TIME_INTERSECT;//debug_map[options["debug"]];
+    opt.samples_per_pixel = per_pixel;
+    igr = make_unique<DebugIntegrator>(opt);
+  }
+
   scene->prepare();
-  igr.render(*cam, *scene, f);
 
-  auto mapper = make_shared<LinearToneMapper>();
-  // auto mapper = make_shared<ReinhardGlobal>();
-  //auto mapper = make_shared<ReinhardLocal>(ReinhardLocal::Options{});
-  //auto mapper = make_shared<CutoffToneMapper>();
+  igr->render(*cam, *scene, f);
+
+  shared_ptr<ToneMapper> mapper;
+  if (options["mapper"] == "linear")
+  {
+    mapper = make_shared<LinearToneMapper>();
+  }
+  else if (options["mapper"] == "cutoff")
+  {      
+    mapper = make_shared<CutoffToneMapper>();
+  }
 
   f.render_to_ppm(cout, *mapper);
-  //f.render_to_twi(cout);
-  //f.render_to_console(cout);
 
   return 0;
 }
