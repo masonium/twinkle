@@ -192,6 +192,7 @@ shared_ptr<Camera> showcase_scene(Scene& scene, scalar ar, int angle)
   vector<shared_ptr<Geometry>> geoms;
 
   auto cmat = make_shared<RoughMaterial>(0.0, make_shared<NormalTexture>());
+  auto mirr_mat = make_shared<MirrorMaterial>();
   geoms.push_back(make_shared<Sphere>(Vec3::zero, 0.5));
 
   RawModel model;
@@ -210,7 +211,7 @@ shared_ptr<Camera> showcase_scene(Scene& scene, scalar ar, int angle)
 
   geoms.push_back(make_torus(Vec3::y_axis, 0.8, 0.2));
   geoms.push_back(make_capsule(Vec3::x_axis, 0.7, 0.15));
-  geoms.push_back(make_rounded_box(Vec3{0.8}, 0.2));
+  geoms.push_back(make_rounded_box(Vec3{0.6}, 0.4));
 
   const scalar spacing = 2.0;
   const auto total_shapes = geoms.size() * 2;
@@ -219,7 +220,6 @@ shared_ptr<Camera> showcase_scene(Scene& scene, scalar ar, int angle)
   UniformSampler sampler;
   {
     auto i = 0u;
-
     for (auto j = 0u, x = 0u, z = 0u; j < geoms.size(); ++j, ++i, x = i % grid_size, z = i / grid_size)
     {
       scene.add(SHAPE(translate(geoms[j], spacing * Vec3{scalar(x), 0, scalar(z)}), cmat));
@@ -228,17 +228,19 @@ shared_ptr<Camera> showcase_scene(Scene& scene, scalar ar, int angle)
     for (auto j = 0u, x = 0u, z = 0u; j < geoms.size(); ++j, ++i, x = i % grid_size, z = i / grid_size)
     {
       auto r = rotate(geoms[j], uniform_hemisphere_sample(sampler.sample_2d()), sampler.sample_1d() * 2 * PI);
-      scene.add(SHAPE(translate(r, spacing * Vec3{scalar(x), 0, scalar(z)}), cmat));
+      scene.add(SHAPE(translate(r, spacing * Vec3{scalar(x), 0, scalar(z)}), mirr_mat));
     }
   }
-  auto gray = make_shared<RoughColorMaterial>(0.0, spectrum{0.8});
-  scene.add(SHAPE(make_shared<Plane>(Vec3::y_axis, 1.2), gray));
+
+  //auto plane_mat = make_shared<RoughColorMaterial>(0.0, spectrum{0.8});
+  auto plane_mat = make_shared<RoughMaterial>(0.0, make_shared<Checkerboard2D>(spectrum{0.0}, spectrum{1.0}, 2));
+  scene.add(SHAPE(make_shared<Plane>(Vec3::y_axis, 1.2), plane_mat));
 
   scalar gs = (grid_size - 1) * spacing ;
 
-  scene.add(make_shared<PointLight>( Vec3{0, gs, 0}, spectrum{2.0} ));
-  scene.add(make_shared<EnvironmentalLight>( make_shared<SolidColor>(spectrum{3.0})));
+  scene.add(make_shared<PointLight>( Vec3{0, gs, -gs/2}, spectrum{2.0} ));
+  scene.add(make_shared<EnvironmentalLight>( make_shared<SolidColor>(spectrum{0.0})));
 
 
-  return make_shared<PerspectiveCamera>(Vec3(gs * 0.5, gs * .8, -gs * .4), Vec3{gs/2, 0, gs/4}, Vec3::y_axis, PI/2.0, ar);
+  return make_shared<PerspectiveCamera>(Vec3(gs * 0.5, gs * .7, -gs * .4), Vec3{gs/2, 0, gs/4}, Vec3::y_axis, PI/2.0, ar);
 }

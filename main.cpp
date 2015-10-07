@@ -66,7 +66,7 @@ int main(int argc, char** args)
 #if RENDER_ALGO == 0
   PathTracerIntegrator::Options opt;
   opt.samples_per_pixel = per_pixel;
-  opt.num_threads = 4;
+  opt.num_threads = 1;
   opt.max_depth = 10;
   PathTracerIntegrator igr(opt);
 #elif RENDER_ALGO == 1
@@ -78,7 +78,7 @@ int main(int argc, char** args)
   DirectLightingIntegrator igr(opt);
 #else
   DebugIntegrator::Options opt;
-  opt.type = DebugIntegrator::DI_TIME_INTERSECT;
+  opt.type = DebugIntegrator::DI_NORMAL;
   opt.samples_per_pixel = per_pixel;
   DebugIntegrator igr(opt);
 #endif
@@ -88,8 +88,8 @@ int main(int argc, char** args)
   scene->prepare();
   igr.render(*cam, *scene, f);
 
-  // auto mapper = make_shared<LinearToneMapper>();
-  auto mapper = make_shared<ReinhardGlobal>();
+  auto mapper = make_shared<LinearToneMapper>();
+  // auto mapper = make_shared<ReinhardGlobal>();
   //auto mapper = make_shared<ReinhardLocal>(ReinhardLocal::Options{});
   //auto mapper = make_shared<CutoffToneMapper>();
 
