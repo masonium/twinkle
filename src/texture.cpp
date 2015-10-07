@@ -17,7 +17,7 @@ Checkerboard2D::Checkerboard2D(spectrum a, spectrum b, int gsx, int gsy)
 
 spectrum Checkerboard2D::at_coord(const Vec2& uv) const
 {
-  int m = int(uv.u * grid_size_x) + int(uv.v * grid_size_y);
+  int m = std::floor(uv.u * grid_size_x) + std::floor(uv.v * grid_size_y);
   return m % 2 == 0 ? c1 : c2;
 }
 
