@@ -101,13 +101,17 @@ shared_ptr<Geometry> make_torus(Vec3 normal, scalar outer_radius, scalar inner_r
     return sqrt(a*a + b*b) - inner_radius;
   };
 
-  auto gsdf = gradient_from_sdf(sdf);
+  auto grad = [=](const Vec3& v) {
+    scalar xz = sqrt(v.x*v.x + v.z*v.z);
+    scalar f = (xz - outer_radius) / (xz + 0.0001);
+    return Vec3{v.x * f, v.y, v.z * f}.normal();
+  };
 
   const auto Rxz = outer_radius + inner_radius;
   const auto lb = Vec3{-Rxz, -inner_radius, -Rxz};
 
   return make_shared<Transformed>(
-    make_shared<ImplicitSurface>(sdf, gsdf, 1.0, bounds::AABB{lb, -lb}),
+    make_shared<ImplicitSurface>(sdf, grad, 1.0, bounds::AABB{lb, -lb}),
     Transform{Mat33::rotate_match(Vec3::y_axis, normal), Vec3::zero});
 }
 
