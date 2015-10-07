@@ -53,13 +53,13 @@ public:
   RoughColorMaterial(scalar roughness, const spectrum& color);
 };
 
-
 class MirrorMaterial : public Material
 {
 public:
   MirrorMaterial()
   {
   }
+
   spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing) const override;
   
   Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,

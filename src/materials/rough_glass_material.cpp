@@ -46,7 +46,8 @@ RoughGlassMaterial<D>::RoughGlassMaterial(scalar r, scalar ref_inside, scalar re
 }
 
 template <typename D>
-scalar RoughGlassMaterial<D>::reflectance(const Vec3& incoming, const Vec3& outgoing) const
+spectrum RoughGlassMaterial<D>::reflectance(const IntersectionView&,
+                                            const Vec3& incoming, const Vec3& outgoing) const
 {
   const auto hr = (incoming + outgoing).normal() * sign(incoming.dot(outgoing));
   const auto ht = (-incoming * refr_incoming - outgoing * refr_outgoing).normal();
@@ -70,8 +71,9 @@ scalar RoughGlassMaterial<D>::reflectance(const Vec3& incoming, const Vec3& outg
 
 template <typename D>
 
-Vec3 RoughGlassMaterial<D>::sample_bsdf(const Vec3& incoming, Sampler& sampler,
-                                          scalar& p, scalar& reflectance) const
+Vec3 RoughGlassMaterial<D>::sample_bsdf(const IntersectionView&,
+                                        const Vec3& incoming, Sampler& sampler,
+                                        scalar& p, spectrum& reflectance) const
 {
   D sample_dt{1.2 - 0.2 * sqrt(abs(incoming.z))};
 

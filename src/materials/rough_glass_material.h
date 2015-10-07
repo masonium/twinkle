@@ -32,12 +32,11 @@ public:
                      scalar ref_inside = refraction_index::CROWN_GLASS,
                      scalar ref_outside = refraction_index::AIR);
 
-  scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const override;
+  spectrum reflectance(const IntersectionView&,
+                       const Vec3& incoming, const Vec3& outgoing) const override;
 
-  Vec3 sample_bsdf(const Vec3& incoming, Sampler& sampler,
-                   scalar& p, scalar& reflectance) const override;
-
-  spectrum texture_at_point(const Intersection& isect) const override;
+  Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
+                   scalar& p, spectrum& reflectance) const override;
 
 private:
   Distribution dt;
