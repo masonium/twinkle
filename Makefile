@@ -18,7 +18,7 @@ COMMON_FLAGS = -Wall -Wextra -Wno-unused-parameter $(CXX_VERSION)
 CXXFLAGS := $(COMMON_FLAGS) -Isrc/ -Iextlib/ -ggdb
 NOTESTFLAGS := -fno-exceptions -fno-rtti
 SFLAGS =  -fsyntax-only $(CXXFLAGS)
-LFLAGS = -pthread -lm  -lUnitTest++ -L$(LIBDIR) -ltwinkle
+LFLAGS = -pthread -lm  -lUnitTest++ -L$(LIBDIR) -ltwinkle -lcpp-optparse
 
 ifeq (${CONFIG}, Debug)
 CXXFLAGS += -Og
@@ -30,17 +30,19 @@ endif
 
 -include src/Makefile
 
-OBJSTMP := $(SRCS:.cpp=.o)
-OBJS := $(OBJSTMP:src/%=$(OBJDIR)/%)
+TWINKLE_OBJSTMP := $(SRCS:.cpp=.o)
+TWINKLE_OBJS := $(TWINKLE_OBJSTMP:src/%=$(OBJDIR)/%)
 
 TEST_SRCS = $(wildcard src/tests/*.cpp)
 TEST_OBJS := $(TEST_SRCS:.cpp=.o)
 TEST_OBJS := $(TEST_OBJS:src/%=$(OBJDIR)/%)
 
+CPPPARSE_OBJS := $(OBJDIR)/cpp-optparse/OptionParser.o
+
 EXE_NAMES = twinkle test_twinkle tonemap model_check texture_check
 EXES = $(addprefix $(BINDIR)/,$(EXE_NAMES))
 
-STATIC_LIBS = $(LIBDIR)/libtwinkle.a
+STATIC_LIBS = $(LIBDIR)/libtwinkle.a $(LIBDIR)/libcpp-optparse.a
 
 all: $(EXES)
 
@@ -52,12 +54,16 @@ debug:
 cleandebug debugclean:
 	make CONFIG=Debug clean ${OPTIONS}
 
-DEPS := $(OBJS:.o=.dep)
+DEPS := $(TWINKLE_OBJS:.o=.dep)
 -include $(DEPS)
 
-VPATH = .:src:src/shapes:src/textures:src/tests
+VPATH = .:src:src/shapes:src/textures:src/tests:src/geometry:src/materials
 
-$(LIBDIR)/libtwinkle.a: $(OBJS)
+$(LIBDIR)/libcpp-optparse.a: $(CPPPARSE_OBJS)
+	@mkdir -p $(dir $@)
+	ar rcs $@ $^
+
+$(LIBDIR)/libtwinkle.a: $(TWINKLE_OBJS)
 	@mkdir -p $(dir $@)
 	ar rcs $@ $^
 
@@ -71,23 +77,33 @@ $(OBJDIR)/%.o: %.cpp
 	  sed -e 's/^ *//' -e 's/$$/:/' >> $(OBJDIR)/$*.dep
 	@rm -f $(OBJDIR)/$*.dep.tmp
 
-$(BINDIR)/twinkle: $(OBJDIR)/main.o $(LIBDIR)/libtwinkle.a
+$(OBJDIR)/%.o: extlib/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
+	$(CXX) -MM $(CXXFLAGS) $< > $(OBJDIR)/$*.dep
+	@mv -f $(OBJDIR)/$*.dep $(OBJDIR)/$*.dep.tmp
+	@sed -e 's|.*:|$(OBJDIR)/$*.o:|' < $(OBJDIR)/$*.dep.tmp > $(OBJDIR)/$*.dep
+	@sed -e 's/.*://' -e 's/\\$$//' < $(OBJDIR)/$*.dep.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> $(OBJDIR)/$*.dep
+	@rm -f $(OBJDIR)/$*.dep.tmp
+
+$(BINDIR)/twinkle: $(OBJDIR)/main.o $(STATIC_LIBS)
 	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $< $(CXXFLAGS) $(NOTESTFLAGS) $(LFLAGS)
 
-$(BINDIR)/tonemap: $(OBJDIR)/tonemap_main.o $(LIBDIR)/libtwinkle.a
+$(BINDIR)/tonemap: $(OBJDIR)/tonemap_main.o $(STATIC_LIBS)
 	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $< $(CXXFLAGS) $(NOTESTFLAGS) $(LFLAGS)
 
-$(BINDIR)/test_twinkle: $(OBJDIR)/test.o $(TEST_OBJS) $(LIBDIR)/libtwinkle.a
+$(BINDIR)/test_twinkle: $(OBJDIR)/test.o $(TEST_OBJS) $(STATIC_LIBS)
 	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LFLAGS)
 
-$(BINDIR)/model_check: $(OBJDIR)/model_check.o $(LIBDIR)/libtwinkle.a
+$(BINDIR)/model_check: $(OBJDIR)/model_check.o $(STATIC_LIBS)
 	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $< $(CXXFLAGS) $(NOTESTFLAGS) $(LFLAGS)
 
-$(BINDIR)/texture_check: $(OBJDIR)/texture_check.o $(LIBDIR)/libtwinkle.a
+$(BINDIR)/texture_check: $(OBJDIR)/texture_check.o $(STATIC_LIBS)
 	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $< $(CXXFLAGS) $(NOTESTFLAGS) $(LFLAGS)
 
