@@ -54,7 +54,7 @@ int main(int argc, char** args)
   parser.add_option("-h", "--height").action("store").type("int").set_default(300);
   parser.add_option("-t", "--threads").action("store").type("int").set_default(0);
   parser.add_option("-s", "--samples").action("store").type("int").set_default(1);
-  parser.add_option("-d", "--debug-type").action("store").choices(debug_map_keys).set_default("normal");
+  parser.add_option("-d", "--debug_type").action("store").choices(debug_map_keys).set_default("normal");
   parser.add_option("-i", "--integrator").action("store").choices(std::vector<string>({"path", "direct", "debug"})).set_default("path");
   parser.add_option("-m", "--mapper").action("store").choices(std::vector<string>({"linear", "cutoff"})).set_default("linear");
   parser.add_option("--kd").action("store_const").dest("scene_container").set_const("kd");
@@ -108,7 +108,8 @@ int main(int argc, char** args)
   else // if (igr_type == "debug")
   {
     DebugIntegrator::Options opt;
-    opt.type = DebugIntegrator::Type::DI_TIME_INTERSECT;//debug_map[options["debug"]];
+    string dt = options.get("debug_type");
+    opt.type = debug_map.at(dt);
     opt.samples_per_pixel = per_pixel;
     igr = make_unique<DebugIntegrator>(opt);
   }
@@ -118,13 +119,14 @@ int main(int argc, char** args)
   igr->render(*cam, *scene, f);
 
   shared_ptr<ToneMapper> mapper;
-  if (options["mapper"] == "linear")
+  string map_type = options.get("mapper");
+  if (map_type == "cutoff")
   {
-    mapper = make_shared<LinearToneMapper>();
-  }
-  else if (options["mapper"] == "cutoff")
-  {      
     mapper = make_shared<CutoffToneMapper>();
+  }
+  else // if (options["mapper"] == "linear")
+  {      
+    mapper = make_shared<LinearToneMapper>();
   }
 
   f.render_to_ppm(cout, *mapper);

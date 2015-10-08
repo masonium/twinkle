@@ -10,6 +10,7 @@ using std::make_pair;
 
 const int NUM_DISTINCT_ID_COLORS = 20;
 spectrum color_list[NUM_DISTINCT_ID_COLORS];
+static std::mutex color_mutex;
 
 DebugIntegrator::DebugIntegrator(const DebugIntegrator::Options& opt_) : opt(opt_)
 {
@@ -19,7 +20,7 @@ DebugIntegrator::DebugIntegrator(const DebugIntegrator::Options& opt_) : opt(opt
 
 void DebugIntegrator::render(const Camera& cam, const Scene& scene, Film& film)
 {
-  grid_render(*this, cam, scene, film, 1, 4, opt.samples_per_pixel);
+  grid_render(*this, cam, scene, film, 1, 1, opt.samples_per_pixel);
 }
 
 void DebugIntegrator::render_rect(const Camera& cam, const Scene& scene, Film& film,
@@ -80,8 +81,11 @@ spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene,
     
     auto isect = isect_opt.get();
     auto shape = isect.get_shape_for_id();
-    if (scm.find(shape) == scm.end())
-      scm.insert(make_pair(shape, color_list[scm.size() % NUM_DISTINCT_ID_COLORS]));
+    {
+      std::lock_guard<std::mutex> lg(color_mutex);
+      if (scm.find(shape) == scm.end())
+        scm.insert(make_pair(shape, color_list[scm.size() % NUM_DISTINCT_ID_COLORS]));
+    }
 
     return scm[shape];
   }
