@@ -18,6 +18,7 @@
 #include "scenes/basic_scenes.h"
 #include "reinhard.h"
 #include "cpp-optparse/OptionParser.h"
+#include "util/timer.h"
 
 using std::cerr;
 using std::endl;
@@ -116,7 +117,15 @@ int main(int argc, char** args)
 
   scene->prepare();
 
-  igr->render(*cam, *scene, f);
+  scalar render_time = 0;
+  {
+    Timer tm;
+    igr->render(*cam, *scene, f);
+    render_time = tm.since();
+  }
+
+  //if (options.get("time").as<bool>())
+  cerr << "Render Time: " << format_duration(render_time) << endl;
 
   shared_ptr<ToneMapper> mapper;
   string map_type = options.get("mapper");

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <string>
 #include "twinkle.h"
 
 using std::chrono::high_resolution_clock;
@@ -14,7 +15,7 @@ public:
   {
   }
 
-  scalar since() const
+  double since() const
   {
     return duration_cast<nanoseconds>(high_resolution_clock::now() - now).count() * 1e-9;
   }
@@ -22,3 +23,5 @@ public:
 private:
   const decltype(high_resolution_clock::now()) now;
 };
+
+std::string format_duration(double seconds);

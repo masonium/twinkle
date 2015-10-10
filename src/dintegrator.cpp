@@ -59,7 +59,7 @@ spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene,
   {
     Timer timer;
     scene.intersect(ray);
-    return spectrum{timer.since()};
+    return spectrum{static_cast<scalar>(timer.since())};
   }
 
   auto isect_opt = scene.intersect(ray);
