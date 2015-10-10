@@ -368,8 +368,14 @@ bounds::Sphere RawModel::bounding_sphere() const
   return bounds::Sphere(mid, radius);
 }
 
-void RawModel::invert_normals()
+void RawModel::flip_tris()
 {
+  for (auto& tri: tris_)
+  {
+    std::swap(tri.v[1], tri.v[2]);
+  }
+
+  // flipping the triangles inverts the normals
   for (auto& vert: verts_)
   {
     vert.normal = -vert.normal;

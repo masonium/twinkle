@@ -5,6 +5,7 @@
 #include "geometry.h"
 #include "vec3.h"
 #include "vec2.h"
+
 #include "bounds.h"
 
 using std::string;
@@ -50,7 +51,10 @@ public:
   RawModelLoadStatus load_stl_model(string filename);
 
   RawModel merge_vertices(scalar eps = EPSILON) const;
-  
+
+  /** 
+   * Rescale (and translate) the mode to fit inside the specified bounding object.
+   */
   void rescale(const bounds::AABB& new_bb, bool preserve_aspect_ratio = true);
   void rescale(const bounds::Sphere& new_bs);
 
@@ -59,10 +63,13 @@ public:
    */
   void translate_to_origin();
 
+  /*
+   * Flip the order of the triangles.
+   */
+  void flip_tris();
+
   bounds::AABB bounding_box( ) const;
   bounds::Sphere bounding_sphere( ) const;
-
-  void invert_normals();
 
   const vector<Vertex>& verts() const & { return verts_; }
   vector<Vertex>&& verts() && { return std::move(verts_); }
