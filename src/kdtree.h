@@ -8,7 +8,7 @@
 #include "geometry.h"
 #include "kdtree_util.h"
 
-using std::shared_ptr;
+using std::unique_ptr;
 using std::vector;
 using std::pair;
 using std::stack;
@@ -33,12 +33,11 @@ namespace kd
   {
   public:
     using node_type = Node<T>;
-    using element_type = T;
-    using const_element_type = typename std::remove_const<T>::type;
+    using element_type = T const*;
 
-    Tree(const vector<T>& objects, const TreeOptions& opt);
+    Tree(const vector<element_type>& objects, const TreeOptions& opt);
 
-    scalar_fp intersect(const Ray& ray, const scalar_fp max_t, T& geom, SubGeo& subgeo) const;
+    scalar_fp intersect(const Ray& ray, const scalar_fp max_t, element_type& geom, SubGeo& subgeo) const;
 
     auto get_bounding_box() const { return bound; }
 
@@ -57,7 +56,7 @@ namespace kd
     }
 
   private:
-    shared_ptr<Node<T>> root;
+    unique_ptr<Node<T>> root;
     bounds::AABB bound;
     uint _height;
   };
@@ -68,10 +67,10 @@ namespace kd
   public:
     ~Node();
 
-    using object_type = T;
+    using element_type = T const*;
 
   private:
-    Node(const vector<T>& objects, const vector<bounds::AABB>& boxes,
+    Node(const vector<element_type>& objects, const vector<bounds::AABB>& boxes,
          const bounds::AABB& total_bound,
          const TreeOptions& opt);
 
@@ -97,8 +96,8 @@ namespace kd
 
     static pair<scalar, scalar> child_areas(const bounds::AABB& bound, const split_plane& sp);
 
-    void make_leaf(const vector<T>& objects);
-    void make_split(const vector<T>& objects, const vector<bounds::AABB>& boxes,
+    void make_leaf(const vector<element_type>& objects);
+    void make_split(const vector<element_type>& objects, const vector<bounds::AABB>& boxes,
                     const bounds::AABB& bound, const split_plane& plane,
                     const TreeOptions& opt);
 
@@ -109,7 +108,7 @@ namespace kd
       return left == nullptr && right == nullptr;
     }
 
-    scalar_fp leaf_intersect(const Ray& ray, scalar_fp max_t, T& obj, SubGeo& geo) const;
+    scalar_fp leaf_intersect(const Ray& ray, scalar_fp max_t, element_type& obj, SubGeo& geo) const;
 
     /**
      * statistic methods
@@ -137,13 +136,12 @@ namespace kd
      * friends
      */
     friend class Tree<T>;
-    friend class shared_ptr<Node<T>>;
+    friend class unique_ptr<Node<T>>;
 
     /*
      * member fields
      */
-
-    vector<T> shapes;
+    vector<element_type> shapes;
     Node *left, *right;
     split_plane plane;
   };

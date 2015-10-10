@@ -2,7 +2,7 @@
 #include "kdtree.h"
 
 using std::unique_ptr;
-using tri_tree = kd::Tree<MeshTri const*>;
+using tri_tree = kd::Tree<MeshTri>;
 
 class KDMesh : public Mesh
 {

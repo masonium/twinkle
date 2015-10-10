@@ -41,7 +41,7 @@ private:
   vector<shared_ptr<const Shape>> shape_vector_;
 
   vector<shared_ptr<const Shape>> unbounded_shapes_;
-  unique_ptr<kd::Tree<shared_ptr<const Shape>>> shape_tree_;
+  unique_ptr<kd::Tree<Shape>> shape_tree_;
 
   vector<shared_ptr<const Light>> lights_;
   shared_ptr<const EnvironmentalLight> env_light_;

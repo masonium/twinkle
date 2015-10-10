@@ -29,17 +29,15 @@ void KDScene::add(shared_ptr<const EnvironmentalLight> env_light_)
 
 void KDScene::prepare()
 {
-  decltype(shape_vector_) bounded_shapes;
+  vector<const Shape*> bounded_shapes;
   for (const auto& shape: shape_vector_)
   {
     if (shape->is_bounded())
-      bounded_shapes.push_back(shape);
+      bounded_shapes.push_back(shape.get());
     else
       unbounded_shapes_.push_back(shape);
   }
-  shape_tree_ = make_unique<decltype(shape_tree_)::element_type>(bounded_shapes, kd::TreeOptions());
-
-  shape_vector_.clear();
+  shape_tree_ = make_unique<kd::Tree<Shape>>(bounded_shapes, kd::TreeOptions());
 }
 
 const vector<shared_ptr<const Light>>& KDScene::lights() const
@@ -70,7 +68,7 @@ optional<Intersection> KDScene::intersect(const Ray& ray) const
    */
 
   SubGeo best_geom = SUBGEO_NONE;
-  shared_ptr<const Shape> best_shape{nullptr};
+  Shape const* best_shape{nullptr};
 
   auto best_t = sfp_none;
 
@@ -81,14 +79,14 @@ optional<Intersection> KDScene::intersect(const Ray& ray) const
     if (t < best_t)
     {
       best_t = t;
-      best_shape = s;
+      best_shape = s.get();
       best_geom = g;
     }
   }
 
   {
-  SubGeo geom = SUBGEO_NONE;
-  shared_ptr<const Shape> shape{nullptr};
+    SubGeo geom = SUBGEO_NONE;
+    Shape const* shape{nullptr};
 
     auto t = shape_tree_->intersect(ray, best_t, shape, geom);
     if (t < best_t)
@@ -100,7 +98,7 @@ optional<Intersection> KDScene::intersect(const Ray& ray) const
 
   }
   if (best_t.is())
-    return Intersection(best_shape.get(), best_geom, ray, best_t.get());
+    return Intersection(best_shape, best_geom, ray, best_t.get());
 
   return none_tag;
 }

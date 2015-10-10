@@ -7,7 +7,7 @@
 #include "math_util.h"
 
 using std::max_element;
-using std::make_shared;
+using std::make_unique;
 using std::distance;
 using std::count_if;
 using std::tie;
@@ -22,7 +22,7 @@ namespace kd
 {
 
   template <typename T>
-  Node<T>::Node(const vector<T>& objects,
+  Node<T>::Node(const vector<element_type>& objects,
                 const vector<bounds::AABB>& boxes,
                 const bounds::AABB& total_bound, const TreeOptions& opt)
     : left(nullptr), right(nullptr)
@@ -50,7 +50,10 @@ namespace kd
       if (num_boxes > opt.hybrid_one_axis_limit && ai != longest_axis)
         continue;
 
-      auto x = num_boxes <= opt.exact_evaluation_limit ? best_plane_exhaustive(ai, boxes, total_bound, sa, opt) : best_plane_adaptive(ai, boxes, total_bound, sa, opt);
+      auto x = num_boxes <= opt.exact_evaluation_limit ?
+        best_plane_exhaustive(ai, boxes, total_bound, sa, opt) :
+        best_plane_adaptive(ai, boxes, total_bound, sa, opt);
+
       best_split = min(x, best_split);
     }
 
@@ -284,18 +287,18 @@ namespace kd
    * copy the object references into the leaf.
    */
   template <typename T>
-  void Node<T>::make_leaf(const vector<T>& objects)
+  void Node<T>::make_leaf(const vector<element_type>& objects)
   {
     shapes.resize(objects.size());
     std::copy(objects.begin(), objects.end(), shapes.begin());
   }
 
   template <typename T>
-  void Node<T>::make_split(const vector<T>& objects, const vector<bounds::AABB>& boxes,
+  void Node<T>::make_split(const vector<element_type>& objects, const vector<bounds::AABB>& boxes,
                            const bounds::AABB& bound, const split_plane& sp,
                            const TreeOptions& opt)
   {
-    vector<T> left_objects, right_objects;
+    vector<element_type> left_objects, right_objects;
     vector<bounds::AABB> left_boxes, right_boxes;
 
     this->plane = sp;
@@ -342,10 +345,10 @@ namespace kd
 
 
   template <typename T>
-  scalar_fp Node<T>::leaf_intersect(const Ray& ray, scalar_fp max_t, T& obj, SubGeo& geo) const
+  scalar_fp Node<T>::leaf_intersect(const Ray& ray, scalar_fp max_t, element_type& obj, SubGeo& geo) const
   {
     scalar_fp best_t = max_t;
-    T best_obj{nullptr};
+    element_type best_obj{nullptr};
     SubGeo best_geo = 0, leaf_geo = 0;
 
     for (const auto& shape: shapes)
@@ -380,7 +383,7 @@ namespace kd
 
 ////////////////////////////////////////////////////////////////////////////////
   template<typename T>
-  Tree<T>::Tree(const vector<T>& objects, const TreeOptions& opt) :
+  Tree<T>::Tree(const vector<element_type>& objects, const TreeOptions& opt) :
     root(nullptr), bound(Vec3::zero, Vec3::zero), _height(0)
   {
     if (!objects.empty())
@@ -391,13 +394,13 @@ namespace kd
 
       bound = accumulate(boxes.begin() + 1, boxes.end(), boxes[0], bounds::AABB::box_union);
 
-      root = shared_ptr<node_type>(new node_type(objects, boxes, bound, opt));
+      root = unique_ptr<node_type>(new node_type(objects, boxes, bound, opt));
       _height = root->height();
     }
   }
 
   template <typename T>
-  scalar_fp Tree<T>::intersect(const Ray& ray, const scalar_fp max_t, T& obj, SubGeo& geo) const
+  scalar_fp Tree<T>::intersect(const Ray& ray, const scalar_fp max_t, element_type& obj, SubGeo& geo) const
   {
     scalar t0, t1;
     if (!bound.intersect(ray, t0, t1))
