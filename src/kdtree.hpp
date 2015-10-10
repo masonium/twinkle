@@ -3,6 +3,7 @@
 #include <memory>
 #include <cassert>
 #include <stack>
+#include <numeric>
 #include "kdtree.h"
 #include "math_util.h"
 
@@ -22,15 +23,16 @@ namespace kd
 {
 
   template <typename T>
-  Node<T>::Node(const vector<element_type>& objects,
+  Node<T>::Node(Tree<T>& owner,
+                const vector<element_index>& objects,
                 const vector<bounds::AABB>& boxes,
                 const bounds::AABB& total_bound, const TreeOptions& opt)
-    : left(nullptr), right(nullptr)
+    : num_objects(0), offset(0), left(nullptr), right(nullptr)
   {
     const auto num_boxes = boxes.size();
     if (num_boxes <= opt.max_elements_per_leaf)
     {
-      make_leaf(objects);
+      make_leaf(owner, objects);
       return;
     }
 
@@ -65,13 +67,13 @@ namespace kd
       // std::cerr << "cost of best split " << best_split.second << " = "
       // << best_split.first << " beats no split cost of "
       //           << no_split_cost << std::endl;
-      make_split(objects, boxes, total_bound, best_split.second, opt);
+      make_split(owner, objects, boxes, total_bound, best_split.second, opt);
     }
     else
     {
       // cout << "cost " << best_split.first << " exceeds number of boxes "
       //      << num_boxes << "\n";
-      make_leaf(objects);
+      make_leaf(owner, objects);
     }
   }
 
@@ -284,21 +286,22 @@ namespace kd
   }
 
   /*
-   * copy the object references into the leaf.
+   * Store the indices in the owning tree
    */
   template <typename T>
-  void Node<T>::make_leaf(const vector<element_type>& objects)
+  void Node<T>::make_leaf(Tree<T>& owner, const vector<element_index>& objects)
   {
-    shapes.resize(objects.size());
-    std::copy(objects.begin(), objects.end(), shapes.begin());
+    num_objects = objects.size();
+    offset = owner.add_node_indices(objects);
   }
 
   template <typename T>
-  void Node<T>::make_split(const vector<element_type>& objects, const vector<bounds::AABB>& boxes,
+  void Node<T>::make_split(Tree<T>& owner,
+                           const vector<element_index>& objects, const vector<bounds::AABB>& boxes,
                            const bounds::AABB& bound, const split_plane& sp,
                            const TreeOptions& opt)
   {
-    vector<element_type> left_objects, right_objects;
+    vector<element_index> left_objects, right_objects;
     vector<bounds::AABB> left_boxes, right_boxes;
 
     this->plane = sp;
@@ -332,53 +335,18 @@ namespace kd
       }
     }
 
-    // std::cerr << "Making split on " << sp << " (" << bound.min()[sp.axis] << ", " << bound.max()[sp.axis] << "): " << boxes.size() << ", "
-    //           << left_boxes.size() << ", " << right_boxes.size() << std::endl;
-
-    if (!left_objects.empty())
-      left = new Node(left_objects, left_boxes, left_bound, opt);
-
-    if (!right_objects.empty())
-      right = new Node(right_objects, right_boxes, right_bound, opt);
-  }
-
-
-
-  template <typename T>
-  scalar_fp Node<T>::leaf_intersect(const Ray& ray, scalar_fp max_t, element_type& obj, SubGeo& geo) const
-  {
-    scalar_fp best_t = max_t;
-    element_type best_obj{nullptr};
-    SubGeo best_geo = 0, leaf_geo = 0;
-
-    for (const auto& shape: shapes)
-    {
-      auto t = shape->intersect(ray, best_t, leaf_geo);
-      if (t < best_t)
-      {
-        best_t = t;
-        best_obj = shape;
-        best_geo = leaf_geo;
-      }
-    }
-
-    if (best_obj != nullptr)
-    {
-      obj = best_obj;
-      geo = best_geo;
-      return best_t;
-    }
-
-    return none_tag;
+    left = new Node(owner, left_objects, left_boxes, left_bound, opt);
+    right = new Node(owner, right_objects, right_boxes, right_bound, opt);
   }
 
   template <typename T>
   Node<T>::~Node()
   {
     if (left)
+    {
       delete left;
-    if (right)
       delete right;
+    }
   }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -392,11 +360,24 @@ namespace kd
       transform(objects.begin(), objects.end(), boxes.begin(),
                 [](const auto& a) { return a->get_bounding_box(); });
 
+      auto indices = vector<obj_index>(objects.size());
+      std::iota(indices.begin(), indices.end(), 0);
+
+      elements = objects;
+
       bound = accumulate(boxes.begin() + 1, boxes.end(), boxes[0], bounds::AABB::box_union);
 
-      root = unique_ptr<node_type>(new node_type(objects, boxes, bound, opt));
+      root = unique_ptr<node_type>(new node_type(*this, indices, boxes, bound, opt));
       _height = root->height();
     }
+  }
+
+  template <typename T>
+  auto Tree<T>::add_node_indices(const vector<obj_index>& node_indices) -> element_offset_t
+  {
+    auto offset = indices.size();
+    std::copy(node_indices.begin(), node_indices.end(), std::inserter(indices, indices.end()));
+    return offset;
   }
 
   template <typename T>
@@ -437,7 +418,7 @@ namespace kd
        **/
       else if (active->is_leaf())
       {
-        auto best_t = active->leaf_intersect(ray, max_t, obj, geo);
+        auto best_t = leaf_intersect(*active, ray, max_t, obj, geo);
         if (best_t.is())
           return best_t;
       }
@@ -479,5 +460,36 @@ namespace kd
     }
 
     return sfp_none;
+  }
+
+  template <typename T>
+  scalar_fp Tree<T>::leaf_intersect(const Node<T>& leaf,
+                                    const Ray& ray, scalar_fp max_t, element_type& obj, SubGeo& geo) const
+  {
+    scalar_fp best_t = max_t;
+    element_type best_obj{nullptr};
+    SubGeo best_geo = 0, leaf_geo = 0;
+
+    const int end = leaf.offset + leaf.num_objects;
+    for (int i = leaf.offset; i < end; ++i)
+    {
+      const auto shape = elements[indices[i]];
+      auto t = shape->intersect(ray, best_t, leaf_geo);
+      if (t < best_t)
+      {
+        best_t = t;
+        best_obj = shape;
+        best_geo = leaf_geo;
+      }
+    }
+
+    if (best_obj != nullptr)
+    {
+      obj = best_obj;
+      geo = best_geo;
+      return best_t;
+    }
+
+    return none_tag;
   }
 }

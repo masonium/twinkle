@@ -34,6 +34,8 @@ namespace kd
   public:
     using node_type = Node<T>;
     using element_type = T const*;
+    using obj_index = uint32_t;
+    using element_offset_t = uint32_t;
 
     Tree(const vector<element_type>& objects, const TreeOptions& opt);
 
@@ -43,22 +45,32 @@ namespace kd
 
     int height() const
     {
-      return root ? root->heigh() : 0;
+      return _height;
     }
 
     int count_leaves() const
     {
-      return root ? root->count_leaves() : 0;
+      return root->count_leaves();
     }
     int count_objs() const
     {
-      return root ? root->count_objs() : 0;
+      return root->count_objs();
     }
 
   private:
+    vector<element_type> elements;
+    vector<obj_index> indices;
+
+    scalar_fp leaf_intersect(const Node<T>& leaf,
+                             const Ray& ray, scalar_fp max_t, element_type& obj, SubGeo& geo) const;
+
+    element_offset_t add_node_indices(const vector<obj_index>&);
+
+    friend class Node<T>;
+
     unique_ptr<Node<T>> root;
     bounds::AABB bound;
-    uint _height;
+    size_t  _height;
   };
 
   template <typename T>
@@ -67,10 +79,13 @@ namespace kd
   public:
     ~Node();
 
-    using element_type = T const*;
+    using element_index = uint32_t;
+    using tree_t = Tree<T>;
 
   private:
-    Node(const vector<element_type>& objects, const vector<bounds::AABB>& boxes,
+    Node(Tree<T>& _parent,
+         const vector<element_index>& objects,
+         const vector<bounds::AABB>& boxes,
          const bounds::AABB& total_bound,
          const TreeOptions& opt);
 
@@ -96,8 +111,9 @@ namespace kd
 
     static pair<scalar, scalar> child_areas(const bounds::AABB& bound, const split_plane& sp);
 
-    void make_leaf(const vector<element_type>& objects);
-    void make_split(const vector<element_type>& objects, const vector<bounds::AABB>& boxes,
+    void make_leaf(Tree<T>&, const vector<element_index>& objects);
+    void make_split(Tree<T>&, const vector<element_index>& objects,
+                    const vector<bounds::AABB>& boxes,
                     const bounds::AABB& bound, const split_plane& plane,
                     const TreeOptions& opt);
 
@@ -105,31 +121,29 @@ namespace kd
      * intersection methods
      */
     bool is_leaf() const {
-      return left == nullptr && right == nullptr;
+      return left == nullptr;
     }
-
-    scalar_fp leaf_intersect(const Ray& ray, scalar_fp max_t, element_type& obj, SubGeo& geo) const;
 
     /**
      * statistic methods
      */
-    int height() const
+    size_t height() const
     {
-      return 1 + (left ? left->height() : 0) + (right ? right->height() : 0);
+      return 1 + (left ? std::max(left->height(), right->height()) : 0);
     }
 
-    int count_leaves() const
+    size_t count_leaves() const
     {
-      if (!(left || right))
+      if (!left)
         return 1;
-      return (left ? left->count_leaves() : 0) + (right ? right->count_leaves() : 0);
+      return left->count_leaves() + right->count_leaves();
     }
 
-    int count_objs() const
+    size_t count_objs() const
     {
-      if (!(left || right))
-        return shapes.size();
-      return (left ? left->count_objs() : 0) + (right ? right->count_objs() : 0);
+      if (!left)
+        return num_objects;
+      return left->count_objs() + right->count_objs();
     }
 
     /**
@@ -139,9 +153,14 @@ namespace kd
     friend class unique_ptr<Node<T>>;
 
     /*
-     * member fields
+     * Leaf member fields
      */
-    vector<element_type> shapes;
+    uint32_t num_objects;
+    uint32_t offset;
+
+    /*
+     * Inner node member fields
+     */
     Node *left, *right;
     split_plane plane;
   };
