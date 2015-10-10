@@ -3,6 +3,7 @@
 #include <cstring>
 #include <sstream>
 #include <unordered_map>
+#include <unordered_set>
 #include <functional>
 #include <algorithm>
 #include <limits>
@@ -12,9 +13,11 @@
 using std::transform;
 using std::ifstream;
 using std::istringstream;
+using std::string;
 using std::vector;
 using std::cerr;
 using std::unordered_map;
+using std::unordered_set;
 using std::make_pair;
 using std::pair;
 
@@ -79,6 +82,7 @@ RawModelLoadStatus RawModel::load_raw_model(const vector<Vertex>& verts,
 
 RawModelLoadStatus RawModel::load_obj_model(string filename)
 {
+  const unordered_set<string> ignore_lines({"g", "usemtl", "s", "mtllib"});
   RawModelLoadStatus mls;
   mls.success = false;
 
@@ -156,6 +160,10 @@ RawModelLoadStatus RawModel::load_obj_model(string filename)
 	tri_ref tri{sidx, sidx+i+1, sidx+i+2};
 	tri_list.emplace_back(tri);
       }
+    }
+    else if (ignore_lines.find(line_type) != ignore_lines.end())
+    {
+      continue;
     }
     else if (line_type == "")
     {
