@@ -26,8 +26,8 @@ namespace kd
                 const vector<element_index>& objects,
                 const vector<bounds::AABB>& boxes,
                 const bounds::AABB& total_bound, const TreeOptions& opt)
-    : is_leaf_(true)
   {
+    static_assert( sizeof(*this) == 8, "kd::Node is incorrect size" );
     const auto num_boxes = boxes.size();
     if (num_boxes <= opt.max_elements_per_leaf)
     {
@@ -292,7 +292,7 @@ namespace kd
   {
     leaf.num_objects = objects.size();
     leaf.offset = owner.add_node_indices(objects);
-    is_leaf_ = true;
+    leaf.split = NONE;
   }
 
   template <typename T>
@@ -304,7 +304,8 @@ namespace kd
     vector<element_index> left_objects, right_objects;
     vector<bounds::AABB> left_boxes, right_boxes;
 
-    this->inner.plane = sp;
+    this->inner.plane_split = sp.split;
+    this->inner.plane_axis = sp.axis;
 
     auto left_bound = bound, right_bound = bound;
     left_bound.max()[sp.axis] = sp.split;
@@ -335,19 +336,15 @@ namespace kd
       }
     }
 
-    inner.left = new Node(owner, left_objects, left_boxes, left_bound, opt);
-    inner.right = new Node(owner, right_objects, right_boxes, right_bound, opt);
-    is_leaf_ = false;
+    Node left(owner, left_objects, left_boxes, left_bound, opt);
+    Node right(owner, right_objects, right_boxes, right_bound, opt);
+
+    inner.left_offset = owner.add_nodes(left, right);
   }
 
   template <typename T>
   Node<T>::~Node()
   {
-    if (!is_leaf_)
-    {
-      delete inner.left;
-      delete inner.right;
-    }
   }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -369,8 +366,17 @@ namespace kd
       bound = accumulate(boxes.begin() + 1, boxes.end(), boxes[0], bounds::AABB::box_union);
 
       root = unique_ptr<node_type>(new node_type(*this, indices, boxes, bound, opt));
-      _height = root->height();
+      _height = root->height(*this);
     }
+  }
+
+  template <typename T>
+  uint Tree<T>::add_nodes(const Node<T>& left, const Node<T>& right)
+  {
+    size_t offset = node_storage.size();
+    node_storage.push_back(left);
+    node_storage.push_back(right);
+    return offset;
   }
 
   template <typename T>
@@ -428,12 +434,11 @@ namespace kd
        * push onto the stack.
        */
       else {
-        scalar t_split = (active->plane().split - ray.position[active->plane().axis])
-          * ray.inv_direction[active->plane().axis];
-        const Node<T> *first = active->left(), *second = active->right();
-        if (ray.direction[active->plane().axis] < 0)
+        scalar t_split = (active->plane_split() - ray.position[active->plane_axis()])
+          * ray.inv_direction[active->plane_axis()];
+        const Node<T> *first = get_node(active->left_offset()), *second = get_node(active->right_offset());
+        if (ray.direction[active->plane_axis()] < 0)
           std::swap(first, second);
-
 
         if (t0 < t_split && t_split < t1)
         {

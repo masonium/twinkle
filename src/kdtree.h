@@ -50,11 +50,11 @@ namespace kd
 
     int count_leaves() const
     {
-      return root->count_leaves();
+      return root->count_leaves(*this);
     }
     int count_objs() const
     {
-      return root->count_objs();
+      return root->count_objs(*this);
     }
 
   private:
@@ -66,9 +66,16 @@ namespace kd
 
     element_offset_t add_node_indices(const vector<obj_index>&);
 
+    uint add_nodes(const node_type&, const node_type&);
+    const node_type* get_node(int offset) const { return &node_storage[offset]; }
+    node_type* get_node(int offset) { return &node_storage[offset]; }
+
     friend class Node<T>;
 
     unique_ptr<Node<T>> root;
+
+    vector<Node<T>> node_storage;
+
     bounds::AABB bound;
     size_t  _height;
   };
@@ -77,18 +84,21 @@ namespace kd
   class Node
   {
   public:
+    Node() { }
     ~Node();
 
     using element_index = uint32_t;
     using tree_t = Tree<T>;
 
-    const split_plane& plane() const { return inner.plane; };
-    const Node* left() const { return inner.left; };
-    const Node* right() const { return inner.right; };
+    float plane_split() const { return inner.plane_split; };
+    int plane_axis() const { return inner.plane_axis; }
+    uint left_offset() const { return inner.left_offset; };
+    uint right_offset() const { return inner.left_offset + 1; };
     uint32_t num_objects() const { return leaf.num_objects; };
     uint32_t offset() const { return leaf.offset; };
 
   private:
+
     Node(Tree<T>& _parent,
          const vector<element_index>& objects,
          const vector<bounds::AABB>& boxes,
@@ -127,29 +137,31 @@ namespace kd
      * intersection methods
      */
     bool is_leaf() const {
-      return is_leaf_;
+      return leaf.split == NONE;
     }
 
     /**
      * statistic methods
      */
-    size_t height() const
+    size_t height(const Tree<T>& owner) const
     {
-      return 1 + (!is_leaf_ ? std::max(inner.left->height(), inner.right->height()) : 0);
+      return 1 + (!is_leaf() ? std::max(owner.get_node(left_offset())->height(owner),
+                                        owner.get_node(right_offset())->height(owner)) : 0);
     }
 
-    size_t count_leaves() const
+    size_t count_leaves(const Tree<T>& owner) const
     {
-      if (is_leaf_)
+      if (is_leaf())
         return 1;
-      return inner.left->count_leaves() + inner.right->count_leaves();
+      return owner.get_node(left_offset())->count_leaves(owner) +
+        owner.get_node(right_offset())->count_leaves(owner);
     }
 
-    size_t count_objs() const
+    size_t count_objs(const Tree<T>& owner) const
     {
-      if (is_leaf_)
+      if (is_leaf())
         return leaf.num_objects;
-      return inner.left->count_objs() + inner.right->count_objs();
+      return owner.get_node(left_offset())->count_objs(owner) + owner.get_node(right_offset())->count_objs(owner);
     }
 
     /**
@@ -160,14 +172,16 @@ namespace kd
 
     struct leaf_t
     {
-      uint32_t num_objects;
-      uint32_t offset;
+      uint offset : 32;
+      uint num_objects : 30;
+      uint split : 2;
     };
 
     struct inner_t
     {
-      Node *left, *right;
-      split_plane plane;
+      float plane_split;
+      uint left_offset: 30;
+      uint plane_axis: 2;
     };
 
     union
@@ -175,7 +189,6 @@ namespace kd
       leaf_t leaf;
       inner_t inner;
     };
-    bool is_leaf_;
 
     /*
      * Leaf member fields
