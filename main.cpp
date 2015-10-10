@@ -85,7 +85,7 @@ int main(int argc, char** args)
   else
     scene = make_shared<BasicScene>();
 
-  auto cam = model_scene(*scene, scalar(WIDTH)/scalar(HEIGHT), false);
+  auto cam = model_scene(*scene, scalar(WIDTH)/scalar(HEIGHT), "assets/models/cessna.obj", false);
 
   auto bf = make_shared<BoxFilter>();
   Film f(WIDTH, HEIGHT, bf);

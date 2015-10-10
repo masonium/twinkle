@@ -114,12 +114,13 @@ shared_ptr<Camera> many_sphere_scene(Scene& scene, scalar ar, int angle)
     Vec3::zero, Vec3::y_axis, PI/2, ar);
 }
 
-shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio, bool invert)
+shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio,
+                               const string& model_filename, bool invert)
 {
   RawModel m;
-  if (!m.load_obj_model("assets/models/tak-cube.obj").success)
+  if (!m.load_obj_model(model_filename).success)
   {
-    cerr << "could not load model." << endl;
+    cerr << "could not load model." << model_filename << endl;
     exit(1);
   }
   m.translate_to_origin();
