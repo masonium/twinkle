@@ -82,6 +82,12 @@ namespace kd
     using element_index = uint32_t;
     using tree_t = Tree<T>;
 
+    const split_plane& plane() const { return inner.plane; };
+    const Node* left() const { return inner.left; };
+    const Node* right() const { return inner.right; };
+    uint32_t num_objects() const { return leaf.num_objects; };
+    uint32_t offset() const { return leaf.offset; };
+
   private:
     Node(Tree<T>& _parent,
          const vector<element_index>& objects,
@@ -121,7 +127,7 @@ namespace kd
      * intersection methods
      */
     bool is_leaf() const {
-      return left == nullptr;
+      return is_leaf_;
     }
 
     /**
@@ -129,21 +135,21 @@ namespace kd
      */
     size_t height() const
     {
-      return 1 + (left ? std::max(left->height(), right->height()) : 0);
+      return 1 + (!is_leaf_ ? std::max(inner.left->height(), inner.right->height()) : 0);
     }
 
     size_t count_leaves() const
     {
-      if (!left)
+      if (is_leaf_)
         return 1;
-      return left->count_leaves() + right->count_leaves();
+      return inner.left->count_leaves() + inner.right->count_leaves();
     }
 
     size_t count_objs() const
     {
-      if (!left)
-        return num_objects;
-      return left->count_objs() + right->count_objs();
+      if (is_leaf_)
+        return leaf.num_objects;
+      return inner.left->count_objs() + inner.right->count_objs();
     }
 
     /**
@@ -152,17 +158,32 @@ namespace kd
     friend class Tree<T>;
     friend class unique_ptr<Node<T>>;
 
+    struct leaf_t
+    {
+      uint32_t num_objects;
+      uint32_t offset;
+    };
+
+    struct inner_t
+    {
+      Node *left, *right;
+      split_plane plane;
+    };
+
+    union
+    {
+      leaf_t leaf;
+      inner_t inner;
+    };
+    bool is_leaf_;
+
     /*
      * Leaf member fields
      */
-    uint32_t num_objects;
-    uint32_t offset;
 
     /*
      * Inner node member fields
      */
-    Node *left, *right;
-    split_plane plane;
   };
 }
 

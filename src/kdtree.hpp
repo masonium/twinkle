@@ -21,13 +21,12 @@ using std::endl;
 
 namespace kd
 {
-
   template <typename T>
   Node<T>::Node(Tree<T>& owner,
                 const vector<element_index>& objects,
                 const vector<bounds::AABB>& boxes,
                 const bounds::AABB& total_bound, const TreeOptions& opt)
-    : num_objects(0), offset(0), left(nullptr), right(nullptr)
+    : is_leaf_(true)
   {
     const auto num_boxes = boxes.size();
     if (num_boxes <= opt.max_elements_per_leaf)
@@ -291,8 +290,9 @@ namespace kd
   template <typename T>
   void Node<T>::make_leaf(Tree<T>& owner, const vector<element_index>& objects)
   {
-    num_objects = objects.size();
-    offset = owner.add_node_indices(objects);
+    leaf.num_objects = objects.size();
+    leaf.offset = owner.add_node_indices(objects);
+    is_leaf_ = true;
   }
 
   template <typename T>
@@ -304,7 +304,7 @@ namespace kd
     vector<element_index> left_objects, right_objects;
     vector<bounds::AABB> left_boxes, right_boxes;
 
-    this->plane = sp;
+    this->inner.plane = sp;
 
     auto left_bound = bound, right_bound = bound;
     left_bound.max()[sp.axis] = sp.split;
@@ -335,17 +335,18 @@ namespace kd
       }
     }
 
-    left = new Node(owner, left_objects, left_boxes, left_bound, opt);
-    right = new Node(owner, right_objects, right_boxes, right_bound, opt);
+    inner.left = new Node(owner, left_objects, left_boxes, left_bound, opt);
+    inner.right = new Node(owner, right_objects, right_boxes, right_bound, opt);
+    is_leaf_ = false;
   }
 
   template <typename T>
   Node<T>::~Node()
   {
-    if (left)
+    if (!is_leaf_)
     {
-      delete left;
-      delete right;
+      delete inner.left;
+      delete inner.right;
     }
   }
 
@@ -427,10 +428,10 @@ namespace kd
        * push onto the stack.
        */
       else {
-        scalar t_split = (active->plane.split - ray.position[active->plane.axis])
-          * ray.inv_direction[active->plane.axis];
-        Node<T> *first = active->left, *second = active->right;
-        if (ray.direction[active->plane.axis] < 0)
+        scalar t_split = (active->plane().split - ray.position[active->plane().axis])
+          * ray.inv_direction[active->plane().axis];
+        const Node<T> *first = active->left(), *second = active->right();
+        if (ray.direction[active->plane().axis] < 0)
           std::swap(first, second);
 
 
@@ -470,8 +471,8 @@ namespace kd
     element_type best_obj{nullptr};
     SubGeo best_geo = 0, leaf_geo = 0;
 
-    const int end = leaf.offset + leaf.num_objects;
-    for (int i = leaf.offset; i < end; ++i)
+    const int end = leaf.offset() + leaf.num_objects();
+    for (int i = leaf.offset(); i < end; ++i)
     {
       const auto shape = elements[indices[i]];
       auto t = shape->intersect(ray, best_t, leaf_geo);

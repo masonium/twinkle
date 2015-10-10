@@ -21,11 +21,13 @@ namespace kd
 
     uint32_t max_elements_per_leaf = 4;
   };
+
   enum NodeAxis
   {
     X = 0,
     Y,
-    Z
+    Z,
+    NONE
   };
 
   struct split_eval
