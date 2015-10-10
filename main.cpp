@@ -19,6 +19,7 @@
 #include "reinhard.h"
 #include "cpp-optparse/OptionParser.h"
 #include "util/timer.h"
+#include "util/running_stats.h"
 
 using std::cerr;
 using std::endl;
@@ -55,6 +56,7 @@ int main(int argc, char** args)
   parser.add_option("-h", "--height").action("store").type("int").set_default(300);
   parser.add_option("-t", "--threads").action("store").type("int").set_default(0);
   parser.add_option("-s", "--samples").action("store").type("int").set_default(1);
+  parser.add_option("-b", "--benchmark").action("store").type("int").set_default(1);
   parser.add_option("-o", "--output_image").action("store_true").type("bool");
   parser.add_option("-q", "--no_image").action("store_false").dest("output_image");
   parser.add_option("-d", "--debug_type").action("store").choices(debug_map_keys).set_default("normal");
@@ -121,14 +123,39 @@ int main(int argc, char** args)
   scene->prepare();
 
   scalar render_time = 0;
+
+  auto benchmark_trials = options.get("benchmark").as<int>();
+  bool write_image =  options.get("output_image").as<bool>();
+  if (benchmark_trials > 1)
+  {
+    write_image = false;
+    RunningStats stats;
+    
+    cerr << "Benchmarking with " << benchmark_trials << " trials" << endl;
+    const int toss = 3;
+
+    for (int i = 0; i < benchmark_trials + toss; i += 1)
+    {
+      Film f(WIDTH, HEIGHT, bf);
+      Timer tm;
+      igr->render(*cam, *scene, f);
+      if (i >= toss)
+          stats.update(tm.since());
+    }
+
+    cerr << "Render Time: " << format_duration(stats.mean()) << " +/- " 
+         << format_duration(stats.stdev()) << endl;
+  }
+  else
   {
     Timer tm;
     igr->render(*cam, *scene, f);
     render_time = tm.since();
+    cerr << "Render Time: " << format_duration(render_time) << endl;
   }
 
   //if (options.get("time").as<bool>())
-  cerr << "Render Time: " << format_duration(render_time) << endl;
+
 
   shared_ptr<ToneMapper> mapper;
   string map_type = options.get("mapper");
@@ -141,7 +168,7 @@ int main(int argc, char** args)
     mapper = make_shared<LinearToneMapper>();
   }
 
-  if (options.get("output_image").as<bool>())
+  if (write_image)
     f.render_to_ppm(cout, *mapper);
 
   return 0;
