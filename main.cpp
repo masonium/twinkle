@@ -55,12 +55,15 @@ int main(int argc, char** args)
   parser.add_option("-h", "--height").action("store").type("int").set_default(300);
   parser.add_option("-t", "--threads").action("store").type("int").set_default(0);
   parser.add_option("-s", "--samples").action("store").type("int").set_default(1);
+  parser.add_option("-o", "--output_image").action("store_true").type("bool");
+  parser.add_option("-q", "--no_image").action("store_false").dest("output_image");
   parser.add_option("-d", "--debug_type").action("store").choices(debug_map_keys).set_default("normal");
   parser.add_option("-i", "--integrator").action("store").choices(std::vector<string>({"path", "direct", "debug"})).set_default("path");
   parser.add_option("-m", "--mapper").action("store").choices(std::vector<string>({"linear", "cutoff"})).set_default("linear");
   parser.add_option("--kd").action("store_const").dest("scene_container").set_const("kd");
   parser.add_option("--basic").action("store_const").dest("scene_container").set_const("basic");
 
+  parser.set_defaults("output_image", "true");
   parser.set_defaults("scene_container", "kd");
 
   auto& options = parser.parse_args(argc, args);
@@ -138,7 +141,8 @@ int main(int argc, char** args)
     mapper = make_shared<LinearToneMapper>();
   }
 
-  f.render_to_ppm(cout, *mapper);
+  if (options.get("output_image").as<bool>())
+    f.render_to_ppm(cout, *mapper);
 
   return 0;
 }
