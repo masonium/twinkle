@@ -114,34 +114,41 @@ shared_ptr<Camera> many_sphere_scene(Scene& scene, scalar ar, int angle)
     Vec3::zero, Vec3::y_axis, PI/2, ar);
 }
 
-shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio)
+shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio, bool invert)
 {
   RawModel m;
-  if (!m.load_obj_model("/home/mason/workspace/twinkle/teapot.obj").success)
+  if (!m.load_obj_model("assets/models/tak-cube.obj").success)
   {
     cerr << "could not load model." << endl;
     exit(1);
   }
   m.translate_to_origin();
-  m.rescale(bounds::AABB(Vec3(-2.0), Vec3(2.0)), true);
+  m.rescale(bounds::AABB(Vec3(-1.0, 5.0, -1.0), Vec3(1.0, 7.0, 1.0)), true);
+
+  if (invert)
+    m.flip_tris();
 
   //auto mesh = rotate(make_shared<KDMesh>(m), Vec3::y_axis, PI/4);;
   auto mesh = make_shared<KDMesh>(m);
-  //auto mesh = make_shared<Sphere>(Vec3{0.0, 1.0, 0.0}, 3.1);
-  //auto mesh2 = make_shared<Sphere>(Vec3{0.0, 1.0, 8.0}, 3.1);
   //auto mesh = translate(make_quad(), Vec3{0.0, 0.0, 0.0});
 
   auto rcm = make_shared<RoughColorMaterial>(0.0, spectrum{1.0, 0.5, 0.0});
   auto nmc = make_shared<RoughMaterial>(0.00, make_shared<NormalTexture>());
 
-  scene.add(make_shared<Shape>(mesh, nmc));
+  for (int i = 0; i < 27; ++i)
+  {
+    int x = i % 3 - 1;
+    int y = (i / 3) % 3 - 1;
+    int z = i / 9 - 1;
+    scene.add(make_shared<Shape>(translate(mesh, Vec3(x, y, z) * 4), nmc));
+  }
 
   auto green = make_shared<RoughColorMaterial>(0.0, spectrum{0.2, 0.7, 0.0});
   scene.add(make_shared<Shape>(make_shared<Plane>(Vec3::y_axis, 2), green));
 
   scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{5.0})));
 
-  return make_shared<PerspectiveCamera>(Vec3{2.0, 1.0, 5.0}, Vec3::zero, Vec3::y_axis,
+  return make_shared<PerspectiveCamera>(Vec3{2.0, 7.0, 7.0}, Vec3(0, 6, 0), Vec3::y_axis,
                            PI/2.0, aspect_ratio);
 }
 
