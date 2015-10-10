@@ -6,7 +6,6 @@
 #include "shape.h"
 #include "light.h"
 #include "env_light.h"
-#include "kdtree.h"
 #include "util/optional.h"
 
 using std::vector;

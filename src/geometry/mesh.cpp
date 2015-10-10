@@ -1,5 +1,4 @@
 #include <algorithm>
-#include "kdmesh.h"
 #include "mesh.h"
 #include "geometry/isect_util.h"
 

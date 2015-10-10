@@ -1,6 +1,7 @@
 #pragma once
 
 #include "scene.h"
+#include "kdtree.h"
 
 using std::unique_ptr;
 
