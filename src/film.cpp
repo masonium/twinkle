@@ -120,6 +120,12 @@ void Film::render_to_console(ostream& out) const
   }
 }
 
+void Film::clear()
+{
+  fill(plate.begin(), plate.end(), Pixel());
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 void BoxFilter::add_sample(Film& film, const PixelSample& p, const spectrum& s) const

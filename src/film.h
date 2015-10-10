@@ -106,6 +106,8 @@ public:
     return plate[index(x, y)];
   }
 
+  void clear();
+
   const uint width, height;  
   const shared_ptr<ImageSampleFilter> filter;
 
