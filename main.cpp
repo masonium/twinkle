@@ -61,7 +61,7 @@ int main(int argc, char** args)
   parser.add_option("-q", "--no_image").action("store_false").dest("output_image");
   parser.add_option("-d", "--debug_type").action("store").choices(debug_map_keys).set_default("normal");
   parser.add_option("-i", "--integrator").action("store").choices(std::vector<string>({"path", "direct", "debug"})).set_default("path");
-  parser.add_option("-m", "--mapper").action("store").choices(std::vector<string>({"linear", "cutoff"})).set_default("linear");
+  parser.add_option("-m", "--mapper").action("store").choices(std::vector<string>({"linear", "cutoff", "rh_global"})).set_default("linear");
   parser.add_option("--kd").action("store_const").dest("scene_container").set_const("kd");
   parser.add_option("--basic").action("store_const").dest("scene_container").set_const("basic");
 
@@ -86,6 +86,7 @@ int main(int argc, char** args)
     scene = make_shared<BasicScene>();
 
   auto cam = model_scene(*scene, scalar(WIDTH)/scalar(HEIGHT), "assets/models/cessna.obj", false);
+  //auto cam = glass_scene(*scene, scalar(WIDTH)/scalar(HEIGHT));
 
   auto bf = make_shared<BoxFilter>();
   Film f(WIDTH, HEIGHT, bf);
@@ -162,9 +163,13 @@ int main(int argc, char** args)
   {
     mapper = make_shared<CutoffToneMapper>();
   }
-  else // if (options["mapper"] == "linear")
+  else if (map_type == "linear")
   {      
     mapper = make_shared<LinearToneMapper>();
+  }
+  else if (map_type == "rh_global")
+  {
+    mapper = make_shared<ReinhardGlobal>();
   }
 
   if (write_image)
