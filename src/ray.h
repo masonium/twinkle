@@ -2,7 +2,7 @@
 
 #include "vec3.h"
 
-const scalar NUDGE_EPSILON = 0.0001;
+const scalar NUDGE_EPSILON = 0.001;
 
 class Ray
 {

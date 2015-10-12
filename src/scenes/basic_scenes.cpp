@@ -1,6 +1,8 @@
 #include "basic_scenes.h"
 #include "geometries.h"
 #include "textures/skytexture.h"
+#include "env_light.h"
+#include "materials/rough_glass_material.h"
 
 using std::shared_ptr;
 using std::make_shared;
@@ -23,21 +25,29 @@ shared_ptr<Camera> empty_scene(Scene& scene, scalar aspect_ratio)
   return make_shared<SphericalCamera>(Vec3::zero, -Vec3::y_axis, Vec3::z_axis);
 }
 
-shared_ptr<Camera> single_sphere(Scene& scene, scalar aspect_ratio)
+shared_ptr<Camera> glass_scene(Scene& scene, scalar aspect_ratio)
 {
-  scene.add( make_shared<Shape>( make_shared<Sphere>(Vec3::zero, 1.0),
-                                 make_shared<RoughColorMaterial>(0, spectrum{0.2, 0.2, 1.0})));
+  //auto glass = make_shared<GlassMaterial>();
+  auto glass = make_glass_material(RoughGlassDistribution::GGX, 0.05);
+  scene.add( make_shared<Shape>( make_shared<Sphere>(Vec3::zero, 1.0), glass ));
+
+  auto check = make_shared<Checkerboard2D>(spectrum{0.1}, spectrum{0.9}, 2.0);
 
   scene.add( make_shared<Shape>( make_shared<Plane>(Vec3::y_axis, 1.0),
-                                 make_shared<RoughColorMaterial>(0, spectrum{0.2, 0.2, 0.2})));
+                                 make_shared<RoughMaterial>(0, check)));
 
-  Vec3 light_dir = Vec3::z_axis;
-  scene.add( make_shared<DirectionalLight>( light_dir, spectrum{1.0}));
+  scene.add(SHAPE(make_shared<Sphere>(Vec3{0, 0, -3.0}, 1.0), COLOR(spectrum{0.1, 0.6, 0.1})));
 
-  Vec3 light_pos = Vec3::z_axis * 6;
-  scene.add( make_shared<DirectionalLight>( light_pos, spectrum{1.0}));
+  // Vec3 light_dir = Vec3::z_axis;
+  // scene.add( make_shared<DirectionalLight>( light_dir, spectrum{1.0}));
 
-  return make_shared<PerspectiveCamera>(Vec3(0, 0, 2), Vec3::zero, Vec3::y_axis, PI / 2.0,
+  // Vec3 light_pos = Vec3::z_axis * 6;
+  // scene.add( make_shared<DirectionalLight>( light_pos, spectrum{1.0}));
+
+  scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{1.0})));
+
+  Vec3 cam_pos(1.0, 1.0, 2);
+  return make_shared<PerspectiveCamera>(cam_pos, Vec3::zero, Vec3::y_axis, PI / 2.0,
                                         aspect_ratio);
 }
 
@@ -191,7 +201,6 @@ shared_ptr<Camera> default_scene(Scene& scene, scalar aspect_ratio, int angle)
   auto cam_pos = Mat33::from_axis_angle(Vec3::z_axis, angle * PI / 180) * Vec3{0, 7.5, 2.0};
   auto look_at = Vec3{0.0, 0.0, 0.0};
 
-  //return make_shared<SphericalCamera>(cam_pos, look_at, Vec3{0, 0, 1});
   return make_shared<PerspectiveCamera>(cam_pos, look_at, Vec3{0, 0, 1}, PI/2, aspect_ratio);
 }
 
@@ -248,7 +257,6 @@ shared_ptr<Camera> showcase_scene(Scene& scene, scalar ar, int angle)
 
   scene.add(make_shared<PointLight>( Vec3{0, gs, -gs/2}, spectrum{2.0} ));
   scene.add(make_shared<EnvironmentalLight>( make_shared<SolidColor>(spectrum{0.0})));
-
 
   return make_shared<PerspectiveCamera>(Vec3(gs * 0.5, gs * .7, -gs * .4), Vec3{gs/2, 0, gs/4}, Vec3::y_axis, PI/2.0, ar);
 }

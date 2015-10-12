@@ -102,9 +102,8 @@ spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene,
 
     scalar brdf_p;
     spectrum bsdf_reflectance;
-    ConstSampler s{1.0, 0.0};
-    auto dir = isect_opt.get().sample_bsdf(-ray.direction.normal(), s, brdf_p, bsdf_reflectance);
-    return dir_to_spectrum(dir);
+    auto dir = isect_opt.get().sample_bsdf(-ray.direction.normal(), sampler, brdf_p, bsdf_reflectance);
+    return dir_to_spectrum(dir.normal());
   }
 
   if (opt.type == DI_FIRST_ENV)
