@@ -2,6 +2,7 @@
 #include <iterator>
 #include <algorithm>
 #include <cstring>
+#include <cassert>
 #include "film.h"
 
 using std::transform;
@@ -85,7 +86,14 @@ void Film::render_to_ppm(ostream& out, const ToneMapper& mapper)
   {
     for(uint x = 0; x < width; ++x)
     {
-      const auto& c = final[index(x, y)].clamp(0, 1);
+      const auto& c = final[index(x, y)];//.clamp(0, 1);
+      assert(c.x >= 0);
+      assert(c.y >= 0);
+      assert(c.z >= 0);
+
+      assert(c.x <= 1);
+      assert(c.y <= 1);
+      assert(c.z <= 1);
       out << int(c.x * 255) << " " << int(c.y * 255) << " " << int(c.z * 255) << " ";
     }
     out << "\n";  
