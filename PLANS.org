@@ -36,8 +36,11 @@
 - [ ] lua state into
 - [ ] Mesh or KDMesh based on number of triangles
 - [ ] condensing of nested transforms into transform shapes
+  - [ ] RTTI for shapes (tagging)
+- [X] cache-friendly 8-byte kdtree-node
 - [ ] cache-coherent kd-tree (re)organization
-- [ ] population monte-carlo for pixel-choice of dierct lighting
+- [ ] population monte-carlo for grid-render
+- [ ] population monte-carlo for pixel-choice of direct lighting
 
 * Scenes
 - [X] 'showcase-scene': all available shapes
