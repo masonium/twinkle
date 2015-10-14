@@ -4,11 +4,12 @@
 #include <cassert>
 #include <vector>
 #include <memory>
+#include <atomic>
 #include "spectrum.h"
 #include "ray.h"
 #include "tonemap.h"
 
-
+using std::atomic;
 using std::vector;
 using std::ostream;
 using std::weak_ptr;
@@ -78,14 +79,12 @@ public:
     spectrum total;
   };
   
-  Film(uint w_, uint h_, const shared_ptr<ImageSampleFilter> f);
+  Film(uint w_, uint h_);
   Film(istream& in);
 
   Film(const Film& f);
   Film& operator =(const Film& f) = delete;
   Film& operator =(Film&& f) = delete;
-
-  Film(Film&& f) ;
 
   void add_sample(const PixelSample& ps, const spectrum& s);
   Rect rect() const { return Rect(0, 0, width, height); }
@@ -95,7 +94,7 @@ public:
   void render_to_twi(ostream& out) const;
   
   void merge(const Film& other);
-  
+
   Pixel at(int x, int y) const
   {
     return plate[index(x, y)];
@@ -106,10 +105,12 @@ public:
     return plate[index(x, y)];
   }
 
+  Film clone() const;
+
   void clear();
 
   const uint width, height;  
-  const shared_ptr<ImageSampleFilter> filter;
+  atomic<uint64_t> samples;
 
 private:
   

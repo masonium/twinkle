@@ -13,25 +13,17 @@ using std::ostream_iterator;
 using std::accumulate;
 using std::cerr;
 
-Film::Film(uint w_, uint h_, shared_ptr<ImageSampleFilter> f)
-  : width(w_), height(h_), filter(f), plate(w_ * h_)
+Film::Film(uint w_, uint h_)
+  : width(w_), height(h_), samples(0), plate(w_ * h_)
 {
 }
 
 Film::Film(const Film& f)
-  : width(f.width), height(f.height), filter(f.filter), plate(f.plate)
+  : width(f.width), height(f.height), samples(0), plate(f.plate)
 {
 }
 
-Film::Film(Film&& f) 
-  : width(f.width), height(f.height), filter(f.filter)
-{
-  std::swap(plate, f.plate);
-}
-
-
-
-Film::Film(istream& in) : width(0), height(0), filter(new BoxFilter)
+Film::Film(istream& in) : width(0), height(0), samples(0)
 {
   char buf[8];
   in.read(buf, 8);
@@ -55,7 +47,8 @@ Film::Film(istream& in) : width(0), height(0), filter(new BoxFilter)
 
 void Film::add_sample(const PixelSample& ps, const spectrum& s)
 {
-  filter->add_sample(*this, ps, s);
+  BoxFilter().add_sample(*this, ps, s);
+  ++samples;
 }
 
 vector<spectrum> Film::pixel_list() const
@@ -126,6 +119,11 @@ void Film::render_to_console(ostream& out) const
     }
     out << '\n';
   }
+}
+
+Film Film::clone() const
+{
+  return Film(width, height);
 }
 
 void Film::clear()

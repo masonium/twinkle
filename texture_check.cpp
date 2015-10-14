@@ -57,8 +57,7 @@ int main(int argc, char** args)
   int height = options.get("height").as<int>();
   scalar angle = options.get("angle").as<scalar>();
 
-  auto filter = make_shared<BoxFilter>();
-  Film f(width, height, filter);
+  Film f(width, height);
 
   unique_ptr<Texture2D> tex;
   string tex_type = options.get("type");

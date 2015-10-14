@@ -34,22 +34,24 @@ void usage(char** args)
   cerr << args[0] << ": WIDTH HEIGHT SAMPLES-PER-PIXEL\n";
 }
 
-int main(int argc, char** args)
+const  map<string, DebugIntegrator::Type> DEBUG_TYPE_MAP({
+    {"isect", DebugIntegrator::Type::DI_ISECT},
+    {"object_id", DebugIntegrator::Type::DI_OBJECT_ID},
+    {"normal", DebugIntegrator::Type::DI_NORMAL},
+    {"depth", DebugIntegrator::Type::DI_DEPTH},
+    {"specular", DebugIntegrator::Type::DI_SPECULAR},
+    {"first_env", DebugIntegrator::Type::DI_FIRST_ENV},
+    {"time_intersect", DebugIntegrator::Type::DI_TIME_INTERSECT}
+  });
+
+
+auto parse_args(int argc, char**args)
 {
   optparse::OptionParser parser;
 
-  map<string, DebugIntegrator::Type> debug_map({
-      {"isect", DebugIntegrator::Type::DI_ISECT},
-      {"object_id", DebugIntegrator::Type::DI_OBJECT_ID},
-      {"normal", DebugIntegrator::Type::DI_NORMAL},
-      {"depth", DebugIntegrator::Type::DI_DEPTH},
-      {"specular", DebugIntegrator::Type::DI_SPECULAR},
-      {"first_env", DebugIntegrator::Type::DI_FIRST_ENV},
-      {"time_intersect", DebugIntegrator::Type::DI_TIME_INTERSECT}
-    });
 
   vector<string> debug_map_keys;
-  std::transform(debug_map.begin(), debug_map.end(), 
+  std::transform(DEBUG_TYPE_MAP.begin(), DEBUG_TYPE_MAP.end(), 
                  std::inserter(debug_map_keys, debug_map_keys.end()), [](const auto& e) { return e.first; });
 
   parser.add_option("-w", "--width").action("store").type("int").set_default(400);
@@ -68,7 +70,12 @@ int main(int argc, char** args)
   parser.set_defaults("output_image", "true");
   parser.set_defaults("scene_container", "kd");
 
-  auto& options = parser.parse_args(argc, args);
+  return parser.parse_args(argc, args);
+}
+
+int main(int argc, char** args)
+{
+  auto options = parse_args(argc, args);
 
   const uint WIDTH = options.get("width").as<int>();
   const uint HEIGHT = options.get("height").as<int>();
@@ -86,10 +93,8 @@ int main(int argc, char** args)
     scene = make_shared<BasicScene>();
 
   auto cam = model_scene(*scene, scalar(WIDTH)/scalar(HEIGHT), "assets/models/cessna.obj", false);
-  //auto cam = glass_scene(*scene, scalar(WIDTH)/scalar(HEIGHT));
 
-  auto bf = make_shared<BoxFilter>();
-  Film f(WIDTH, HEIGHT, bf);
+  Film f(WIDTH, HEIGHT);
 
   unique_ptr<Integrator> igr;
   string igr_type = options["integrator"];
@@ -115,7 +120,7 @@ int main(int argc, char** args)
   {
     DebugIntegrator::Options opt;
     string dt = options.get("debug_type");
-    opt.type = debug_map.at(dt);
+    opt.type = DEBUG_TYPE_MAP.at(dt);
     opt.samples_per_pixel = per_pixel;
     igr = make_unique<DebugIntegrator>(opt);
   }
@@ -136,7 +141,7 @@ int main(int argc, char** args)
 
     for (int i = 0; i < benchmark_trials + toss; i += 1)
     {
-      Film f(WIDTH, HEIGHT, bf);
+      Film f(WIDTH, HEIGHT);
       Timer tm;
       igr->render(*cam, *scene, f);
       if (i >= toss)
