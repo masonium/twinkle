@@ -22,9 +22,10 @@ DirectLightingIntegrator::DirectLightingIntegrator(const DirectLightingIntegrato
 {
 }
 
-void DirectLightingIntegrator::render(const Camera& cam, const Scene& scene, Film& film)
+void DirectLightingIntegrator::render(const Camera& cam, const Scene& scene, 
+                                      Scheduler& scheduler, Film& film)
 {
-  grid_render(*this, cam, scene, film, options.num_threads,
+  grid_render(*this, cam, scene, film, scheduler,
     options.subdivision, options.samples_per_pixel);
 }
 
@@ -101,10 +102,11 @@ spectrum DirectLightingIntegrator::trace_ray(const Scene& scene, const Ray& ray,
 }
 
 void DirectLightingIntegrator::render_rect(
-  const Camera& cam, const Scene& scene, Film& film,
+  const Camera& cam, const Scene& scene,
   const Film::Rect& render_rect, uint samples_per_pixel) const
 {
   auto sampler = UniformSampler{};
+  auto& film = get_thread_film();
 
   for (uint x = 0; x < render_rect.width; ++x)
   {
@@ -124,16 +126,3 @@ void DirectLightingIntegrator::render_rect(
     }
   }
 }
-/*
-DirectLightingIntegrator::RenderTask::RenderTask(
-  const DirectLightingIntegrator& pit, const RenderInfo& ri_,
-  vector<Film>& films_,  const Film::Rect& rect_, uint spp_) :
-  owner(pit), ri(ri_), films(films_), rect(rect_), spp(spp_)
-{
-}
-
-void DirectLightingIntegrator::RenderTask::run(uint worker_id)
-{
-
-}
-*/

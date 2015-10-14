@@ -30,10 +30,11 @@ PathTracerIntegrator::PathTracerIntegrator(const PathTracerIntegrator::Options& 
 {
 }
 
-void PathTracerIntegrator::render(const Camera& cam, const Scene& scene, Film& film)
+void PathTracerIntegrator::render(const Camera& cam, const Scene& scene, 
+                                  Scheduler& scheduler, Film& film)
 {
   grid_render(*this, cam, scene, film,
-              opt.num_threads, 4, opt.samples_per_pixel);
+              scheduler, 4, opt.samples_per_pixel);
 }
 
 spectrum PathTracerIntegrator::trace_ray(const Scene& scene, const Ray& ray,
@@ -114,12 +115,12 @@ spectrum PathTracerIntegrator::trace_ray(const Scene& scene, const Ray& ray,
 }
 
 void PathTracerIntegrator::render_rect(const Camera& cam, const Scene& scene,
-                   Film& film, const Film::Rect& rect,
-                   uint samples_per_pixel) const
+                                       const Film::Rect& rect,
+                                       uint samples_per_pixel) const
 {
   auto sampler = UniformSampler{};
 
-//  std::cerr  << "Printing width: " << film.width << "\n";
+  auto& film = get_thread_film();
   
   for (uint x = 0; x < rect.width; ++x)
   {

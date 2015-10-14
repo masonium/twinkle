@@ -7,6 +7,7 @@
 #include <future>
 #include <queue>
 #include <memory>
+#include "thread_state.h"
 
 using std::istream;
 using std::ostream;
@@ -20,12 +21,9 @@ public:
   virtual ~LocalTask() {}
 };
 
-enum ScheduleHint
-{
-  SCHEDULE_HINT_NONE = 0,
-  SCHEDULE_HINT_PREFER_LOCAL,
-  SCHEDULE_HINT_PREFER_REMOTE
-};
+/**
+ * A scheduler is responsible for registering each thread it uses.
+ */
 
 /* abstract */
 class Scheduler
@@ -36,12 +34,7 @@ public:
 
   /* blocks until all current tasks are complete. */
   virtual void complete_pending() = 0;
-/*
-  virtual int tasks_added() const = 0;
-  virtual int tasks_completed() const = 0;
 
-  virtual int tasks_pending() const = 0;
-*/
   virtual ~Scheduler() { }
 };
 

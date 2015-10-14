@@ -20,6 +20,7 @@
 #include "cpp-optparse/OptionParser.h"
 #include "util/timer.h"
 #include "util/running_stats.h"
+#include "thread_state.h"
 
 using std::cerr;
 using std::endl;
@@ -96,6 +97,9 @@ int main(int argc, char** args)
 
   Film f(WIDTH, HEIGHT);
 
+  register_thread_state_manager(f);
+  auto scheduler = make_scheduler(options.get("threads").as<int>());
+
   unique_ptr<Integrator> igr;
   string igr_type = options["integrator"];
 
@@ -103,7 +107,6 @@ int main(int argc, char** args)
   {
     PathTracerIntegrator::Options opt;
     opt.samples_per_pixel = per_pixel;
-    opt.num_threads = options.get("threads").as<int>();
     opt.max_depth = 10;
     igr = make_unique<PathTracerIntegrator>(opt);
   }
@@ -113,7 +116,6 @@ int main(int argc, char** args)
     opt.samples_per_pixel = 4;
     opt.lighting_samples = per_pixel / 4;
     opt.subdivision = 4;
-    opt.num_threads = 0;
     igr = make_unique<DirectLightingIntegrator>(opt);
   }
   else // if (igr_type == "debug")
@@ -143,9 +145,9 @@ int main(int argc, char** args)
     {
       Film f(WIDTH, HEIGHT);
       Timer tm;
-      igr->render(*cam, *scene, f);
+      igr->render(*cam, *scene, *scheduler, f);
       if (i >= toss)
-          stats.update(tm.since());
+        stats.update(tm.since());
     }
 
     cerr << "Render Time: " << format_duration(stats.mean()) << " +/- " 
@@ -154,13 +156,10 @@ int main(int argc, char** args)
   else
   {
     Timer tm;
-    igr->render(*cam, *scene, f);
+    igr->render(*cam, *scene, *scheduler, f);
     render_time = tm.since();
     cerr << "Render Time: " << format_duration(render_time) << endl;
   }
-
-  //if (options.get("time").as<bool>())
-
 
   shared_ptr<ToneMapper> mapper;
   string map_type = options.get("mapper");

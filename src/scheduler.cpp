@@ -1,9 +1,11 @@
 #include "scheduler.h"
+#include "thread_state.h"
 #include "util.h"
 #include <future>
 #include <thread>
 #include <chrono>
 #include <cassert>
+
 
 using std::future;
 using std::unique_lock;
@@ -71,6 +73,11 @@ private:
 class BlockingScheduler : public Scheduler
 {
 public:
+  BlockingScheduler()
+  {
+    register_thread();
+  }
+
   void add_task(shared_ptr<LocalTask> t) override
   {
     t->run(0);
@@ -84,6 +91,9 @@ public:
 void LocalThreadScheduler::worker(LocalThreadScheduler& scheduler, int worker_id)
 {
   bool keep_running = true;
+
+  register_thread();
+
   while (keep_running)
   {
     uint task_count = scheduler.pending_task_count;

@@ -22,10 +22,10 @@ public:
   DirectLightingIntegrator() {}
   DirectLightingIntegrator(const Options& opt);
 
-  void render(const Camera& cam, const Scene& scene, Film& film)  override;
+  void render(const Camera& cam, const Scene& scene, Scheduler& scheduler, Film& film)  override;
 
   void render_rect(const Camera& cam, const Scene& scene,
-                   Film& film, const Film::Rect& rect,
+                   const Film::Rect& rect,
                    uint samples_per_pixel) const;
 
   virtual ~DirectLightingIntegrator() {}
