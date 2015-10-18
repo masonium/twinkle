@@ -5,13 +5,13 @@
 using std::copy;
 
 MeshTri::MeshTri(const Mesh* m, const int v[3]) :
-  mesh(m),
-  e1(mesh->pos(v[1]) - mesh->pos(v[0])),
-  e2(mesh->pos(v[2]) - mesh->pos(v[0]))
+  mesh(m)
+//  e1(mesh->pos(v[1]) - mesh->pos(v[0])),
+//  e2(mesh->pos(v[2]) - mesh->pos(v[0]))
 {
-  Vec3 N = e1.cross(e2);
-  inv_a_double = 1.0 / N.norm();
-  n = N * inv_a_double;
+//  Vec3 N = e1.cross(e2);
+//  inv_a_double = 1.0 / N.norm();
+//  n = N * inv_a_double;
   copy(v, v+3, vi);
 }
 
@@ -22,7 +22,7 @@ scalar_fp MeshTri::intersect(const Ray& ray, scalar_fp max_t, SubGeo& geo) const
 
 Vec3 MeshTri::normal(const Vec3& point) const
 {
-  return n;
+  return (_p(1) - _p(0)).cross(_p(2) - _p(0)).normal();
 }
 
 bounds::AABB MeshTri::get_bounding_box() const
@@ -35,6 +35,12 @@ bounds::AABB MeshTri::get_bounding_box() const
 void MeshTri::texture_coord(const Vec3& pos, const Vec3& normal,
                             scalar& u, scalar& v) const
 {
+  Vec3 e1(_p(1) - _p(0));
+  Vec3 e2(_p(2) - _p(0));
+  Vec3 N = e1.cross(e2);
+  scalar inv_a_double = 1.0 / N.norm();
+  Vec3 n = N * inv_a_double;
+
   const Vec3 P = pos - _p(0);
   const Vec3 n1 = e1.cross(P), n2 = P.cross(e2);
   scalar bu  = n1.dot(n) * inv_a_double, bv = n2.dot(n) * inv_a_double;

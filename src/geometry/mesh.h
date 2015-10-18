@@ -84,6 +84,4 @@ private:
 
   const Mesh* mesh;
   int vi[3];
-  Vec3 e1, e2, n;
-  scalar inv_a_double;
 };
