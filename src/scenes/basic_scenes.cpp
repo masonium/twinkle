@@ -138,6 +138,7 @@ shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio,
     exit(1);
   }
   cerr << "Loaded " << model_filename << " in " << format_duration(tm.since()) << endl;
+  cerr << "Model has " << m.tris().size() << " triangles." << endl;
 
   m.translate_to_origin();
   m.rescale(bounds::AABB(Vec3(-1.0, 5.0, -1.0), Vec3(1.0, 7.0, 1.0)), true);
@@ -149,6 +150,8 @@ shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio,
   tm.reset();
   auto mesh = make_shared<KDMesh>(m);
   cerr << "Created KDMesh in " << format_duration(tm.since()) << endl;
+  cerr << "Mesh has " << mesh->kd_tree->count_objects() << " objects among "
+       << mesh->kd_tree->count_leaves() << " leaves." << endl;
   //auto mesh = translate(make_quad(), Vec3{0.0, 0.0, 0.0});
 
   auto rcm = make_shared<RoughColorMaterial>(0.0, spectrum{1.0, 0.5, 0.0});
