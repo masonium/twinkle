@@ -3,6 +3,7 @@
 #include "textures/skytexture.h"
 #include "env_light.h"
 #include "materials/rough_glass_material.h"
+#include "util/timer.h"
 
 using std::shared_ptr;
 using std::make_shared;
@@ -130,11 +131,14 @@ shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio,
                                const string& model_filename, bool invert)
 {
   RawModel m;
+  Timer tm;
   if (!m.load_obj_model(model_filename).success)
   {
     cerr << "could not load model." << model_filename << endl;
     exit(1);
   }
+  cerr << "Loaded " << model_filename << " in " << format_duration(tm.since()) << endl;
+
   m.translate_to_origin();
   m.rescale(bounds::AABB(Vec3(-1.0, 5.0, -1.0), Vec3(1.0, 7.0, 1.0)), true);
 
@@ -142,7 +146,9 @@ shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio,
     m.flip_tris();
 
   //auto mesh = rotate(make_shared<KDMesh>(m), Vec3::y_axis, PI/4);;
+  tm.reset();
   auto mesh = make_shared<KDMesh>(m);
+  cerr << "Created KDMesh in " << format_duration(tm.since()) << endl;
   //auto mesh = translate(make_quad(), Vec3{0.0, 0.0, 0.0});
 
   auto rcm = make_shared<RoughColorMaterial>(0.0, spectrum{1.0, 0.5, 0.0});
@@ -156,7 +162,7 @@ shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio,
     int y = (i / 3) % 3 - 1;
     int z = i / 9 - 1;
     Vec3 r = uniform_sphere_sample(sampler.sample_2d());
-    auto tr_mesh = rotate(translate(mesh, Vec3(x, y, z) * 4), r, sampler.sample_1d() * PI);
+    auto tr_mesh = rotate(translate(mesh, Vec3(x, y, z) * 3.1), r, sampler.sample_1d() * PI);
     scene.add(make_shared<Shape>(tr_mesh, nmc));
   }
 

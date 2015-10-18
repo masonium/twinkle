@@ -11,8 +11,14 @@ using std::chrono::nanoseconds;
 class Timer
 {
 public:
-  Timer() : now(high_resolution_clock::now())
+  Timer()
   {
+    reset();
+  }
+
+  void reset()
+  {
+    now = high_resolution_clock::now();
   }
 
   double since() const
@@ -21,7 +27,7 @@ public:
   }
 
 private:
-  const decltype(high_resolution_clock::now()) now;
+  decltype(high_resolution_clock::now()) now;
 };
 
 std::string format_duration(double seconds);
