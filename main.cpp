@@ -97,7 +97,7 @@ int main(int argc, char** args)
 
   Film f(WIDTH, HEIGHT);
 
-  register_thread_state_manager(f);
+  register_thread_state_manager(f, "assets/scripts/test.lua");
   auto scheduler = make_scheduler(options.get("threads").as<int>());
 
   unique_ptr<Integrator> igr;

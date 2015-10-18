@@ -1,6 +1,7 @@
 #include "basic_scenes.h"
 #include "geometries.h"
 #include "textures/skytexture.h"
+#include "script/proc_texture.h"
 #include "env_light.h"
 #include "materials/rough_glass_material.h"
 #include "util/timer.h"
@@ -169,8 +170,9 @@ shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio,
     scene.add(make_shared<Shape>(tr_mesh, nmc));
   }
 
-  auto green = make_shared<RoughColorMaterial>(0.0, spectrum{0.2, 0.7, 0.0});
-  scene.add(make_shared<Shape>(make_shared<Plane>(Vec3::y_axis, 2), green));
+  //auto plane_mat = make_shared<RoughColorMaterial>(0.0, spectrum{0.2, 0.7, 0.0});
+  auto plane_mat = make_shared<RoughMaterial>(0.0, make_shared<ScriptTexture>("checker"));
+  scene.add(make_shared<Shape>(make_shared<Plane>(Vec3::y_axis, 2), plane_mat));
 
   scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{5.0})));
 
@@ -205,8 +207,10 @@ shared_ptr<Camera> default_scene(Scene& scene, scalar aspect_ratio, int angle)
                                    make_shared<RoughMaterial>(0.0, make_shared<GridTexture2D>(sc, sc2, 30.0, 0.1))));
   }
 
+  auto plane_mat = make_shared<RoughColorMaterial>(0.0, spectrum{0.6});
+
   scene.add(make_shared<Shape>(make_shared<Plane>(Vec3{0.0, 0.0, 1.0}, sphere_radius),
-                               make_shared<RoughColorMaterial>(0.0, spectrum{0.6})));
+                               plane_mat));
 
   auto env_light_tex = make_shared<Checkerboard2D>(spectrum{1.0}, spectrum{0.0}, 2, 1);
   //auto env_light_tex = make_shared<SolidColor>(spectrum{1.0});
