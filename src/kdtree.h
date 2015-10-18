@@ -52,9 +52,9 @@ namespace kd
     {
       return root->count_leaves(*this);
     }
-    int count_objs() const
+    int count_objects() const
     {
-      return root->count_objs(*this);
+      return root->count_objects(*this);
     }
 
   private:
@@ -157,11 +157,11 @@ namespace kd
         owner.get_node(right_offset())->count_leaves(owner);
     }
 
-    size_t count_objs(const Tree<T>& owner) const
+    size_t count_objects(const Tree<T>& owner) const
     {
       if (is_leaf())
         return leaf.num_objects;
-      return owner.get_node(left_offset())->count_objs(owner) + owner.get_node(right_offset())->count_objs(owner);
+      return owner.get_node(left_offset())->count_objects(owner) + owner.get_node(right_offset())->count_objects(owner);
     }
 
     /**
