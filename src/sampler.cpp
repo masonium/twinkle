@@ -160,3 +160,11 @@ Vec3 uniform_hemisphere_sample(const Sample2D& sample, scalar& p)
   p = INV_2PI;
   return ret;
 }
+
+Vec3 uniform_sphere_sample(const Sample2D& sample)
+{
+  scalar theta = 2 * PI * sample[0];
+  scalar phi = acos(sample[1] * 2.0 - 1.0);
+
+  return Vec3::from_euler(theta, phi);
+}

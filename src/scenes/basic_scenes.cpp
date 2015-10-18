@@ -28,15 +28,17 @@ shared_ptr<Camera> empty_scene(Scene& scene, scalar aspect_ratio)
 shared_ptr<Camera> glass_scene(Scene& scene, scalar aspect_ratio)
 {
   //auto glass = make_shared<GlassMaterial>();
-  auto glass = make_glass_material(RoughGlassDistribution::GGX, 0.05);
-  scene.add( make_shared<Shape>( make_shared<Sphere>(Vec3::zero, 1.0), glass ));
+  auto glass = make_glass_material(RoughGlassDistribution::GGX, 0.01);
+  //auto glass = make_shared<MirrorMaterial>();
+  //scene.add( make_shared<Shape>( make_quad(Vec3::x_axis, Vec3::y_axis), glass ));
+  scene.add( make_shared<Shape>( make_shared<Sphere>(Vec3::zero, 0.8), glass ));
 
   auto check = make_shared<Checkerboard2D>(spectrum{0.1}, spectrum{0.9}, 2.0);
 
   scene.add( make_shared<Shape>( make_shared<Plane>(Vec3::y_axis, 1.0),
                                  make_shared<RoughMaterial>(0, check)));
 
-  scene.add(SHAPE(make_shared<Sphere>(Vec3{0, 0, -3.0}, 1.0), COLOR(spectrum{0.1, 0.6, 0.1})));
+  scene.add(SHAPE(make_shared<Sphere>(Vec3{1.0, 0, -3.0}, 1.0), COLOR(spectrum{0.1, 0.6, 0.1})));
 
   // Vec3 light_dir = Vec3::z_axis;
   // scene.add( make_shared<DirectionalLight>( light_dir, spectrum{1.0}));
@@ -146,12 +148,16 @@ shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio,
   auto rcm = make_shared<RoughColorMaterial>(0.0, spectrum{1.0, 0.5, 0.0});
   auto nmc = make_shared<RoughMaterial>(0.00, make_shared<NormalTexture>());
 
+  UniformSampler sampler;
+
   for (int i = 0; i < 27; ++i)
   {
     int x = i % 3 - 1;
     int y = (i / 3) % 3 - 1;
     int z = i / 9 - 1;
-    scene.add(make_shared<Shape>(translate(mesh, Vec3(x, y, z) * 4), nmc));
+    Vec3 r = uniform_sphere_sample(sampler.sample_2d());
+    auto tr_mesh = rotate(translate(mesh, Vec3(x, y, z) * 4), r, sampler.sample_1d() * PI);
+    scene.add(make_shared<Shape>(tr_mesh, nmc));
   }
 
   auto green = make_shared<RoughColorMaterial>(0.0, spectrum{0.2, 0.7, 0.0});
