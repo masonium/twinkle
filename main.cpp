@@ -93,7 +93,7 @@ int main(int argc, char** args)
   else
     scene = make_shared<BasicScene>();
 
-  auto cam = model_scene(*scene, scalar(WIDTH)/scalar(HEIGHT), "assets/models/cessna.obj", false);
+  auto cam = model_scene(*scene, scalar(WIDTH)/scalar(HEIGHT), "assets/models/trumpet.obj", false);
 
   Film f(WIDTH, HEIGHT);
 
@@ -127,7 +127,11 @@ int main(int argc, char** args)
     igr = make_unique<DebugIntegrator>(opt);
   }
 
-  scene->prepare();
+  {
+    Timer tm;
+    scene->prepare();
+    cerr << "Prepared scene in " << format_duration(tm.since()) << endl;
+  }
 
   scalar render_time = 0;
 

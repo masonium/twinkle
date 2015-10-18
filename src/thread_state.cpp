@@ -46,7 +46,6 @@ void ThreadStateManager::merge_films(Film& f) const
 {
   for (const auto& e: _state_map)
   {
-    cerr << e.second.film().samples << "\n";
     f.merge(e.second.film());
   }
 }
