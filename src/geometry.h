@@ -2,6 +2,7 @@
 
 #include <limits>
 #include <memory>
+#include <util/manager.h>
 #include "geometry/isect_util.h"
 #include "vec3.h"
 #include "ray.h"
@@ -10,8 +11,8 @@
 using std::shared_ptr;
 using std::numeric_limits;
 
-using SubGeo = uint64_t;
-#define SUBGEO_NONE -1
+using SubGeo = int64_t;
+const SubGeo SUBGEO_NONE = -1;
 
 class Geometry
 {
@@ -36,6 +37,8 @@ public:
 
   virtual ~Geometry() {}
 };
+
+using GeometryManager = Manager<Geometry>;
 
 class SimpleGeometry : public Geometry
 {
@@ -65,4 +68,4 @@ public:
   virtual ~SimpleGeometry() { }
 };
 
-  
+GeometryManager::key_type script_geoemtry(shared_ptr<Geometry>);

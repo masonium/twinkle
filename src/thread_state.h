@@ -10,25 +10,6 @@ using std::unordered_map;
 using std::shared_ptr;
 using std::make_shared;
 
-/*
-template <typename T>
-class Singleton
-{
-public:
-  static T& instance()
-  {
-    if (!_instance)
-    {
-      call_once(_flag, [](){ _instance = make_shared<T>(); });
-    }
-    return *_instance;
-  }
-
-private:
-  static shared_ptr<T> _instance;
-  static std::once_flag _flag;
-};
-*/
 
 class Film;
 class ThreadState;
