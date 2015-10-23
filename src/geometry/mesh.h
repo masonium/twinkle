@@ -64,8 +64,6 @@ public:
 
   Vec3 normal(const Vec3& point) const ;
 
-  // void texture_coord(SubGeo, const Vec3& pos, const Vec3& normal,
-  //                    scalar& u, scalar& v) const ;
   virtual void texture_coord(const Vec3& pos, const Vec3& normal,
                              scalar& u, scalar& v) const ;
 

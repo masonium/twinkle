@@ -66,7 +66,7 @@ void kdtree_test()
   kd::TreeOptions opt;
   opt.self_traversal_cost = 1.0;
   auto tree = make_shared<kd::Tree<Sphere>>(spheres, opt);
-  cout << "built tree with " << tree->count_leaves() << " leaves and " << tree->count_objs() << " obj refs.\n";
+  cout << "built tree with " << tree->count_leaves() << " leaves and " << tree->count_objects() << " obj refs.\n";
 }
 
 int main(int argc, char** args)
