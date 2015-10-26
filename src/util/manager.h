@@ -3,22 +3,27 @@
 #include <unordered_map>
 #include <memory>
 #include <vector>
-#include "util/singleton.h"
 
 /*
  * Utility class for holding objects of a given type, to be recovered later.
  */
 
 template <typename T>
-class Manager : public Singleton<Manager<T>>
+class Manager
 {
 private:
   Manager() : _next_key(0) { }
-  friend class Singleton<Manager<T>>;
+  Manager(const Manager&) = delete;
 
 public:
   using key_type = uint32_t;
   using value_type = std::shared_ptr<T>;
+
+  static Manager<T>& instance()
+  {
+    static Manager<T> _inst;
+    return _inst;
+  }
 
   key_type save(std::shared_ptr<T> ptr)
   {
