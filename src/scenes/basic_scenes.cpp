@@ -284,24 +284,21 @@ shared_ptr<Camera> showcase_scene(Scene& scene, scalar ar, int angle)
 
 shared_ptr<Camera> lua_scene(Scene& scene, scalar ar, const string& filename)
 {
-  // LuaRunner runner(filename.c_str());
+  LuaRunner runner(filename.c_str());
 
-  // auto L = runner.state();
-  // lua_getglobal(L, "shapes");
-  // assert(lua_istable(L, -1));
-  // lua_rawgeti(L, -1, 1);
-  // auto obj1 = script::lua_toshape(L, -1);
-  // lua_pop(L, 1);
+  auto L = runner.state();
+  lua_getglobal(L, "shapes");
+  assert(lua_istable(L, -1));
+  lua_rawgeti(L, -1, 1);
+  auto obj1 = script::lua_toshape(L, -1);
+  lua_pop(L, 1);
 
-  // lua_rawgeti(L, -1, 2);
-  // auto obj2 = script::lua_toshape(L, -1);
-  // lua_pop(L, 1);
-    
-  // scene.add(obj1);
-  // scene.add(obj2);
+  lua_rawgeti(L, -1, 2);
+  auto obj2 = script::lua_toshape(L, -1);
+  lua_pop(L, 1);
 
-  scene.add(SHAPE(make_shared<Sphere>(Vec3::zero, 1.0), COLOR(spectrum{0.2, 0.2, 0.8})));
-  scene.add(SHAPE(make_shared<Plane>(Vec3::y_axis, 1.0), COLOR(spectrum{0.7})));
+  cerr << obj1->to_string() << endl;
+  cerr << obj2->to_string() << endl;
 
   scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{2.0})));
   
