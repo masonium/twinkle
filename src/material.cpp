@@ -1,6 +1,7 @@
 #include "material.h"
 #include "bsdf.h"
 #include "util.h"
+#include <sstream>
 #include <memory>
 
 using std::make_shared;
@@ -34,9 +35,16 @@ Vec3 RoughMaterial::sample_bsdf(const IntersectionView& isect, const Vec3& incom
 ////////////////////////////////////////////////////////////////////////////////
 
 RoughColorMaterial::RoughColorMaterial(scalar roughness, const spectrum& color) :
-  RoughMaterial(roughness, make_shared<SolidColor>(color))
+  RoughMaterial(roughness, make_shared<SolidColor>(color)), c(color)
 {
 
+}
+
+std::string RoughColorMaterial::to_string() const
+{
+  std::ostringstream s;
+  s << "RCMat(" << c << ")";
+  return s.str();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

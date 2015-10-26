@@ -1,11 +1,13 @@
 #pragma once
 
 #include <memory>
+#include <sstream>
 #include "spectrum.h"
 #include "ray.h"
 #include "material.h"
 #include "geometry.h"
 #include "util/optional.h"
+
 
 using std::shared_ptr;
 
@@ -42,6 +44,13 @@ public:
   bounds::AABB get_bounding_box() const
   {
     return geometry->get_bounding_box();
+  }
+
+  std::string to_string() const
+  {
+    std::ostringstream s;
+    s << "Shape(" << geometry->to_string() << "; " << material->to_string() << ")";
+    return s.str();
   }
   
   shared_ptr<const Geometry> geometry;

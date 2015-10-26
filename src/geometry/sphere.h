@@ -24,6 +24,8 @@ public:
 
   bounds::AABB get_bounding_box() const override;
 
+  std::string to_string() const override;
+
   Vec3 position;
   scalar radius, radius2;
 };

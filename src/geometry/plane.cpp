@@ -1,8 +1,10 @@
+#include <sstream>
 #include "plane.h"
 
 Plane::Plane(const Vec3& normal, scalar offset) : N(normal), d(offset)
 {
   scalar n = N.norm();
+  assert(n > 0);
   d /= n;
   N /= n;
 
@@ -33,4 +35,11 @@ void Plane::texture_coord(SubGeo geo, const Vec3& pos, const Vec3& normal,
 {
   u = pos.dot(U);
   v = pos.dot(V);
+}
+
+std::string Plane::to_string() const
+{
+  std::ostringstream s;
+  s << "Plane(" << N << ", " << d << ")";
+  return s.str();
 }

@@ -35,6 +35,8 @@ public:
 
   virtual bounds::AABB get_bounding_box() const { return bounds::AABB::infinite; }
 
+  virtual std::string to_string() const { return "Shape{}"; }
+
   virtual ~Geometry() {}
 };
 

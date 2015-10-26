@@ -16,6 +16,7 @@ public:
   void texture_coord(SubGeo geo, const Vec3& pos, const Vec3& normal,
                      scalar& u, scalar& v) const override;
 
+  std::string to_string() const override;
 private:
   Vec3 N;
   Vec3 U, V;

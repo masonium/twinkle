@@ -1,4 +1,5 @@
 #include "sphere.h"
+#include <sstream>
 
 using std::move;
 
@@ -47,4 +48,11 @@ bounds::AABB Sphere::get_bounding_box() const
 {
   auto vr = Vec3(radius);
   return bounds::AABB(position - vr, position + vr);
+}
+
+std::string Sphere::to_string() const
+{
+  std::ostringstream s;
+  s << "Sphere(" << position << ", " << radius <<")";
+  return s.str();
 }

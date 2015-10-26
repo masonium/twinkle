@@ -28,6 +28,8 @@ public:
     return spectrum::zero;
   }
 
+  virtual std::string to_string() const { return "Material"; }
+
   virtual ~Material() {}
 };
 
@@ -51,6 +53,11 @@ class RoughColorMaterial : public RoughMaterial
 {
 public:
   RoughColorMaterial(scalar roughness, const spectrum& color);
+
+  std::string to_string() const override;
+
+private:
+  spectrum c;
 };
 
 class MirrorMaterial : public Material
