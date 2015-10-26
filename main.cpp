@@ -93,12 +93,19 @@ int main(int argc, char** args)
   else
     scene = make_shared<BasicScene>();
 
-  auto cam = model_scene(*scene, scalar(WIDTH)/scalar(HEIGHT), "assets/models/trumpet.obj", false);
+  scalar aspect = scalar(WIDTH)/scalar(HEIGHT);
+  //auto cam = model_scene(*scene, aspect, "assets/models/trumpet.obj", false);
+  auto cam = lua_scene(*scene, aspect, "assets/scripts/scene1.lua");
 
   Film f(WIDTH, HEIGHT);
 
   register_thread_state_manager(f, "assets/scripts/test.lua");
-  auto scheduler = make_scheduler(options.get("threads").as<int>());
+  auto num_threads = options.get("threads").as<int>();
+  if (num_threads == 0)
+    num_threads = num_system_procs();
+  cerr << "using " << num_threads << " threads.\n";
+
+  auto scheduler = make_scheduler(num_threads);
 
   unique_ptr<Integrator> igr;
   string igr_type = options["integrator"];
