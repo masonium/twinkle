@@ -17,4 +17,4 @@ shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio,
                                bool invert);
 shared_ptr<Camera> default_scene(Scene& scene, scalar aspect_ratio, int angle);
 shared_ptr<Camera> showcase_scene(Scene& scene, scalar ar, int angle);
-
+shared_ptr<Camera> lua_scene(Scene& scene, scalar ar, const string&);

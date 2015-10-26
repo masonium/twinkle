@@ -14,6 +14,7 @@ class Manager : public Singleton<Manager<T>>
 {
 private:
   Manager() : _next_key(0) { }
+  friend class Singleton<Manager<T>>;
 
 public:
   using key_type = uint32_t;

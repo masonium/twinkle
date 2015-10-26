@@ -21,6 +21,8 @@ public:
 
   spectrum call_texture_2d_function(const string&, const Vec2& coord);
 
+  lua_State* state() { return _state.get(); }
+
 private:
   unique_ptr<lua_State, lua_deleter> _state;
 };

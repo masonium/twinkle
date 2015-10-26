@@ -1,6 +1,11 @@
 #include <cassert>
-#include <script/runner.h>
-#include <util/filesystem.h>
+#include <iostream>
+#include "vec3.h"
+#include "script/runner.h"
+#include "script/make_util.h"
+#include "util/filesystem.h"
+
+using std::cerr;
 
 void lua_deleter::operator()(lua_State* ptr) const
 {
@@ -15,8 +20,11 @@ LuaRunner::LuaRunner() : _state(nullptr)
 LuaRunner::LuaRunner(const string& filename) : _state(luaL_newstate())
 {
   assert(filesystem::exists(filename.c_str()));
-  luaL_openlibs(_state.get());
-  assert(!luaL_dofile(_state.get(), filename.c_str()));
+  luaL_openlibs(state());
+
+  script::register_all(state());
+
+  assert(!luaL_dofile(state(), filename.c_str()));
 }
 
 spectrum LuaRunner::call_texture_2d_function(const string& fn, const Vec2& v)

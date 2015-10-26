@@ -5,6 +5,8 @@
 #include "env_light.h"
 #include "materials/rough_glass_material.h"
 #include "util/timer.h"
+#include "script/runner.h"
+#include "script/make_util.h"
 
 using std::shared_ptr;
 using std::make_shared;
@@ -278,4 +280,30 @@ shared_ptr<Camera> showcase_scene(Scene& scene, scalar ar, int angle)
   scene.add(make_shared<EnvironmentalLight>( make_shared<SolidColor>(spectrum{0.0})));
 
   return make_shared<PerspectiveCamera>(Vec3(gs * 0.5, gs * .7, -gs * .4), Vec3{gs/2, 0, gs/4}, Vec3::y_axis, PI/2.0, ar);
+}
+
+shared_ptr<Camera> lua_scene(Scene& scene, scalar ar, const string& filename)
+{
+  // LuaRunner runner(filename.c_str());
+
+  // auto L = runner.state();
+  // lua_getglobal(L, "shapes");
+  // assert(lua_istable(L, -1));
+  // lua_rawgeti(L, -1, 1);
+  // auto obj1 = script::lua_toshape(L, -1);
+  // lua_pop(L, 1);
+
+  // lua_rawgeti(L, -1, 2);
+  // auto obj2 = script::lua_toshape(L, -1);
+  // lua_pop(L, 1);
+    
+  // scene.add(obj1);
+  // scene.add(obj2);
+
+  scene.add(SHAPE(make_shared<Sphere>(Vec3::zero, 1.0), COLOR(spectrum{0.2, 0.2, 0.8})));
+  scene.add(SHAPE(make_shared<Plane>(Vec3::y_axis, 1.0), COLOR(spectrum{0.7})));
+
+  scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{2.0})));
+  
+  return make_shared<PerspectiveCamera>(Vec3(0.0, 1.0, 3.0), Vec3::zero, Vec3::y_axis, PI/2.0, ar);
 }
