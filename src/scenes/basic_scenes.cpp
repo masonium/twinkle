@@ -21,7 +21,7 @@ shared_ptr<Material> COLOR(const spectrum& x)
   return make_shared<RoughColorMaterial>(0, x);
 }
 
-shared_ptr<Camera> empty_scene(Scene& scene, scalar aspect_ratio)
+shared_ptr<Camera> empty_scene(Scene& scene)
 {
   auto sun_dir = Vec3::from_euler(PI/4, PI/4);
   scene.add(make_shared<EnvironmentalLight>(make_shared<ShirleySkyTexture>(sun_dir, 8)));
@@ -29,7 +29,7 @@ shared_ptr<Camera> empty_scene(Scene& scene, scalar aspect_ratio)
   return make_shared<SphericalCamera>(Vec3::zero, -Vec3::y_axis, Vec3::z_axis);
 }
 
-shared_ptr<Camera> glass_scene(Scene& scene, scalar aspect_ratio)
+shared_ptr<Camera> glass_scene(Scene& scene)
 {
   //auto glass = make_shared<GlassMaterial>();
   auto glass = make_glass_material(RoughGlassDistribution::GGX, 0.01);
@@ -53,11 +53,10 @@ shared_ptr<Camera> glass_scene(Scene& scene, scalar aspect_ratio)
   scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{1.0})));
 
   Vec3 cam_pos(1.0, 1.0, 2);
-  return make_shared<PerspectiveCamera>(cam_pos, Vec3::zero, Vec3::y_axis, PI / 2.0,
-                                        aspect_ratio);
+  return make_shared<PerspectiveCamera>(cam_pos, Vec3::zero, Vec3::y_axis, PI / 2.0);
 }
 
-shared_ptr<Camera> box_scene(Scene& scene, scalar ar, scalar angle)
+shared_ptr<Camera> box_scene(Scene& scene, scalar angle)
 {
   // right
   scene.add(SHAPE(translate(make_quad(Vec3::z_axis * 3.0, Vec3::y_axis * 3.0),
@@ -89,11 +88,11 @@ shared_ptr<Camera> box_scene(Scene& scene, scalar ar, scalar angle)
   //                                   spectrum{3.0}));
   scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{4.0})));
 
-  return make_shared<PerspectiveCamera>(Vec3(7*sin(angle * PI / 180), 0, 7*cos(angle * PI / 180)), Vec3::zero, Vec3::y_axis,
-                                        PI/2.0, ar);
+  Vec3 pos(7*sin(angle * PI / 180), 0, 7*cos(angle * PI / 180));
+  return make_shared<PerspectiveCamera>(pos, Vec3::zero, Vec3::y_axis, PI/2.0);
 }
 
-shared_ptr<Camera> many_sphere_scene(Scene& scene, scalar ar, int angle)
+shared_ptr<Camera> many_sphere_scene(Scene& scene, int angle)
 {
   const int SPHERES_PER_SIDE = 12;
   const scalar SW = 6.0;
@@ -127,11 +126,10 @@ shared_ptr<Camera> many_sphere_scene(Scene& scene, scalar ar, int angle)
 
   return make_shared<PerspectiveCamera>(
     12.0 * Vec3(sin(angle * PI/180), 0, -cos(angle*PI/180)),
-    Vec3::zero, Vec3::y_axis, PI/2, ar);
+    Vec3::zero, Vec3::y_axis, PI/2);
 }
 
-shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio,
-                               const string& model_filename, bool invert)
+shared_ptr<Camera> model_scene(Scene& scene, const string& model_filename, bool invert)
 {
   RawModel m;
   Timer tm;
@@ -179,11 +177,11 @@ shared_ptr<Camera> model_scene(Scene& scene, scalar aspect_ratio,
   scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{5.0})));
 
   return make_shared<PerspectiveCamera>(Vec3{2.0, 7.0, 7.0}, Vec3(0, 6, 0), Vec3::y_axis,
-                           PI/2.0, aspect_ratio);
+                           PI/2.0);
 }
 
 
-shared_ptr<Camera> default_scene(Scene& scene, scalar aspect_ratio, int angle)
+shared_ptr<Camera> default_scene(Scene& scene, int angle)
 {
   auto mirror = make_shared<MirrorMaterial>();
 
@@ -222,10 +220,10 @@ shared_ptr<Camera> default_scene(Scene& scene, scalar aspect_ratio, int angle)
   auto cam_pos = Mat33::from_axis_angle(Vec3::z_axis, angle * PI / 180) * Vec3{0, 7.5, 2.0};
   auto look_at = Vec3{0.0, 0.0, 0.0};
 
-  return make_shared<PerspectiveCamera>(cam_pos, look_at, Vec3{0, 0, 1}, PI/2, aspect_ratio);
+  return make_shared<PerspectiveCamera>(cam_pos, look_at, Vec3{0, 0, 1}, PI/2);
 }
 
-shared_ptr<Camera> showcase_scene(Scene& scene, scalar ar, int angle)
+shared_ptr<Camera> showcase_scene(Scene& scene, int angle)
 {
   vector<shared_ptr<Geometry>> geoms;
 
@@ -279,10 +277,10 @@ shared_ptr<Camera> showcase_scene(Scene& scene, scalar ar, int angle)
   scene.add(make_shared<PointLight>( Vec3{0, gs, -gs/2}, spectrum{2.0} ));
   scene.add(make_shared<EnvironmentalLight>( make_shared<SolidColor>(spectrum{0.0})));
 
-  return make_shared<PerspectiveCamera>(Vec3(gs * 0.5, gs * .7, -gs * .4), Vec3{gs/2, 0, gs/4}, Vec3::y_axis, PI/2.0, ar);
+  return make_shared<PerspectiveCamera>(Vec3(gs * 0.5, gs * .7, -gs * .4), Vec3{gs/2, 0, gs/4}, Vec3::y_axis, PI/2.0);
 }
 
-shared_ptr<Camera> lua_scene(Scene& scene, scalar ar, const string& filename)
+shared_ptr<Camera> lua_scene(Scene& scene, const string& filename)
 {
   LuaRunner runner(filename.c_str());
 
@@ -302,5 +300,5 @@ shared_ptr<Camera> lua_scene(Scene& scene, scalar ar, const string& filename)
 
   scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{2.0})));
   
-  return make_shared<PerspectiveCamera>(Vec3(0.0, 1.0, 3.0), Vec3::zero, Vec3::y_axis, PI/2.0, ar);
+  return make_shared<PerspectiveCamera>(Vec3(0.0, 1.0, 3.0), Vec3::zero, Vec3::y_axis, PI/2.0);
 }

@@ -10,11 +10,16 @@ class Material;
 class Shape;
 class Texture;
 class EnvironmentalLight;
+class Camera;
 
 class Vec3;
 class spectrum;
 
 #define LUA_CHECK_NUM_ARGS(L, n)  assert(lua_gettop(L) == n)
+#define LUA_CHECK_RNAGE_ARGS(L, m, n)  { int x = lua_gettop(L); \
+    assert(m <= x); \
+    assert(x <= n); \
+}
 
 namespace script
 {
@@ -27,6 +32,7 @@ namespace script
   int script_material(lua_State*, shared_ptr<Material>);
   int script_shape(lua_State*, shared_ptr<Shape>);
   int script_texture(lua_State*, shared_ptr<Texture>);
+  int script_camera(lua_State*, shared_ptr<Camera>);
 
 
   /*
@@ -37,6 +43,7 @@ namespace script
   shared_ptr<Material> lua_tomaterial(lua_State*, int);
   shared_ptr<Shape> lua_toshape(lua_State*, int);
   shared_ptr<Texture> lua_totexture(lua_State*, int);
+  shared_ptr<Camera> lua_tocamera(lua_State*, int);
 
   int shape(lua_State* L);
 

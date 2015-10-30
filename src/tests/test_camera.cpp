@@ -5,7 +5,7 @@ namespace test
 {
   TEST(Camera)
   {
-    PerspectiveCamera cam(Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0, 1.0);
+    PerspectiveCamera cam(Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0);
 
     const Vec3 pos = cam.position;
     const Vec3 fn = cam.aspect_forward.normal();
@@ -21,7 +21,7 @@ namespace test
 
   TEST(SinglePixelCamera)
   {
-    PerspectiveCamera cam(Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0, 1.0);
+    PerspectiveCamera cam(Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0);
     ConstSampler sampler{0.5, 0.5};
     Ray r = cam.sample_pixel(1, 1, 0, 0, sampler).ray;
     r.normalize();
@@ -31,7 +31,7 @@ namespace test
 
   TEST(TwoPixelCamera)
   {
-    PerspectiveCamera cam(Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0, 1.0);
+    PerspectiveCamera cam(Vec3{0, 0, 5}, Vec3{0, 0, 0}, Vec3{0, 1, 0}, PI / 2.0);
     ConstSampler sampler{0.5, 0.5};
     Ray r1 = cam.sample_pixel(2, 2, 0, 0, sampler).ray;
     Ray r2 = cam.sample_pixel(2, 2, 0, 1, sampler).ray;

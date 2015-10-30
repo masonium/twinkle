@@ -12,9 +12,13 @@ pair<scalar, scalar> Camera::to_unit_coord(uint w, uint h, int x, int y, Sample2
 
 
 PerspectiveCamera::PerspectiveCamera(Vec3 pos, Vec3 lookat_, Vec3 up_,
-                                     scalar fov_, scalar aspect_, scalar aperture_radius_,
-                                     scalar f) :
-  position(pos), aspect(aspect_), aperture(aperture_radius_), focal_length(f)
+                                     scalar fov_) :
+  PerspectiveCamera(pos, lookat_, up_, fov_, DepthLens())
+{
+}
+
+PerspectiveCamera::PerspectiveCamera(Vec3 pos, Vec3 lookat_, Vec3 up_,
+                                     scalar fov_, DepthLens depth_lens)
 {
   const Vec3 forward = lookat_ - pos;
   right = forward.cross(up_).normal();
@@ -28,16 +32,17 @@ PixelSample PerspectiveCamera::sample_pixel(uint w, uint h, int x, int y, Sample
   scalar fx, fy;
   tie(fx, fy) = to_unit_coord(w, h, x, y, ps);
 
+  scalar aspect = scalar(w)/scalar(h);
   Ray r{ position, up * fy + right * fx * aspect + aspect_forward };
   
-  if (aperture > 0)
+  if (dl.aperture_radius > 0)
   {
     auto lens_samp = sampler.sample_2d();
     r.normalize();
-    auto focal_pos = r.evaluate(focal_length);
+    auto focal_pos = r.evaluate(dl.focal_distance);
 
     const scalar lens_angle = 2 * PI * lens_samp[0];
-    const scalar lens_radius = aperture * sqrt(lens_samp[1]);
+    const scalar lens_radius = dl.aperture_radius * sqrt(lens_samp[1]);
 
     auto new_origin = position + right * lens_radius * cos(lens_angle) +
       up * lens_radius * sin(lens_angle);

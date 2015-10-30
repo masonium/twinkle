@@ -59,6 +59,11 @@ namespace script
     return script_ptr(L, obj);
   }
 
+  int script_camera(lua_State* L, shared_ptr<Camera> obj)
+  {
+    return script_ptr(L, obj);
+  }
+
   shared_ptr<EnvironmentalLight> lua_toenvlight(lua_State* L, int index)
   {
     return lua_toobj<EnvironmentalLight>(L, index);
@@ -78,6 +83,10 @@ namespace script
   shared_ptr<Texture> lua_totexture(lua_State* L, int index)
   {
     return lua_toobj<Texture>(L, index);
+  }
+  shared_ptr<Camera> lua_tocamera(lua_State* L, int index)
+  {
+    return lua_toobj<Camera>(L, index);
   }
 
   template <typename T, typename Tag>

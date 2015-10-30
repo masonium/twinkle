@@ -93,9 +93,8 @@ int main(int argc, char** args)
   else
     scene = make_shared<BasicScene>();
 
-  scalar aspect = scalar(WIDTH)/scalar(HEIGHT);
   //auto cam = model_scene(*scene, aspect, "assets/models/trumpet.obj", false);
-  auto cam = lua_scene(*scene, aspect, "assets/scripts/scene1.lua");
+  auto cam = lua_scene(*scene, "assets/scripts/scene1.lua");
 
   Film f(WIDTH, HEIGHT);
 

@@ -25,9 +25,17 @@ protected:
 class PerspectiveCamera : public Camera
 {
 public:
-  PerspectiveCamera(Vec3 pos, Vec3 lookat_, Vec3 up,
-         scalar fov_, scalar aspect_,
-         scalar aperture_radius_ = 0.0, scalar f = 1.0);
+  struct DepthLens
+  {
+    explicit DepthLens(scalar ar = 0, scalar fd = 1) : aperture_radius(ar), focal_distance(fd) { }
+
+    scalar aperture_radius;
+    scalar focal_distance;
+  };
+
+  PerspectiveCamera(Vec3 pos, Vec3 lookat_, Vec3 up, scalar fov_);
+  PerspectiveCamera(Vec3 pos, Vec3 lookat_, Vec3 up, scalar fov_,
+    DepthLens dl);
   
   PixelSample sample_pixel(uint w, uint h, int x, int y, Sampler& sampler) const override;
 
@@ -36,7 +44,7 @@ public:
   Vec3 up;
   Vec3 right;
   scalar aspect;
-  const scalar aperture, focal_length;
+  const DepthLens dl;
 };
 
 
