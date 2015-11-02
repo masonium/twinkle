@@ -1,4 +1,5 @@
 #include "sphere.h"
+#include "util.h"
 #include <sstream>
 
 using std::move;
@@ -19,7 +20,7 @@ scalar_fp Sphere::intersect(const Ray& r) const
     return sfp_none;
 }
 
-Vec3 Sphere::normal(SubGeo geo, const Vec3& point) const
+Vec3 Sphere::normal(SubGeo UNUSED(geo), const Vec3& point) const
 {
   return (point - position).normal();
 }
@@ -35,7 +36,7 @@ Vec3 Sphere::sample_shadow_ray_dir(const Intersection& isect,
 }
 */
 
-void Sphere::texture_coord(SubGeo geo, const Vec3& pos, const Vec3& normal,
+void Sphere::texture_coord(SubGeo UNUSED(geo), const Vec3& UNUSED(pos), const Vec3& normal,
                            scalar& u, scalar& v) const
 {
   scalar theta, phi;
