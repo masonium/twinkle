@@ -39,7 +39,6 @@ string format_duration(double seconds)
   }
   if (mins > 0 || print_rest)
   {
-    print_rest = true;
     s << setfill('0') << setw(2) << mins << "m";
   }
   s << setfill('0') << setw(2) << secs << "." << setfill('0') << setw(3) << milli << "s";
