@@ -59,7 +59,7 @@ private:
 
   std::queue<shared_ptr<SchedulerTask>> task_queue;
   std::mutex queue_mutex;
-  std::atomic<uint> pending_task_count;
+  std::atomic<int> pending_task_count;
 
   std::atomic<uint> num_threads_free;
 
@@ -96,7 +96,7 @@ void LocalThreadScheduler::worker(LocalThreadScheduler& scheduler, int worker_id
 
   while (keep_running)
   {
-    uint task_count = scheduler.pending_task_count;
+    int task_count = scheduler.pending_task_count;
     if (task_count == 0)
     {
       std::this_thread::yield();
