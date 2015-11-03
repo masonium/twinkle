@@ -16,7 +16,7 @@ class Vec3;
 class spectrum;
 
 #define LUA_CHECK_NUM_ARGS(L, n)  assert(lua_gettop(L) == n)
-#define LUA_CHECK_RNAGE_ARGS(L, m, n)  { int x = lua_gettop(L); \
+#define LUA_CHECK_RANGE_ARGS(L, m, n)  { decltype(m) x = lua_gettop(L); \
     assert(m <= x); \
     assert(x <= n); \
 }
@@ -33,7 +33,6 @@ namespace script
   int script_shape(lua_State*, shared_ptr<Shape>);
   int script_texture(lua_State*, shared_ptr<Texture>);
   int script_camera(lua_State*, shared_ptr<Camera>);
-
 
   /*
     The lua_to* functions act exaclty as the standard lua_to* functions.

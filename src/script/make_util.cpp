@@ -8,6 +8,7 @@
 #include "shape.h"
 #include "script/make_geometry.h"
 #include "script/make_material.h"
+#include "script/make_scene.h"
 
 using std::cerr;
 using std::make_shared;
@@ -144,6 +145,9 @@ namespace script
 
     lua_register(L, "material_color", color_material);
     lua_register(L, "envlight_color", color_env_light);
+
+    lua_register(L, "camera_spherical", spherical_camera);
+    lua_register(L, "camera_perspective", perspective_camera);
 
     lua_register(L, "shape", shape);
   }
