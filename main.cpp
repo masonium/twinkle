@@ -104,8 +104,6 @@ int main(int argc, char** args)
     num_threads = num_system_procs();
   cerr << "using " << num_threads << " threads.\n";
 
-  auto scheduler = make_scheduler(num_threads);
-
   unique_ptr<Integrator> igr;
   string igr_type = options["integrator"];
 
@@ -143,32 +141,38 @@ int main(int argc, char** args)
 
   auto benchmark_trials = options.get("benchmark").as<int>();
   bool write_image =  options.get("output_image").as<bool>();
-  if (benchmark_trials > 1)
-  {
-    write_image = false;
-    RunningStats stats;
-    
-    cerr << "Benchmarking with " << benchmark_trials << " trials" << endl;
-    const int toss = 3;
 
-    for (int i = 0; i < benchmark_trials + toss; i += 1)
+
+  {
+    auto scheduler = make_scheduler(num_threads);
+
+    if (benchmark_trials > 1)
     {
-      Film f(WIDTH, HEIGHT);
+      write_image = false;
+      RunningStats stats;
+    
+      cerr << "Benchmarking with " << benchmark_trials << " trials" << endl;
+      const int toss = 3;
+
+      for (int i = 0; i < benchmark_trials + toss; i += 1)
+      {
+        Film f(WIDTH, HEIGHT);
+        Timer tm;
+        igr->render(*cam, *scene, *scheduler, f);
+        if (i >= toss)
+          stats.update(tm.since());
+      }
+
+      cerr << "Render Time: " << format_duration(stats.mean()) << " +/- " 
+           << format_duration(stats.stdev()) << endl;
+    }
+    else
+    {
       Timer tm;
       igr->render(*cam, *scene, *scheduler, f);
-      if (i >= toss)
-        stats.update(tm.since());
+      render_time = tm.since();
+      cerr << "Render Time: " << format_duration(render_time) << endl;
     }
-
-    cerr << "Render Time: " << format_duration(stats.mean()) << " +/- " 
-         << format_duration(stats.stdev()) << endl;
-  }
-  else
-  {
-    Timer tm;
-    igr->render(*cam, *scene, *scheduler, f);
-    render_time = tm.since();
-    cerr << "Render Time: " << format_duration(render_time) << endl;
   }
 
   shared_ptr<ToneMapper> mapper;

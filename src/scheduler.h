@@ -12,6 +12,7 @@
 using std::istream;
 using std::ostream;
 using std::shared_ptr;
+using std::unique_ptr;
 
 class LocalTask
 {
@@ -38,4 +39,4 @@ public:
   virtual ~Scheduler() { }
 };
 
-shared_ptr<Scheduler> make_scheduler(uint num_threads);
+unique_ptr<Scheduler> make_scheduler(uint num_threads);

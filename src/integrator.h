@@ -80,6 +80,7 @@ void grid_render(const T& renderer, const Camera& cam, const Scene& scene, Film&
   grid_subtask_options opt;
   opt.grid_subdivision = subdiv;
   auto subrects = subtasks_from_grid(film.width, film.height, opt);
+
   using RT = RenderTask<T>;
   vector<shared_ptr<RT>> render_tasks;
   render_tasks.resize(subrects.size());

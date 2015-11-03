@@ -2,6 +2,7 @@
 #include <iterator>
 #include <algorithm>
 #include <cstring>
+#include <mutex>
 #include <cassert>
 #include "film.h"
 
@@ -14,16 +15,32 @@ using std::accumulate;
 using std::cerr;
 
 Film::Film(uint w_, uint h_)
-  : width(w_), height(h_), samples(0), plate(w_ * h_)
+  : width(w_), height(h_), plate(w_ * h_)
 {
 }
 
 Film::Film(const Film& f)
-  : width(f.width), height(f.height), samples(0), plate(f.plate)
+  : width(f.width), height(f.height), plate(f.plate)
 {
 }
 
-Film::Film(istream& in) : width(0), height(0), samples(0)
+Film& Film::operator=(const Film& f)
+{
+  width = f.width;
+  height = f.height;
+  plate = f.plate;
+  return *this;
+}
+
+Film& Film::operator=(Film&& f)
+{
+  width = f.width;
+  height = f.height;
+  swap(plate, f.plate);
+  return *this;
+}
+
+Film::Film(istream& in) : width(0), height(0)
 {
   char buf[8];
   in.read(buf, 8);
@@ -48,15 +65,16 @@ Film::Film(istream& in) : width(0), height(0), samples(0)
 void Film::add_sample(const PixelSample& ps, const spectrum& s)
 {
   BoxFilter().add_sample(*this, ps, s);
-  ++samples;
 }
 
 vector<spectrum> Film::pixel_list() const
 {
   vector<spectrum> ret;
   for (const auto& p: plate)
+  {
+    assert(p.weight > 0);
     ret.push_back( p.total / p.weight );
-
+  }
   return ret;
 }
 
@@ -64,6 +82,8 @@ void Film::merge(const Film& f)
 {
   assert(width == f.width);
   assert(height == f.height);
+  assert(plate.size() == f.plate.size());
+
   transform(plate.begin(), plate.end(), f.plate.begin(),
             plate.begin(), [](auto& x, const auto& y) { return x + y; });
 }
@@ -121,11 +141,6 @@ void Film::render_to_console(ostream& out) const
   }
 }
 
-Film Film::clone() const
-{
-  return Film(width, height);
-}
-
 void Film::clear()
 {
   fill(plate.begin(), plate.end(), Pixel());
@@ -152,3 +167,18 @@ Film::Pixel Film::Pixel::operator+(const Pixel& p) const
   Pixel x(*this);
   return x += p;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+ostream& operator<<(ostream& o, const Film::Pixel& pixel)
+{
+  o << "Rect(" << pixel.total << ", " << pixel.weight << ")";
+  return o;
+}
+
+ostream& operator<<(ostream& o, const Film::Rect& rect)
+{
+  o << "Rect(" << rect.x << ", " << rect.y << "; " << rect.width << ", " << rect.height << ")";
+  return o;
+}
+

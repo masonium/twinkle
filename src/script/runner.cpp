@@ -29,7 +29,7 @@ LuaRunner::LuaRunner(const string& filename) : _state(luaL_newstate())
 
 spectrum LuaRunner::call_texture_2d_function(const string& fn, const Vec2& v)
 {
-  auto L = _state.get();
+  auto L = state();
   lua_getglobal(L, fn.c_str());
   lua_pushnumber(L, v[0]);
   lua_pushnumber(L, v[1]);

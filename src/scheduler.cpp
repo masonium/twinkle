@@ -11,6 +11,7 @@ using std::future;
 using std::unique_lock;
 using std::mutex;
 using std::make_shared;
+using std::make_unique;
 
 class LocalThreadScheduler : public Scheduler
 {
@@ -61,6 +62,7 @@ private:
   std::mutex queue_mutex;
   std::atomic<int> pending_task_count;
 
+  std::atomic<uint> num_threads_initialized;
   std::atomic<uint> num_threads_free;
 
   std::vector<std::thread> pool;
@@ -93,6 +95,7 @@ void LocalThreadScheduler::worker(LocalThreadScheduler& scheduler, int worker_id
   bool keep_running = true;
 
   register_thread();
+  ++scheduler.num_threads_initialized;
 
   while (keep_running)
   {
@@ -118,7 +121,8 @@ void LocalThreadScheduler::worker(LocalThreadScheduler& scheduler, int worker_id
   }
 }
 
-LocalThreadScheduler::LocalThreadScheduler(uint num_threads_) : pending_task_count(0)
+LocalThreadScheduler::LocalThreadScheduler(uint num_threads_)
+  : pending_task_count(0), num_threads_initialized(0)
 {
   if (num_threads_ == 0)
     num_threads_ = num_system_procs();
@@ -156,18 +160,22 @@ void LocalThreadScheduler::on_task_completed(int worker_id, const shared_ptr<Sch
 
 void LocalThreadScheduler::complete_pending()
 {
+  while (num_threads_initialized < pool.size());
+
   // wait for the queue to be empty
-  while (true)
-  {
-    unique_lock<std::mutex> queue_lock(queue_mutex, std::try_to_lock);
+  while (pending_task_count > 0);
 
-    if (queue_lock && task_queue.empty())
-      break;
-  }
+  // {
+  //   unique_lock<std::mutex> queue_lock(queue_mutex, std::try_to_lock);
 
-  // wait for all of the threads to be free
+  //   if (queue_lock && task_queue.empty())
+  //     break;
+  // }
+
+  // // wait for all of the threads to be free
   while (num_threads_free != pool.size())
     std::this_thread::yield();
+  std::cerr << num_threads_free << ", " << pending_task_count << "\n";
 }
 
 LocalThreadScheduler::~LocalThreadScheduler()
@@ -181,15 +189,15 @@ LocalThreadScheduler::~LocalThreadScheduler()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-shared_ptr<Scheduler> make_scheduler(uint num_threads)
+unique_ptr<Scheduler> make_scheduler(uint num_threads)
 {
   assert(num_threads > 0);
   if (num_threads == 1)
   {
-    return make_shared<BlockingScheduler>();
+    return make_unique<BlockingScheduler>();
   }
   else
   {
-    return make_shared<LocalThreadScheduler>(num_threads);
+    return make_unique<LocalThreadScheduler>(num_threads);
   }
 }

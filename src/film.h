@@ -83,8 +83,8 @@ public:
   Film(istream& in);
 
   Film(const Film& f);
-  Film& operator =(const Film& f) = delete;
-  Film& operator =(Film&& f) = delete;
+  Film& operator=(Film&& f);
+  Film& operator=(const Film& f);
 
   void add_sample(const PixelSample& ps, const spectrum& s);
   Rect rect() const { return Rect(0, 0, width, height); }
@@ -105,12 +105,9 @@ public:
     return plate[index(x, y)];
   }
 
-  Film clone() const;
-
   void clear();
 
-  const uint width, height;  
-  atomic<uint64_t> samples;
+  uint width, height;  
 
 private:
   
@@ -125,3 +122,6 @@ private:
   
   vector<Pixel> plate;
 };
+
+ostream& operator<<(ostream& o, const Film::Pixel& rect);
+ostream& operator<<(ostream& o, const Film::Rect& rect);
