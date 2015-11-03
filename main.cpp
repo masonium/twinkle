@@ -93,7 +93,7 @@ int main(int argc, char** args)
   else
     scene = make_shared<BasicScene>();
 
-  //auto cam = model_scene(*scene, aspect, "assets/models/trumpet.obj", false);
+  //auto cam = model_scene(*scene, "assets/models/tak-cube.obj", false);
   auto cam = lua_scene(*scene, "assets/scripts/scene1.lua");
 
   Film f(WIDTH, HEIGHT);
