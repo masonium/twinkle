@@ -39,10 +39,10 @@ spectrum spectrum::clamp(scalar m, scalar M) const
 
 spectrum spectrum::from_hex(uint hex)
 {
-  int b = hex % 0xff;
-  int g = (hex >> 8) & 0xff;
-  int r = (hex >> 16) & 0xff;
-  const scalar denom = 256.0;
+  uint b = hex & 0xff;
+  uint g = (hex >> 8) & 0xff;
+  uint r = (hex >> 16) & 0xff;
+  const scalar denom = 255.0;
   return spectrum{r / denom, g / denom, b / denom};
 }
 

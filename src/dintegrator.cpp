@@ -74,7 +74,7 @@ spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene,
     if (isect_opt.is())
       return spectrum(1.0 / max<scalar>((isect_opt.get().position - ray.position).norm(), 1.0));
     else
-      return spectrum{0.0};
+      return spectrum::zero;
   }
   if (opt.type == DI_OBJECT_ID)
   {
@@ -122,7 +122,7 @@ spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene,
     {
       return spectrum(scene.intersect(Ray{isect.position, brdf_dir}.nudge()).is() ? 0.0 : 1.0);
     }
-    return spectrum{0.0};
+    return spectrum::zero;
   }
 
   return spectrum::zero;

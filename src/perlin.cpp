@@ -1,5 +1,6 @@
 #include "perlin.h"
 #include <algorithm>
+#include <random>
 
 using std::cerr;
 using std::make_shared;

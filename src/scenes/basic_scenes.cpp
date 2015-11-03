@@ -295,10 +295,10 @@ shared_ptr<Camera> lua_scene(Scene& scene, const string& filename)
   auto obj2 = script::lua_toshape(L, -1);
   lua_pop(L, 1);
 
-  cerr << obj1->to_string() << endl;
-  cerr << obj2->to_string() << endl;
+  scene.add(obj1);
+  scene.add(obj2);
 
   scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{2.0})));
   
-  return make_shared<PerspectiveCamera>(Vec3(0.0, 1.0, 3.0), Vec3::zero, Vec3::y_axis, PI/2.0);
+  return make_shared<PerspectiveCamera>(Vec3(0.0, 1.0, 6.0), Vec3::zero, Vec3::y_axis, PI/2.0);
 }

@@ -54,7 +54,7 @@ Light const* KDScene::sample_light(scalar r1, scalar& light_prob) const
     return nullptr;
   }
 
-  light_prob = scalar{1.0} / lights_.size();
+  light_prob = 1.0 / lights_.size();
 
   auto max_light_idx = lights_.size() - 1;
   return lights_[min(max_light_idx, decltype(max_light_idx)(r1 * lights_.size()))].get();
@@ -68,7 +68,7 @@ optional<Intersection> KDScene::intersect(const Ray& ray) const
    */
 
   SubGeo best_geom = SUBGEO_NONE;
-  Shape const* best_shape{nullptr};
+  Shape const* best_shape = nullptr;
 
   auto best_t = sfp_none;
 
@@ -86,7 +86,7 @@ optional<Intersection> KDScene::intersect(const Ray& ray) const
 
   {
     SubGeo geom = SUBGEO_NONE;
-    Shape const* shape{nullptr};
+    Shape const* shape = nullptr;
 
     auto t = shape_tree_->intersect(ray, best_t, shape, geom);
     if (t < best_t)
@@ -105,7 +105,7 @@ optional<Intersection> KDScene::intersect(const Ray& ray) const
 
 spectrum KDScene::environment_light_emission(const Vec3& dir) const
 {
-  return env_light_ ?  env_light_->emission(dir) : spectrum{0.0};
+  return env_light_ ? env_light_->emission(dir) : spectrum::zero;
 }
 
 #endif
