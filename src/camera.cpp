@@ -19,6 +19,7 @@ PerspectiveCamera::PerspectiveCamera(Vec3 pos, Vec3 lookat_, Vec3 up_,
 
 PerspectiveCamera::PerspectiveCamera(Vec3 pos, Vec3 lookat_, Vec3 up_,
                                      scalar fov_, DepthLens depth_lens)
+  : position(pos), dl(depth_lens)
 {
   const Vec3 forward = lookat_ - pos;
   right = forward.cross(up_).normal();
@@ -32,7 +33,7 @@ PixelSample PerspectiveCamera::sample_pixel(uint w, uint h, int x, int y, Sample
   scalar fx, fy;
   tie(fx, fy) = to_unit_coord(w, h, x, y, ps);
 
-  scalar aspect = scalar(w)/scalar(h);
+  const scalar aspect = scalar(w)/scalar(h);
   Ray r{ position, up * fy + right * fx * aspect + aspect_forward };
   
   if (dl.aperture_radius > 0)
