@@ -21,6 +21,6 @@ namespace script
   {
     LUA_CHECK_NUM_ARGS(L, 1);
     auto s = lua_tospectrum(L, 1);
-    return script_envlight(L, make_shared<EnvironmentalLight>(make_shared<SolidColor>(s)));
+    return script_envlight(L, make_shared<EnvironmentLight>(make_shared<SolidColor>(s)));
   }
 }

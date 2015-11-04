@@ -3,7 +3,7 @@
 
 using std::tie;
 
-spectrum EnvironmentalLight::emission(const Vec3& dir) const
+spectrum EnvironmentLight::emission(const Vec3& dir) const
 {
   scalar theta, phi;
   tie(theta, phi) = dir.to_euler();

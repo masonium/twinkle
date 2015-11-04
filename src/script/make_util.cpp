@@ -55,7 +55,7 @@ namespace script
     return script_ptr(L, obj);
   }
 
-  int script_envlight(lua_State* L, shared_ptr<EnvironmentalLight> obj)
+  int script_envlight(lua_State* L, shared_ptr<EnvironmentLight> obj)
   {
     return script_ptr(L, obj);
   }
@@ -65,9 +65,9 @@ namespace script
     return script_ptr(L, obj);
   }
 
-  shared_ptr<EnvironmentalLight> lua_toenvlight(lua_State* L, int index)
+  shared_ptr<EnvironmentLight> lua_toenvlight(lua_State* L, int index)
   {
-    return lua_toobj<EnvironmentalLight>(L, index);
+    return lua_toobj<EnvironmentLight>(L, index);
   }
   shared_ptr<Geometry> lua_togeometry(lua_State* L, int index)
   {

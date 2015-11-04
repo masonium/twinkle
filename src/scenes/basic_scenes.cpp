@@ -24,7 +24,7 @@ shared_ptr<Material> COLOR(const spectrum& x)
 shared_ptr<Camera> empty_scene(Scene& scene)
 {
   auto sun_dir = Vec3::from_euler(PI/4, PI/4);
-  scene.add(make_shared<EnvironmentalLight>(make_shared<ShirleySkyTexture>(sun_dir, 8)));
+  scene.add(make_shared<EnvironmentLight>(make_shared<ShirleySkyTexture>(sun_dir, 8)));
 
   return make_shared<SphericalCamera>(Vec3::zero, -Vec3::y_axis, Vec3::z_axis);
 }
@@ -50,7 +50,7 @@ shared_ptr<Camera> glass_scene(Scene& scene)
   // Vec3 light_pos = Vec3::z_axis * 6;
   // scene.add( make_shared<DirectionalLight>( light_pos, spectrum{1.0}));
 
-  scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{1.0})));
+  scene.add(make_shared<EnvironmentLight>(make_shared<SolidColor>(spectrum{1.0})));
 
   Vec3 cam_pos(1.0, 1.0, 2);
   return make_shared<PerspectiveCamera>(cam_pos, Vec3::zero, Vec3::y_axis, PI / 2.0);
@@ -86,7 +86,7 @@ shared_ptr<Camera> box_scene(Scene& scene, scalar angle)
                                     spectrum{3.0}));
   // scene.add(make_shared<PointLight>(Vec3{0, 2.9, 0},
   //                                   spectrum{3.0}));
-  scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{4.0})));
+  scene.add(make_shared<EnvironmentLight>(make_shared<SolidColor>(spectrum{4.0})));
 
   Vec3 pos(7*sin(angle * PI / 180), 0, 7*cos(angle * PI / 180));
   return make_shared<PerspectiveCamera>(pos, Vec3::zero, Vec3::y_axis, PI/2.0);
@@ -174,7 +174,7 @@ shared_ptr<Camera> model_scene(Scene& scene, const string& model_filename, bool 
   auto plane_mat = make_shared<RoughMaterial>(0.0, make_shared<ScriptTexture>("checker"));
   scene.add(make_shared<Shape>(make_shared<Plane>(Vec3::y_axis, 2), plane_mat));
 
-  scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{5.0})));
+  scene.add(make_shared<EnvironmentLight>(make_shared<SolidColor>(spectrum{5.0})));
 
   return make_shared<PerspectiveCamera>(Vec3{2.0, 7.0, 7.0}, Vec3(0, 6, 0), Vec3::y_axis,
                            PI/2.0);
@@ -215,7 +215,7 @@ shared_ptr<Camera> default_scene(Scene& scene, int angle)
   auto env_light_tex = make_shared<Checkerboard2D>(spectrum{1.0}, spectrum{0.0}, 2, 1);
   //auto env_light_tex = make_shared<SolidColor>(spectrum{1.0});
   //auto env_light_tex = make_shared<ShirleySkyTexture>(Vec3{0, 0, 1}, 20);
-  scene.add(make_shared<EnvironmentalLight>(env_light_tex));
+  scene.add(make_shared<EnvironmentLight>(env_light_tex));
 
   auto cam_pos = Mat33::from_axis_angle(Vec3::z_axis, angle * PI / 180) * Vec3{0, 7.5, 2.0};
   auto look_at = Vec3{0.0, 0.0, 0.0};
@@ -275,7 +275,7 @@ shared_ptr<Camera> showcase_scene(Scene& scene, int angle)
   scalar gs = (grid_size - 1) * spacing ;
 
   scene.add(make_shared<PointLight>( Vec3{0, gs, -gs/2}, spectrum{2.0} ));
-  scene.add(make_shared<EnvironmentalLight>( make_shared<SolidColor>(spectrum{0.0})));
+  scene.add(make_shared<EnvironmentLight>( make_shared<SolidColor>(spectrum{0.0})));
 
   return make_shared<PerspectiveCamera>(Vec3(gs * 0.5, gs * .7, -gs * .4), Vec3{gs/2, 0, gs/4}, Vec3::y_axis, PI/2.0);
 }
@@ -298,7 +298,7 @@ shared_ptr<Camera> lua_scene(Scene& scene, const string& filename)
   scene.add(obj1);
   scene.add(obj2);
 
-  scene.add(make_shared<EnvironmentalLight>(make_shared<SolidColor>(spectrum{2.0})));
+  scene.add(make_shared<EnvironmentLight>(make_shared<SolidColor>(spectrum{2.0})));
   
   return make_shared<PerspectiveCamera>(Vec3(0.0, 1.0, 6.0), Vec3::zero, Vec3::y_axis, PI/2.0);
 }

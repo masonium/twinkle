@@ -18,7 +18,7 @@ void BasicScene::add(shared_ptr<const Light> light)
 {
   lights_.push_back(light);
 }
-void BasicScene::add(shared_ptr<const EnvironmentalLight> env_light_)
+void BasicScene::add(shared_ptr<const EnvironmentLight> env_light_)
 {
   this->env_light_ = env_light_;
 }

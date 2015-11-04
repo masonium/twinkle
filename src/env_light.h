@@ -7,10 +7,10 @@
 
 using std::shared_ptr;
 
-class EnvironmentalLight
+class EnvironmentLight
 {
 public:
-  EnvironmentalLight(shared_ptr<Texture2D> tex) : texture(tex) { }
+  EnvironmentLight(shared_ptr<Texture2D> tex) : texture(tex) { }
 
   spectrum emission(const Vec3& dir) const;
 

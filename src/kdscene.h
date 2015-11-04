@@ -15,7 +15,7 @@ public:
 
   void add(shared_ptr<const Shape>) override;
   void add(shared_ptr<const Light>) override;
-  void add(shared_ptr<const EnvironmentalLight>) override;
+  void add(shared_ptr<const EnvironmentLight>) override;
 
   void prepare() override;
 
@@ -27,7 +27,7 @@ public:
 
   const vector<shared_ptr<const Light>>& lights() const override;
 
-  const shared_ptr<const EnvironmentalLight>& env_light() const override
+  const shared_ptr<const EnvironmentLight>& env_light() const override
   {
     return env_light_;
   }
@@ -45,7 +45,7 @@ private:
   unique_ptr<kd::Tree<Shape>> shape_tree_;
 
   vector<shared_ptr<const Light>> lights_;
-  shared_ptr<const EnvironmentalLight> env_light_;
+  shared_ptr<const EnvironmentLight> env_light_;
 };
 
 #endif
