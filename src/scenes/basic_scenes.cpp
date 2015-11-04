@@ -6,7 +6,7 @@
 #include "materials/rough_glass_material.h"
 #include "util/timer.h"
 #include "script/runner.h"
-#include "script/make_util.h"
+#include "script/script_util.h"
 
 using std::shared_ptr;
 using std::make_shared;

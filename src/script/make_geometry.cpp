@@ -1,6 +1,6 @@
 #include <lua.hpp>
 #include "geometries.h"
-#include "script/make_util.h"
+#include "script/script_util.h"
 #include "script/make_geometry.h"
 
 using std::make_shared;

@@ -2,7 +2,7 @@
 #include "make_scene.h"
 #include "vec3.h"
 #include "camera.h"
-#include "script/make_util.h"
+#include "script/script_util.h"
 
 using std::make_shared;
 

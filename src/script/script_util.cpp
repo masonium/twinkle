@@ -2,7 +2,7 @@
 #include <iostream>
 #include <cassert>
 #include "util/manager.h"
-#include "script/make_util.h"
+#include "script/script_util.h"
 #include "vec3.h"
 #include "spectrum.h"
 #include "shape.h"

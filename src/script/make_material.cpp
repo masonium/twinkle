@@ -3,7 +3,7 @@
 #include "material.h"
 #include "env_light.h"
 #include "script/make_material.h"
-#include "script/make_util.h"
+#include "script/script_util.h"
 
 using std::shared_ptr;
 using std::make_shared;

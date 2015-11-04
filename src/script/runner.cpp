@@ -2,7 +2,7 @@
 #include <iostream>
 #include "vec3.h"
 #include "script/runner.h"
-#include "script/make_util.h"
+#include "script/script_util.h"
 #include "util/filesystem.h"
 
 using std::cerr;
