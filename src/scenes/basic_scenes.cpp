@@ -177,7 +177,7 @@ shared_ptr<Camera> model_scene(Scene& scene, const string& model_filename, bool 
   scene.add(make_shared<EnvironmentLight>(make_shared<SolidColor>(spectrum{5.0})));
 
   return make_shared<PerspectiveCamera>(Vec3{2.0, 7.0, 7.0}, Vec3(0, 6, 0), Vec3::y_axis,
-                           PI/2.0);
+                                        PI/2.0);
 }
 
 
@@ -285,20 +285,33 @@ shared_ptr<Camera> lua_scene(Scene& scene, const string& filename)
   LuaRunner runner(filename.c_str());
 
   auto L = runner.state();
-  lua_getglobal(L, "shapes");
+  lua_getglobal(L, "scene");
+  assert(lua_isfunction(L, -1));
+  assert(lua_pcall(L, 0, 1, 0) == 0);
+
+
+  // shapes
+  script::lua_gettablefield(L, -1, "shapes");
   assert(lua_istable(L, -1));
-  lua_rawgeti(L, -1, 1);
-  auto obj1 = script::lua_toshape(L, -1);
+
+  int num_shapes = lua_objlen(L, -1);
+
+  for (int i = 0; i < num_shapes; ++i)
+  {
+    lua_rawgeti(L, -1, i+1);
+    auto obj = script::lua_toshape(L, -1);
+    lua_pop(L, 1);
+    scene.add(obj);
+  }
+
   lua_pop(L, 1);
 
-  lua_rawgeti(L, -1, 2);
-  auto obj2 = script::lua_toshape(L, -1);
-  lua_pop(L, 1);
+  assert(lua_istable(L, -1));
+  script::lua_gettablefield(L, -1, "camera");
 
-  scene.add(obj1);
-  scene.add(obj2);
+  auto camera = script::lua_tocamera(L, -1);
 
   scene.add(make_shared<EnvironmentLight>(make_shared<SolidColor>(spectrum{2.0})));
   
-  return make_shared<PerspectiveCamera>(Vec3(0.0, 1.0, 6.0), Vec3::zero, Vec3::y_axis, PI/2.0);
+  return camera;
 }

@@ -24,7 +24,14 @@ LuaRunner::LuaRunner(const string& filename) : _state(luaL_newstate())
 
   script::register_all(state());
 
-  assert(!luaL_dofile(state(), filename.c_str()));
+  auto result = luaL_dofile(state(), filename.c_str());
+  if (result != 0)
+  {
+    auto error = lua_tostring(state(), -1);
+    cerr << "Error running " << filename << ":\n";
+    cerr << error << std::endl;
+    assert(false);
+  }
 }
 
 spectrum LuaRunner::call_texture_2d_function(const string& fn, const Vec2& v)

@@ -49,6 +49,17 @@ namespace script
   Vec3 lua_tovector(lua_State* L, int index);
   spectrum lua_tospectrum(lua_State* L, int index);
 
+  /**
+   * Push the value t[key] to the top of the stack, where t is a table-like value
+   * at index.
+   */
+  void lua_gettablefield(lua_State* L, int index, const char *key);
+
+  /**
+   * Return a string representing the type of the object at index.
+   */
+  std::string lua_typeat(lua_State* L, int index);
+
   /*
     Register all twinkle-provided methods in the lua state.
    */

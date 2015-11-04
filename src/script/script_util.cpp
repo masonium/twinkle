@@ -18,7 +18,7 @@ namespace script
   template <typename T>
   int script_ptr(lua_State* L, shared_ptr<T> obj)
   {
-    auto& mgr =  Manager<T>::instance();
+    auto& mgr = Manager<T>::instance();
     auto ret = mgr.save(obj);
     auto user_data = lua_newuserdata(L, sizeof(ret));
     *reinterpret_cast<decltype(ret)*>(user_data) = ret;
@@ -98,12 +98,29 @@ namespace script
       // translate the index to be positive
       int pos_index = index > 0 ? index : (lua_gettop(L) + index + 1);
       T v;
-      for (auto i = 0u; i < 3; ++i)
+
+      // construct the vector based on the table length
+      auto tlen = lua_objlen(L, pos_index);
+
+      if (tlen == 3)
       {
-        lua_rawgeti(L, pos_index, i+1);
-        v[i] = lua_tonumber(L, -1);
+        for (auto i = 0u; i < 3; ++i)
+        {
+          lua_rawgeti(L, pos_index, i+1);
+          v[i] = lua_tonumber(L, -1);
+        }
+        lua_pop(L, 3);
       }
-      lua_pop(L, 3);
+      else if (tlen == 1)
+      {
+        lua_rawgeti(L, pos_index, 1);
+        v[0] = v[1] = v[2] = lua_tonumber(L, -1);
+        lua_pop(L, 1);
+      }
+      else
+      {
+        assert("lua_tovtype invalid for tables not of length 1 or 3" && false);
+      }
       return v;
     }
     else
@@ -126,6 +143,21 @@ namespace script
     lua_tospectrum_tag ltt;
     return lua_tovtype<spectrum, lua_tospectrum_tag>(L, index, ltt);
   }
+
+  void lua_gettablefield(lua_State* L, int index, const char *key)
+  {
+    lua_pushvalue(L, index);
+    assert(lua_istable(L, -1));
+    lua_pushstring(L, key);
+    lua_gettable(L, -2);
+    lua_remove(L, -2);
+  }
+
+  std::string lua_typeat(lua_State* L, int index)
+  {
+    return std::move(std::string(lua_typename(L, lua_type(L, index))));
+  }
+
 
   int shape(lua_State* L)
   {
