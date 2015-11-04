@@ -160,22 +160,15 @@ void LocalThreadScheduler::on_task_completed(int worker_id, const shared_ptr<Sch
 
 void LocalThreadScheduler::complete_pending()
 {
+  // wait for all threads to initialize
   while (num_threads_initialized < pool.size());
 
   // wait for the queue to be empty
   while (pending_task_count > 0);
 
-  // {
-  //   unique_lock<std::mutex> queue_lock(queue_mutex, std::try_to_lock);
-
-  //   if (queue_lock && task_queue.empty())
-  //     break;
-  // }
-
-  // // wait for all of the threads to be free
+  // wait for all of the threads to be free
   while (num_threads_free != pool.size())
     std::this_thread::yield();
-  std::cerr << num_threads_free << ", " << pending_task_count << "\n";
 }
 
 LocalThreadScheduler::~LocalThreadScheduler()
