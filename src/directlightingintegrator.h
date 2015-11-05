@@ -13,16 +13,11 @@ public:
     Options();
 
     double env_light_weight;
-    unsigned int samples_per_pixel;
     unsigned int lighting_samples;
-    uint num_threads;
-    uint subdivision;
   };
 
   DirectLightingIntegrator() {}
   DirectLightingIntegrator(const Options& opt);
-
-  void render(const Camera& cam, const Scene& scene, Scheduler& scheduler, Film& film)  override;
 
   void render_rect(const Camera& cam, const Scene& scene,
                    const Film::Rect& rect,

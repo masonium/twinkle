@@ -84,7 +84,7 @@ int main(int argc, char** args)
   assert(WIDTH > 0);
   assert(HEIGHT > 0);
 
-  const uint per_pixel = options.get("samples").as<int>();
+  uint per_pixel = options.get("samples").as<int>();
   assert(per_pixel > 0);
 
   shared_ptr<Scene> scene;
@@ -104,22 +104,20 @@ int main(int argc, char** args)
     num_threads = num_system_procs();
   cerr << "using " << num_threads << " threads.\n";
 
-  unique_ptr<Integrator> igr;
+  unique_ptr<RectIntegrator> igr;
   string igr_type = options["integrator"];
 
   if (igr_type == "path")
   {
     PathTracerIntegrator::Options opt;
-    opt.samples_per_pixel = per_pixel;
     opt.max_depth = 10;
     igr = make_unique<PathTracerIntegrator>(opt);
   }
   else if (igr_type == "direct")
   {
     DirectLightingIntegrator::Options opt;
-    opt.samples_per_pixel = 4;
     opt.lighting_samples = per_pixel / 4;
-    opt.subdivision = 4;
+    per_pixel = 4;
     igr = make_unique<DirectLightingIntegrator>(opt);
   }
   else // if (igr_type == "debug")
@@ -127,7 +125,6 @@ int main(int argc, char** args)
     DebugIntegrator::Options opt;
     string dt = options.get("debug_type");
     opt.type = DEBUG_TYPE_MAP.at(dt);
-    opt.samples_per_pixel = per_pixel;
     igr = make_unique<DebugIntegrator>(opt);
   }
 
@@ -141,7 +138,6 @@ int main(int argc, char** args)
 
   auto benchmark_trials = options.get("benchmark").as<int>();
   bool write_image =  options.get("output_image").as<bool>();
-
 
   {
     auto scheduler = make_scheduler(num_threads);
@@ -158,7 +154,7 @@ int main(int argc, char** args)
       {
         Film f(WIDTH, HEIGHT);
         Timer tm;
-        igr->render(*cam, *scene, *scheduler, f);
+        grid_render(*igr, *cam, *scene, f, *scheduler, 4, per_pixel);
         if (i >= toss)
           stats.update(tm.since());
       }
@@ -169,7 +165,7 @@ int main(int argc, char** args)
     else
     {
       Timer tm;
-      igr->render(*cam, *scene, *scheduler, f);
+      grid_render(*igr, *cam, *scene, f, *scheduler, 4, per_pixel);
       render_time = tm.since();
       cerr << "Render Time: " << format_duration(render_time) << endl;
     }

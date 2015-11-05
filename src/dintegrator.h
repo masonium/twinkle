@@ -26,12 +26,9 @@ public:
   struct Options
   {
     Type type;
-    int samples_per_pixel;
   };
 
   DebugIntegrator(const Options& opt_);
-
-  void render(const Camera& cam, const Scene& scene, Scheduler& scheduler, Film& film) override;
 
   void render_rect(const Camera& cam, const Scene& scene,
                    const Film::Rect& rect,

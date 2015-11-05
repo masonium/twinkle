@@ -12,7 +12,7 @@ using std::transform;
 using std::for_each;
 
 DirectLightingIntegrator::Options::Options()
-  : env_light_weight(.50), samples_per_pixel(4), lighting_samples(16), num_threads(1), subdivision(16)
+  : env_light_weight(.50), lighting_samples(16)
 {
 
 }
@@ -20,13 +20,6 @@ DirectLightingIntegrator::Options::Options()
 DirectLightingIntegrator::DirectLightingIntegrator(const DirectLightingIntegrator::Options& opt)
   : options(opt)
 {
-}
-
-void DirectLightingIntegrator::render(const Camera& cam, const Scene& scene, 
-                                      Scheduler& scheduler, Film& film)
-{
-  grid_render(*this, cam, scene, film, scheduler,
-    options.subdivision, options.samples_per_pixel);
 }
 
 spectrum DirectLightingIntegrator::trace_ray(const Scene& scene, const Ray& ray,
@@ -44,7 +37,7 @@ spectrum DirectLightingIntegrator::trace_ray(const Scene& scene, const Ray& ray,
   auto lights = scene.lights();
   int num_lights = lights.size();
 
-  spectrum total{0};
+  spectrum total(0.0);
 
   int i = 0;
   int cum_samples = 0;

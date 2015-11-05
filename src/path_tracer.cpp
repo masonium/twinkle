@@ -19,8 +19,7 @@ using std::shared_ptr;
 using std::unique_ptr;
 
 PathTracerIntegrator::Options::Options()
-  : russian_roulette(true), rr_kill_prob(0.1), min_rr_depth(4),
-    max_depth(10), samples_per_pixel(16), num_threads(0)
+  : russian_roulette(true), rr_kill_prob(0.1), min_rr_depth(4), max_depth(10)
 {
   assert( 0.0 <= rr_kill_prob && rr_kill_prob <= 1.0 );
 }
@@ -28,13 +27,6 @@ PathTracerIntegrator::Options::Options()
 PathTracerIntegrator::PathTracerIntegrator(const PathTracerIntegrator::Options& opt_)
   : rays_traced(0), primary_rays_traced(0), opt(opt_)
 {
-}
-
-void PathTracerIntegrator::render(const Camera& cam, const Scene& scene, 
-                                  Scheduler& scheduler, Film& film)
-{
-  grid_render(*this, cam, scene, film,
-              scheduler, 4, opt.samples_per_pixel);
 }
 
 spectrum PathTracerIntegrator::trace_ray(const Scene& scene, const Ray& ray,

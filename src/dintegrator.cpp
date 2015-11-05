@@ -18,11 +18,6 @@ DebugIntegrator::DebugIntegrator(const DebugIntegrator::Options& opt_) : opt(opt
     color_list[i] = spectrum::from_hsv(i * 18, 0.8, 1.0);
 }
 
-void DebugIntegrator::render(const Camera& cam, const Scene& scene, Scheduler& scheduler, Film& film)
-{
-  grid_render(*this, cam, scene, film, scheduler, 1, opt.samples_per_pixel);
-}
-
 void DebugIntegrator::render_rect(const Camera& cam, const Scene& scene,
                                   const Film::Rect& rect, uint samples_per_pixel) const
 {
