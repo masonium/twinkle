@@ -19,21 +19,29 @@
 - [ ] image-based
 - [ ] function-basedd
 - [ ] worley-noise
+- [ ] new sky texture
 
 ** Renders
 - [X] time-based debug renderer (intersection-only)
-
 
 ** Volume rendering !
 
 * External Features
 ** Lua scripting(!!!)
-- [ ] basics (renderer, camera, render-options, sphere, implicit, rough-color material)
-- [ ] push luastate into generic renderer
+- [-] basics (renderer, camera, render-options, sphere, implicit, rough-color material)
+  - [X] camera
+  - [X] sphere
+  - [X] plane
+  - [X] lights
+  - [ ] envlights
+  - [ ] color material
+  - [ ] implicit
+- [X] push luastate into generic renderer
 
 ** Internal advancements
-- [ ] push scheduler as argument to renderer
-- [ ] lua state into
+- [X] invert rendering algorithm (grid_render takes integrator as input, instead of reverse)
+- [X] push scheduler as argument to renderer
+- [X] lua state into
 - [ ] Mesh or KDMesh based on number of triangles
 - [ ] condensing of nested transforms into transform shapes
   - [ ] RTTI for shapes (tagging)
@@ -41,6 +49,7 @@
 - [ ] cache-coherent kd-tree (re)organization
 - [ ] population monte-carlo for grid-render
 - [ ] population monte-carlo for pixel-choice of direct lighting
+- [ ] triangle fan implementation (faster mesh rendering)
 
 * Scenes
 - [X] 'showcase-scene': all available shapes
