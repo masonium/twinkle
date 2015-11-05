@@ -4,6 +4,9 @@
 
 namespace script
 {
-  int perspective_camera(lua_State* L);
-  int spherical_camera(lua_State* L);
+  namespace camera
+  {
+    int perspective(lua_State* L);
+    int spherical(lua_State* L);
+  }
 }

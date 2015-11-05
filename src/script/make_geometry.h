@@ -4,13 +4,14 @@ struct lua_State;
 
 namespace script
 {
-  /*
-    Create a sphere.
-   */
-  int sphere(lua_State*);
+  namespace bounds
+  {
+    int box(lua_State*);
+  }
 
-  /*
-    Create a plane.
-   */
-  int plane(lua_State*);
+  namespace geometry
+  {
+    int sphere(lua_State*);
+    int plane(lua_State*);
+  }
 }

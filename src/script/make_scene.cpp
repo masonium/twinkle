@@ -8,31 +8,33 @@ using std::make_shared;
 
 namespace script
 {
-  int perspective_camera(lua_State* L)
+  namespace camera
   {
-    LUA_CHECK_NUM_ARGS(L, 4);
+    int perspective(lua_State* L)
+    {
+      LUA_CHECK_NUM_ARGS(L, 4);
 
-    auto pos = lua_tovector(L, 1);
-    auto target = lua_tovector(L, 2);
-    auto up = lua_tovector(L, 3);
-    auto fov = lua_tonumber(L, 4);
+      auto pos = lua_tovector(L, 1);
+      auto target = lua_tovector(L, 2);
+      auto up = lua_tovector(L, 3);
+      auto fov = lua_tonumber(L, 4);
 
-    auto c = make_shared<PerspectiveCamera>(pos, target, up, fov);
+      auto c = make_shared<PerspectiveCamera>(pos, target, up, fov);
 
-    return script_camera(L, c);
+      return script_camera(L, c);
+    }
+
+    int spherical(lua_State* L)
+    {
+      LUA_CHECK_NUM_ARGS(L, 3);
+
+      auto pos = lua_tovector(L, 1);
+      auto target = lua_tovector(L, 2);
+      auto up = lua_tovector(L, 3);
+
+      auto c = make_shared<SphericalCamera>(pos, target, up);
+
+      return script_camera(L, c);
+    }
   }
-
-  int spherical_camera(lua_State* L)
-  {
-    LUA_CHECK_NUM_ARGS(L, 3);
-
-    auto pos = lua_tovector(L, 1);
-    auto target = lua_tovector(L, 2);
-    auto up = lua_tovector(L, 3);
-
-    auto c = make_shared<SphericalCamera>(pos, target, up);
-
-    return script_camera(L, c);
-  }
-
 }

@@ -10,11 +10,20 @@ using std::make_shared;
 
 namespace script
 {
-  int color_material(lua_State* L)
+  namespace material
   {
-    LUA_CHECK_NUM_ARGS(L, 1);
-    auto s = lua_tospectrum(L, 1);
-    return script_material(L, make_shared<RoughColorMaterial>(0.0, s));
+    int color(lua_State* L)
+    {
+      LUA_CHECK_NUM_ARGS(L, 1);
+      auto s = lua_tospectrum(L, 1);
+      return script_material(L, make_shared<RoughColorMaterial>(0.0, s));
+    }
+
+    int mirror(lua_State* L)
+    {
+      LUA_CHECK_NUM_ARGS(L, 0);
+      return script_material(L, make_shared<MirrorMaterial>());
+    }
   }
 
   int color_env_light(lua_State* L)

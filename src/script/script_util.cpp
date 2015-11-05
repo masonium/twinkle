@@ -36,59 +36,26 @@ namespace script
     return mgr.at(*user_data_key);
   }
 
-  int script_geometry(lua_State* L , shared_ptr<Geometry> obj)
-  {
-    return script_ptr(L, obj);
-  }
-  int script_material(lua_State* L, shared_ptr<Material> obj)
-  {
-    return script_ptr(L, obj);
-  }
-
-  int script_shape(lua_State* L, shared_ptr<Shape> obj)
-  {
-    return script_ptr(L, obj);
-  }
-
-  int script_texture(lua_State* L, shared_ptr<Texture> obj)
-  {
-    return script_ptr(L, obj);
+/*
+ * define the lua pusher/popper for a given type
+ */
+#define LUA_METHODS(CLASSNAME, SHORTNAME) \
+  int script_##SHORTNAME(lua_State* L, shared_ptr<CLASSNAME> obj) \
+  { \
+    return script_ptr(L, obj); \
+  } \
+  shared_ptr<CLASSNAME> lua_to##SHORTNAME(lua_State* L, int index) \
+  { \
+    return lua_toobj<CLASSNAME>(L, index); \
   }
 
-  int script_envlight(lua_State* L, shared_ptr<EnvironmentLight> obj)
-  {
-    return script_ptr(L, obj);
-  }
-
-  int script_camera(lua_State* L, shared_ptr<Camera> obj)
-  {
-    return script_ptr(L, obj);
-  }
-
-  shared_ptr<EnvironmentLight> lua_toenvlight(lua_State* L, int index)
-  {
-    return lua_toobj<EnvironmentLight>(L, index);
-  }
-  shared_ptr<Geometry> lua_togeometry(lua_State* L, int index)
-  {
-    return lua_toobj<Geometry>(L, index);
-  }
-  shared_ptr<Material> lua_tomaterial(lua_State* L, int index)
-  {
-    return lua_toobj<Material>(L, index);
-  }
-  shared_ptr<Shape> lua_toshape(lua_State* L, int index)
-  {
-    return lua_toobj<Shape>(L, index);
-  }
-  shared_ptr<Texture> lua_totexture(lua_State* L, int index)
-  {
-    return lua_toobj<Texture>(L, index);
-  }
-  shared_ptr<Camera> lua_tocamera(lua_State* L, int index)
-  {
-    return lua_toobj<Camera>(L, index);
-  }
+  LUA_METHODS(Geometry, geometry);
+  LUA_METHODS(EnvironmentLight, envlight);
+  LUA_METHODS(Material, material);
+  LUA_METHODS(Shape, shape);
+  LUA_METHODS(Texture, texture);
+  LUA_METHODS(Camera, camera);
+  LUA_METHODS(::bounds::AABB, bbox);
 
   template <typename T, typename Tag>
   T lua_tovtype(lua_State* L, int index, Tag tag)
@@ -172,14 +139,23 @@ namespace script
 
   void register_all(lua_State* L)
   {
-    lua_register(L, "sphere", sphere);
-    lua_register(L, "plane", plane);
+    luaL_Reg geom_package[] = {{"sphere", geometry::sphere},
+                               {"plane", geometry::plane},
+                               {NULL, NULL}};
+    luaL_register(L, "geom", geom_package);
 
-    lua_register(L, "material_color", color_material);
+    luaL_Reg material_package[] = {{"color", material::color},
+                                   {"mirror", material::mirror},
+                                   {NULL, NULL}};
+    luaL_register(L, "material", material_package);
+
     lua_register(L, "envlight_color", color_env_light);
 
-    lua_register(L, "camera_spherical", spherical_camera);
-    lua_register(L, "camera_perspective", perspective_camera);
+    luaL_Reg camera_package[] = {{"spherical", camera::spherical},
+                                 {"perspective", camera::perspective},
+                                 {NULL, NULL}};
+
+    luaL_register(L, "camera", camera_package);
 
     lua_register(L, "shape", shape);
   }
