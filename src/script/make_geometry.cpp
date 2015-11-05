@@ -42,6 +42,20 @@ namespace script
 
       return script_geometry(L, make_shared<Plane>(v, d));
     }
+
+    int implicit(lua_State* L)
+    {
+      LUA_CHECK_RANGE_ARGS(L, 2, 3);
+
+      auto name = std::string{lua_tostring(L, 1)};
+      auto box = lua_tobbox(L, 2);
+      scalar lc = 1.0;
+
+      if (lua_gettop(L) == 3)
+        lc = lua_tonumber(L, 3);
+
+      return 0;
+    }
   }
 }
 
