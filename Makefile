@@ -21,7 +21,7 @@ SFLAGS =  -fsyntax-only $(CXXFLAGS)
 LFLAGS = -pthread -lm  -lUnitTest++ -L$(LIBDIR) -ltwinkle -lcpp-optparse -lluajit-5.1
 
 ifeq (${CONFIG}, Debug)
-CXXFLAGS += -Og
+CXXFLAGS += -O0
 else ifeq (${CONFIG}, Release)
 CXXFLAGS += -O3 # -Ofast
 else
