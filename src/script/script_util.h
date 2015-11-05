@@ -37,7 +37,7 @@ namespace script
   int script_shape(lua_State*, shared_ptr<Shape>);
   int script_texture(lua_State*, shared_ptr<Texture>);
   int script_camera(lua_State*, shared_ptr<Camera>);
-  int script_bbox(lua_State*, shared_ptr<::bounds::AABB>);
+  int script_bbox(lua_State*, const ::bounds::AABB&);
 
   /*
     The lua_to* functions act exaclty as the standard lua_to* functions.
@@ -48,7 +48,7 @@ namespace script
   shared_ptr<Shape> lua_toshape(lua_State*, int);
   shared_ptr<Texture> lua_totexture(lua_State*, int);
   shared_ptr<Camera> lua_tocamera(lua_State*, int);
-  shared_ptr<bounds::AABB> lua_tobbox(lua_State*, int);
+  ::bounds::AABB lua_tobbox(lua_State*, int);
 
   int shape(lua_State* L);
 

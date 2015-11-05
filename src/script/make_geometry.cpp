@@ -18,7 +18,7 @@ namespace script
       auto lower = lua_tovector(L, 1);
       auto upper = lua_tovector(L, 2);
 
-      return script_bbox(L, make_shared<::bounds::AABB>(lower, upper));
+      return script_bbox(L, ::bounds::AABB(lower, upper));
     }
   }
 
@@ -51,9 +51,8 @@ namespace script
       auto name = std::string{lua_tostring(L, 1)};
       scalar lc = lua_tonumber(L, 2);
       auto box = lua_tobbox(L, 3);
-      cerr << box->to_string() << endl;
 
-      return script_geometry(L, make_shared<Implicit>(name, lc, *box));
+      return script_geometry(L, make_shared<Implicit>(name, lc, box));
     }
   }
 }

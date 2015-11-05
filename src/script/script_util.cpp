@@ -26,7 +26,15 @@ namespace script
   }
 
   template <typename T>
-  shared_ptr<T> lua_toobj(lua_State* L, int index)
+  int script_obj(lua_State* L, const T& obj)
+  {
+    auto user_data = static_cast<T*>(lua_newuserdata(L, sizeof(T)));
+    *user_data = obj;
+    return 1;
+  }
+
+  template <typename T>
+  shared_ptr<T> lua_tosharedptr(lua_State* L, int index)
   {
     assert(lua_isuserdata(L, index));
 
@@ -34,6 +42,13 @@ namespace script
     using key_t = typename Manager<T>::key_type;
     key_t* user_data_key = reinterpret_cast<key_t*>(lua_touserdata(L, index));
     return mgr.at(*user_data_key);
+  }
+
+  template <typename T>
+  T lua_toobj(lua_State* L, int index)
+  {
+    assert(lua_isuserdata(L, index));
+    return *static_cast<T*>(lua_touserdata(L, index));
   }
 
 /*
@@ -46,6 +61,16 @@ namespace script
   } \
   shared_ptr<CLASSNAME> lua_to##SHORTNAME(lua_State* L, int index) \
   { \
+    return lua_tosharedptr<CLASSNAME>(L, index); \
+  }
+
+#define LUA_NATIVE_METHODS(CLASSNAME, SHORTNAME) \
+  int script_##SHORTNAME(lua_State* L, const CLASSNAME& obj) \
+  { \
+    return script_obj(L, obj); \
+  } \
+  CLASSNAME lua_to##SHORTNAME(lua_State* L, int index) \
+  { \
     return lua_toobj<CLASSNAME>(L, index); \
   }
 
@@ -55,7 +80,8 @@ namespace script
   LUA_METHODS(Shape, shape);
   LUA_METHODS(Texture, texture);
   LUA_METHODS(Camera, camera);
-  LUA_METHODS(::bounds::AABB, bbox);
+
+  LUA_NATIVE_METHODS(::bounds::AABB, bbox);
 
   template <typename T, typename Tag>
   T lua_tovtype(lua_State* L, int index, Tag tag)
