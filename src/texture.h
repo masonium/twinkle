@@ -3,7 +3,8 @@
 #include "spectrum.h"
 #include "vec2.h"
 #include "vec3.h"
-#include "intersection.h"
+
+class IntersectionView;
 
 class Texture
 {
@@ -15,10 +16,7 @@ public:
 class Texture2D : public Texture
 {
 public:
-  virtual spectrum at_point(const IntersectionView& isect) const override
-  {
-    return at_coord(isect.tc);
-  }
+  virtual spectrum at_point(const IntersectionView& isect) const override;
   
   virtual spectrum at_coord(const Vec2& uv) const = 0;
 };
@@ -76,9 +74,5 @@ private:
 class NormalTexture : public Texture
 {
 public:
-  spectrum at_point(const IntersectionView& isect) const override
-  {
-    const auto& normal = 0.5 * (isect.normal + Vec3(1.0));
-    return spectrum{normal.x, normal.y, normal.z};
-  }
+  spectrum at_point(const IntersectionView& isect) const;
 };

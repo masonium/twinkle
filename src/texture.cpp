@@ -1,11 +1,17 @@
 #include "texture.h"
+#include "intersection.h"
 
-spectrum SolidColor::at_point(const IntersectionView& isect) const
+spectrum Texture2D::at_point(const IntersectionView& isect) const
+{
+  return at_coord(isect.tc);
+}
+
+spectrum SolidColor::at_point(const IntersectionView& UNUSED(isect)) const
 {
   return color;
 }
 
-spectrum SolidColor::at_coord(const Vec2& uv) const
+spectrum SolidColor::at_coord(const Vec2& UNUSED(uv)) const
 {
   return color;
 }
@@ -30,4 +36,10 @@ spectrum GridTexture2D::at_coord(const Vec2& uv) const
     return border;
   else
     return solid;
+}
+
+spectrum NormalTexture::at_point(const IntersectionView& isect) const
+{
+  const auto& normal = 0.5 * (isect.normal + Vec3(1.0));
+  return spectrum{normal.x, normal.y, normal.z};
 }

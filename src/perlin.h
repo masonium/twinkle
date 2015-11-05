@@ -3,7 +3,9 @@
 #include "texture.h"
 #include "vec2.h"
 #include "vec3.h"
-#include <memory.h>
+#include <memory>
+
+using std::shared_ptr;
 
 class PerlinNoise
 {
