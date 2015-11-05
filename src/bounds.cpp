@@ -1,6 +1,7 @@
 #include "bounds.h"
 #include "math_util.h"
 #include <limits>
+#include <sstream>
 
 using std::numeric_limits;
 
@@ -48,6 +49,15 @@ namespace bounds
       return scalar_fp{t1};
     else
       return sfp_none;
+  }
+
+  using std::ostringstream;
+  std::string AABB::to_string() const
+  {
+    ostringstream out;
+    out << "Box({" << min() << "} - {" << max() << "})";
+
+    return out.str();
   }
 
   using std::ostream;

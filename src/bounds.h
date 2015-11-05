@@ -18,7 +18,6 @@ namespace bounds
 
   };
 
-
   class AABB : public Base
   {
   public:
@@ -70,6 +69,8 @@ namespace bounds
      */
     scalar_fp intersect(const Ray& r, scalar_fp max_t) const;
     bool intersect(const Ray& r, scalar& t0, scalar& t1) const;
+
+    std::string to_string() const;
 
     static const AABB infinite;
 
