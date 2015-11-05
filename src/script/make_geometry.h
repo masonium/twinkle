@@ -6,7 +6,7 @@ namespace script
 {
   namespace bounds
   {
-    int box(lua_State*);
+    int bbox(lua_State*);
   }
 
   namespace geometry

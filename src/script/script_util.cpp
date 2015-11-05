@@ -139,6 +139,10 @@ namespace script
 
   void register_all(lua_State* L)
   {
+    luaL_Reg bounds_package[] = {{"bbox", bounds::bbox},
+                                 {NULL, NULL}};
+    luaL_register(L, "bounds", bounds_package);
+
     luaL_Reg geom_package[] = {{"sphere", geometry::sphere},
                                {"plane", geometry::plane},
                                {NULL, NULL}};

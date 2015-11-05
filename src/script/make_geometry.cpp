@@ -10,7 +10,7 @@ namespace script
 {
   namespace bounds
   {
-    int box(lua_State* L)
+    int bbox(lua_State* L)
     {
       LUA_CHECK_NUM_ARGS(L, 2);
 
