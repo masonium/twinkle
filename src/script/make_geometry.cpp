@@ -3,6 +3,7 @@
 #include "bounds.h"
 #include "script/script_util.h"
 #include "script/make_geometry.h"
+#include "script/proc_implicit.h"
 
 using std::make_shared;
 
@@ -45,16 +46,14 @@ namespace script
 
     int implicit(lua_State* L)
     {
-      LUA_CHECK_RANGE_ARGS(L, 2, 3);
+      LUA_CHECK_NUM_ARGS(L, 3);
 
       auto name = std::string{lua_tostring(L, 1)};
-      auto box = lua_tobbox(L, 2);
-      scalar lc = 1.0;
+      scalar lc = lua_tonumber(L, 2);
+      auto box = lua_tobbox(L, 3);
+      cerr << box->to_string() << endl;
 
-      if (lua_gettop(L) == 3)
-        lc = lua_tonumber(L, 3);
-
-      return 0;
+      return script_geometry(L, make_shared<Implicit>(name, lc, *box));
     }
   }
 }

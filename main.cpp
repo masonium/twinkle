@@ -98,7 +98,7 @@ int main(int argc, char** args)
 
   Film f(WIDTH, HEIGHT);
 
-  register_thread_state_manager(f, "assets/scripts/test.lua");
+  register_thread_state_manager(f, "assets/scripts/scene1.lua");
   auto num_threads = options.get("threads").as<int>();
   if (num_threads == 0)
     num_threads = num_system_procs();

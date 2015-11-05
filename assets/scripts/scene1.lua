@@ -1,5 +1,10 @@
+function my_sphere(x, y, z)
+   return math.pow(x*x*x*x + y*y*y*y + z*z*z*z, 0.25) - 1.0
+end
+
 function scene ()
-   local s = geom.sphere({0.0, 0.0, 0.0}, 1.0)
+   local s = geom.implicit("my_sphere", 1.0, bounds.bbox({-1.1}, {1.1}))
+   --local s = geom.sphere({0.0}, 1.0)
    local pl = geom.plane({0.0, 1.0, 0.0}, 1.0)
    local s2 = geom.sphere({0.0, 2.0, 0.0}, 1.0)
 
