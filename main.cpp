@@ -5,8 +5,7 @@
 #include <sstream>
 
 #include "camera.h"
-#include "integrator.h"
-#include "dintegrator.h"
+#include "debugintegrator.h"
 #include "scene.h"
 #include "kdscene.h"
 #include "bsdf.h"

@@ -1,4 +1,4 @@
-#include "dintegrator.h"
+#include "debugintegrator.h"
 #include "mat33.h"
 #include "util/timer.h"
 #include <unordered_map>

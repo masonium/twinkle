@@ -289,7 +289,6 @@ shared_ptr<Camera> lua_scene(Scene& scene, const string& filename)
   assert(lua_isfunction(L, -1));
   assert(lua_pcall(L, 0, 1, 0) == 0);
 
-
   // shapes
   script::lua_gettablefield(L, -1, "shapes");
   assert(lua_istable(L, -1));
