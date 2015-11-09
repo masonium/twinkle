@@ -1,5 +1,7 @@
 #include "sampler.h"
 #include "vec3.h"
+#include "vec2.h"
+#include "util.h"
 #include <cmath>
 
 using std::max;
@@ -168,3 +170,35 @@ Vec3 uniform_sphere_sample(const Sample2D& sample)
 
   return Vec3::from_euler(theta, phi);
 }
+
+Vec2 uniform_sample_disc(const Sample2D& sample)
+{
+  scalar p;
+  return uniform_sample_disc(sample, p);
+}
+
+Vec2 uniform_sample_disc(const Sample2D& sample, scalar& p)
+{
+  scalar x = sample[0] * 2.0 - 1.0;
+  scalar y = sample[1] * 2.0 - 1.0;
+
+  scalar r, theta;
+
+  if (unlikely(x == 0 && y == 0))
+    return Vec2(0, 0);
+
+  if (x * x > y * y)
+  {
+    r = x;
+    theta = PId4 * (y / x);
+  }
+  else
+  {
+    r = y;
+    theta = PId2 - PId4 * (x / y);
+  }
+
+  p = 1 / (PI * PI);
+  return Vec2(r * cos(theta), r * sin(theta));
+}
+

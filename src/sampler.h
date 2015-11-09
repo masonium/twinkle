@@ -115,3 +115,8 @@ Vec3 uniform_hemisphere_sample(const Sample2D& sample);
 Vec3 uniform_hemisphere_sample(const Sample2D& sample, scalar& p);
 
 Vec3 uniform_sphere_sample(const Sample2D& sample);
+
+class Vec2;
+
+Vec2 uniform_sample_disc(const Sample2D& sample);
+Vec2 uniform_sample_disc(const Sample2D& sample, scalar& p);
