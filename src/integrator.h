@@ -38,3 +38,6 @@ public:
 
 void grid_render(const RectIntegrator& renderer, const Camera& cam, const Scene& scene, Film& film,
                  Scheduler& scheduler, uint subdiv, uint total_spp);
+
+void pmc_grid_render(const RectIntegrator& renderer, const Camera& cam, const Scene& scene, Film& film,
+                     Scheduler& scheduler, uint subdiv, uint total_spp);
