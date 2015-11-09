@@ -16,20 +16,12 @@ using std::make_shared;
 namespace script
 {
   template <typename T>
-  int script_ptr(lua_State* L, shared_ptr<T> obj)
+  int script_sharedptr(lua_State* L, shared_ptr<T> obj)
   {
     auto& mgr = Manager<T>::instance();
     auto ret = mgr.save(obj);
     auto user_data = lua_newuserdata(L, sizeof(ret));
     *reinterpret_cast<decltype(ret)*>(user_data) = ret;
-    return 1;
-  }
-
-  template <typename T>
-  int script_obj(lua_State* L, const T& obj)
-  {
-    auto user_data = static_cast<T*>(lua_newuserdata(L, sizeof(T)));
-    *user_data = obj;
     return 1;
   }
 
@@ -45,6 +37,14 @@ namespace script
   }
 
   template <typename T>
+  int script_obj(lua_State* L, const T& obj)
+  {
+    auto user_data = static_cast<T*>(lua_newuserdata(L, sizeof(T)));
+    *user_data = obj;
+    return 1;
+  }
+
+  template <typename T>
   T lua_toobj(lua_State* L, int index)
   {
     assert(lua_isuserdata(L, index));
@@ -57,7 +57,7 @@ namespace script
 #define LUA_METHODS(CLASSNAME, SHORTNAME) \
   int script_##SHORTNAME(lua_State* L, shared_ptr<CLASSNAME> obj) \
   { \
-    return script_ptr(L, obj); \
+    return script_sharedptr(L, obj); \
   } \
   shared_ptr<CLASSNAME> lua_to##SHORTNAME(lua_State* L, int index) \
   { \
