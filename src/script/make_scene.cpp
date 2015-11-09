@@ -1,6 +1,7 @@
 #include <memory>
 #include "make_scene.h"
 #include "vec3.h"
+#include "light.h"
 #include "camera.h"
 #include "script/script_util.h"
 
@@ -35,6 +36,34 @@ namespace script
       auto c = make_shared<SphericalCamera>(pos, target, up);
 
       return script_camera(L, c);
+    }
+  }
+
+
+  namespace light
+  {
+    int point(lua_State* L)
+    {
+      LUA_CHECK_NUM_ARGS(L, 2);
+
+      auto pos = lua_tovector(L, 1);
+      auto spec = lua_tospectrum(L, 2);
+
+      auto light = make_shared<PointLight>(pos, spec);
+
+      return script_light(L, light);
+    }
+
+    int directional(lua_State* L)
+    {
+      LUA_CHECK_NUM_ARGS(L, 2);
+
+      auto pos = lua_tovector(L, 1);
+      auto spec = lua_tospectrum(L, 2);
+
+      auto light = make_shared<DirectionalLight>(pos, spec);
+
+      return script_light(L, light);
     }
   }
 }

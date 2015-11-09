@@ -80,6 +80,7 @@ namespace script
   LUA_METHODS(Shape, shape);
   LUA_METHODS(Texture, texture);
   LUA_METHODS(Camera, camera);
+  LUA_METHODS(Light, light);
 
   LUA_NATIVE_METHODS(::bounds::AABB, bbox);
 
@@ -185,8 +186,12 @@ namespace script
     luaL_Reg camera_package[] = {{"spherical", camera::spherical},
                                  {"perspective", camera::perspective},
                                  {NULL, NULL}};
-
     luaL_register(L, "camera", camera_package);
+
+    luaL_Reg light_package[] = {{"point", light::point},
+                                {"directional", light::directional},
+                                {NULL, NULL}};
+    luaL_register(L, "light", light_package);
 
     lua_register(L, "shape", shape);
   }

@@ -45,6 +45,8 @@ class Light
 public:
   virtual LightSample sample_emission(const Intersection& isect, Sampler&) const = 0;
 
+  virtual std::string to_string() const { return "Light"; }
+
   virtual ~Light() { }
 };
 
@@ -71,6 +73,8 @@ public:
   }
 
   LightSample sample_emission(const Intersection& isect, Sampler&) const override;
+
+  std::string to_string() const override;
 
 private:
   Vec3 position;

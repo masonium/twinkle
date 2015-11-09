@@ -305,6 +305,23 @@ shared_ptr<Camera> lua_scene(Scene& scene, const string& filename)
 
   lua_pop(L, 1);
 
+  // lights
+  script::lua_gettablefield(L, -1, "lights");
+  assert(lua_istable(L, -1));
+
+  int num_lights = lua_objlen(L, -1);
+
+  for (int i = 0; i < num_lights; ++i)
+  {
+    lua_rawgeti(L, -1, i+1);
+    auto obj = script::lua_tolight(L, -1);
+    cerr << obj->to_string() << endl;
+    lua_pop(L, 1);
+    scene.add(obj);
+  }
+
+  lua_pop(L, 1);
+
   assert(lua_istable(L, -1));
   script::lua_gettablefield(L, -1, "camera");
 

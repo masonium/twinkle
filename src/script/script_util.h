@@ -11,6 +11,7 @@ class Shape;
 class Texture;
 class EnvironmentLight;
 class Camera;
+class Light;
 namespace bounds
 {
   class AABB;
@@ -37,6 +38,8 @@ namespace script
   int script_shape(lua_State*, shared_ptr<Shape>);
   int script_texture(lua_State*, shared_ptr<Texture>);
   int script_camera(lua_State*, shared_ptr<Camera>);
+  int script_light(lua_State*, shared_ptr<Light>);
+
   int script_bbox(lua_State*, const ::bounds::AABB&);
 
   /*
@@ -48,6 +51,8 @@ namespace script
   shared_ptr<Shape> lua_toshape(lua_State*, int);
   shared_ptr<Texture> lua_totexture(lua_State*, int);
   shared_ptr<Camera> lua_tocamera(lua_State*, int);
+  shared_ptr<Light> lua_tolight(lua_State*, int);
+
   ::bounds::AABB lua_tobbox(lua_State*, int);
 
   int shape(lua_State* L);
