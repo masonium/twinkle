@@ -8,8 +8,7 @@ namespace script
   namespace material
   {
     int color(lua_State* L);
+    int diffuse(lua_State* L);
     int mirror(lua_State* L);
   }
-
-  int color_env_light(lua_State* L);
 }

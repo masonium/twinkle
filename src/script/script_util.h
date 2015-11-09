@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <cassert>
 
 using std::shared_ptr;
 

@@ -15,4 +15,10 @@ namespace script
     int point(lua_State* L);
     int directional(lua_State* L);
   }
+
+  namespace env_light
+  {
+    int color(lua_State* L);
+//    int texture(lua_State* L);
+  }
 }

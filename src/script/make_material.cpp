@@ -19,6 +19,17 @@ namespace script
       return script_material(L, make_shared<RoughColorMaterial>(0.0, s));
     }
 
+    int diffuse(lua_State* L)
+    {
+      LUA_CHECK_RANGE_ARGS(L, 1, 2);
+      auto tex = lua_totexture(L, 1);
+      scalar roughness = 0.0;
+      if (lua_gettop(L) == 2)
+        roughness = lua_tonumber(L, 2);
+
+      return script_material(L, make_shared<RoughMaterial>(roughness, tex));
+    }
+
     int mirror(lua_State* L)
     {
       LUA_CHECK_NUM_ARGS(L, 0);
@@ -26,10 +37,4 @@ namespace script
     }
   }
 
-  int color_env_light(lua_State* L)
-  {
-    LUA_CHECK_NUM_ARGS(L, 1);
-    auto s = lua_tospectrum(L, 1);
-    return script_envlight(L, make_shared<EnvironmentLight>(make_shared<SolidColor>(s)));
-  }
 }

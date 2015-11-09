@@ -9,6 +9,7 @@
 #include "script/make_geometry.h"
 #include "script/make_material.h"
 #include "script/make_scene.h"
+#include "script/make_texture.h"
 
 using std::cerr;
 using std::make_shared;
@@ -177,11 +178,15 @@ namespace script
     luaL_register(L, "geom", geom_package);
 
     luaL_Reg material_package[] = {{"color", material::color},
+                                   {"diffuse", material::diffuse},
                                    {"mirror", material::mirror},
                                    {NULL, NULL}};
     luaL_register(L, "material", material_package);
 
-    lua_register(L, "envlight_color", color_env_light);
+    luaL_Reg envlight_package[] = {{"color", env_light::color},
+//                                  "texture", env_light::texture},
+                                   {NULL, NULL}};
+    luaL_register(L, "envlight", envlight_package);
 
     luaL_Reg camera_package[] = {{"spherical", camera::spherical},
                                  {"perspective", camera::perspective},
@@ -192,6 +197,12 @@ namespace script
                                 {"directional", light::directional},
                                 {NULL, NULL}};
     luaL_register(L, "light", light_package);
+
+    luaL_Reg texture_package[] = {{"checker", texture::checker},
+                                  {"color", texture::color},
+                                  {"grid", texture::grid},
+                                  {NULL, NULL}};
+    luaL_register(L, "texture", texture_package);
 
     lua_register(L, "shape", shape);
   }
