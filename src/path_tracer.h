@@ -38,6 +38,10 @@ public:
                    const Film::Rect& rect,
                    uint samples_per_pixel) const;
 
+  void pixel_samples(const Camera& cam, const Scene& scene,
+                         uint x, uint y,
+                         uint samples_per_pixel) const;
+
 private:
   spectrum trace_ray(const Scene& scene, const Ray& r,
                      Sampler& sampler, int depth) const;

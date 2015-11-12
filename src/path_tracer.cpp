@@ -45,10 +45,10 @@ spectrum PathTracerIntegrator::trace_ray(const Scene& scene, const Ray& ray,
   if (isect.is_emissive())
     return isect.emission();
 
-  // direct lighting: randomly choose a light or emissive shape, and contribute
+  // direct lighting: randomly choose a light, and contribute
   // the light from that shape if appropriate
   scalar light_prob;
-  const Light* light = scene.sample_light(sampler.sample_1d(), light_prob);
+  const auto light = scene.sample_light(sampler.sample_1d(), light_prob);
 
   spectrum total(0);
 
@@ -110,27 +110,29 @@ void PathTracerIntegrator::render_rect(const Camera& cam, const Scene& scene,
                                        const Film::Rect& rect,
                                        uint samples_per_pixel) const
 {
+  for (uint py = rect.y; py < rect.y + rect.height; ++py)
+  {
+    for (uint px = rect.x; px < rect.x + rect.width; ++px)
+    {
+      pixel_samples(cam, scene, px, py, samples_per_pixel);
+    }
+  }
+}
+
+void PathTracerIntegrator::pixel_samples(const Camera& cam, const Scene& scene,
+                                         uint x, uint y,
+                                         uint samples_per_pixel) const
+{
   auto sampler = UniformSampler{};
 
   auto& film = get_thread_film();
   
-  for (uint x = 0; x < rect.width; ++x)
+  for (uint d = 0; d < samples_per_pixel; ++d)
   {
-    for (uint y = 0; y < rect.height; ++y)
-    {
-      const int px = x + rect.x;
-      const int py = y + rect.y;
+    PixelSample ps = cam.sample_pixel(film.width, film.height, x, y, sampler);
           
-      for (uint d = 0; d < samples_per_pixel; ++d)
-      {
-//        std::cerr << "Printing width: " << d << " " << film.width << "\n";
-        PixelSample ps = cam.sample_pixel(film.width, film.height, px, py, sampler);
-          
-        spectrum s = trace_ray(scene, ps.ray, sampler, 1);
-//        std::cerr << "Printing width: " << d << " " << film.width << "\n";
-        film.add_sample(ps, s);
-      }
-    }
+    spectrum s = trace_ray(scene, ps.ray, sampler, 1);
+    film.add_sample(ps, s);
   }
 }
 
