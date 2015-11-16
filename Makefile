@@ -33,8 +33,10 @@ ifeq (${CONFIG}, Debug)
 CXXFLAGS += -O0
 else ifeq (${CONFIG}, Release)
 CXXFLAGS += -O3 # -Ofast
+else ifeq (${CONFIG}, Profile)
+CXXFLAGS += -O3 -pg
 else
-echo "CONFIG must be one of (Debug, Release)"
+echo "CONFIG must be one of (Debug, Release, Profile)"
 endif
 
 -include src/Makefile
@@ -60,8 +62,15 @@ release:
 
 debug:
 	make CONFIG=Debug all ${OPTIONS}
+
+profile:
+	make CONFIG=Profile all ${OPTIONS}
+
 cleandebug debugclean:
 	make CONFIG=Debug clean ${OPTIONS}
+
+cleanprofile profileclean:
+	make CONFIG=Profile clean ${OPTIONS}
 
 DEPS := $(TWINKLE_OBJS:.o=.dep)
 -include $(DEPS)
