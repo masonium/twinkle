@@ -18,6 +18,8 @@ class Film;
 
 struct PixelSample
 {
+  PixelSample() = default;
+
   PixelSample(int x_, int y_, scalar px_, scalar py_, Ray ray_) :
     x(x_), y(y_), px(px_), py(py_), ray(ray_)
   {
@@ -67,13 +69,13 @@ public:
     uint width, height;
   };
 
-  struct Pixel
+  struct AccPixel  // short for AccumulationPixel
   {
-    Pixel() = default;
-    Pixel(scalar w, const spectrum& t) : weight(w), total(t) { }
+    AccPixel() = default;
+    AccPixel(scalar w, const spectrum& t) : weight(w), total(t) { }
 
-    Pixel& operator +=(const Pixel&);
-    Pixel operator +(const Pixel&) const;
+    AccPixel& operator +=(const AccPixel&);
+    AccPixel operator +(const AccPixel&) const;
 
     scalar weight;
     spectrum total;
@@ -87,6 +89,12 @@ public:
   Film& operator=(const Film& f);
 
   void add_sample(const PixelSample& ps, const spectrum& s);
+
+  /**
+   * Return the (weighted) average instensity over image region.
+   */
+  scalar average_intensity() const;
+
   Rect rect() const { return Rect(0, 0, width, height); }
 
   void render_to_console(ostream& out) const;
@@ -95,12 +103,12 @@ public:
   
   void merge(const Film& other);
 
-  Pixel at(int x, int y) const
+  AccPixel at(int x, int y) const
   {
     return plate[index(x, y)];
   }
 
-  Pixel& at(int x, int y)
+  AccPixel& at(int x, int y)
   {
     return plate[index(x, y)];
   }
@@ -120,8 +128,8 @@ private:
     return y * width + x;
   }
   
-  vector<Pixel> plate;
+  vector<AccPixel> plate;
 };
 
-ostream& operator<<(ostream& o, const Film::Pixel& rect);
+ostream& operator<<(ostream& o, const Film::AccPixel& rect);
 ostream& operator<<(ostream& o, const Film::Rect& rect);

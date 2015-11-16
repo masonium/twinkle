@@ -58,7 +58,7 @@ Film::Film(istream& in) : width(0), height(0)
   plate.resize(width*height);
   for (uint32_t i = 0; i < width * height; ++i)
   {
-    plate[i] = Pixel{ scalar(1.0), spectrum::deserialize(in) };
+    plate[i] = AccPixel{ scalar(1.0), spectrum::deserialize(in) };
   }
 }
 
@@ -86,6 +86,18 @@ void Film::merge(const Film& f)
 
   transform(plate.begin(), plate.end(), f.plate.begin(),
             plate.begin(), [](auto& x, const auto& y) { return x + y; });
+}
+
+scalar Film::average_intensity() const
+{
+  scalar r = 0, w = 0;
+  for (const auto& p: plate)
+  {
+    w += p.weight;
+    r += (p.total.luminance() - r) / w; 
+  }
+
+  return r;
 }
 
 
@@ -143,7 +155,7 @@ void Film::render_to_console(ostream& out) const
 
 void Film::clear()
 {
-  fill(plate.begin(), plate.end(), Pixel());
+  fill(plate.begin(), plate.end(), AccPixel());
 }
 
 
@@ -151,26 +163,26 @@ void Film::clear()
 
 void BoxFilter::add_sample(Film& film, const PixelSample& p, const spectrum& s) const
 {
-  Film::Pixel& fp = film.at(p.x, p.y);
+  Film::AccPixel& fp = film.at(p.x, p.y);
   fp.total += s;
   fp.weight += 1;
 }
 
-Film::Pixel& Film::Pixel::operator+=(const Pixel& p)
+Film::AccPixel& Film::AccPixel::operator+=(const AccPixel& p)
 {
   total += p.total;
   weight += p.weight;
   return *this;
 }
-Film::Pixel Film::Pixel::operator+(const Pixel& p) const
+Film::AccPixel Film::AccPixel::operator+(const AccPixel& p) const
 {
-  Pixel x(*this);
+  AccPixel x(*this);
   return x += p;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-ostream& operator<<(ostream& o, const Film::Pixel& pixel)
+ostream& operator<<(ostream& o, const Film::AccPixel& pixel)
 {
   o << "Rect(" << pixel.total << ", " << pixel.weight << ")";
   return o;
