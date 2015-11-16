@@ -13,6 +13,33 @@ using std::mutex;
 using std::make_shared;
 using std::make_unique;
 
+
+/**
+ * The blocking scheduler is the baseline, stupid scheduler. It runs tasks as
+ * soon as they are added, on the same thread.
+ */
+class BlockingScheduler : public Scheduler
+{
+public:
+  BlockingScheduler()
+  {
+    register_thread();
+  }
+
+  void add_task(shared_ptr<LocalTask> t) override
+  {
+    t->run(0);
+  }
+
+  uint concurrency() const override { return 1; }
+
+  void complete_pending() override { }
+
+  ~BlockingScheduler() { }
+};
+
+#if FEATURE_MULTITHREADED
+
 class LocalThreadScheduler : public Scheduler
 {
 public:
@@ -22,6 +49,8 @@ public:
 
   /* blocks until all current tasks are complete. */
   void complete_pending() override;
+
+  uint concurrency() const override { return pool.size(); }
 
   ~LocalThreadScheduler();
 
@@ -66,28 +95,6 @@ private:
   std::atomic<uint> num_threads_free;
 
   std::vector<std::thread> pool;
-};
-
-/**
- * The blocking scheduler is the baseline, stupid scheduler. It runs tasks as
- * soon as they are added, on the same thread.
- */
-class BlockingScheduler : public Scheduler
-{
-public:
-  BlockingScheduler()
-  {
-    register_thread();
-  }
-
-  void add_task(shared_ptr<LocalTask> t) override
-  {
-    t->run(0);
-  }
-
-  void complete_pending() override { }
-
-  ~BlockingScheduler() { }
 };
 
 void LocalThreadScheduler::worker(LocalThreadScheduler& scheduler, int worker_id)
@@ -180,6 +187,8 @@ LocalThreadScheduler::~LocalThreadScheduler()
     thread.join();
 }
 
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 
 unique_ptr<Scheduler> make_scheduler(uint num_threads)
@@ -189,8 +198,14 @@ unique_ptr<Scheduler> make_scheduler(uint num_threads)
   {
     return make_unique<BlockingScheduler>();
   }
+
+  #if FEATURE_MULTITHREADED
   else
   {
     return make_unique<LocalThreadScheduler>(num_threads);
   }
+  #else
+  assert("must run with one thread." && false);
+  return nullptr;
+  #endif
 }

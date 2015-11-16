@@ -17,6 +17,11 @@ const scalar EPSILON         = 0.00001;
 const scalar SCALAR_MAX = std::numeric_limits<scalar>::max();
 const scalar SCALAR_MIN = std::numeric_limits<scalar>::min();
 
-#define FEATURE_DIRECT_LIGHTING 1
+#ifndef FEATURE_MULTITHREADED
+#define FEATURE_MULTITHREADED 1
+#endif
+
+#define FEATURE_DEBUG_TRACER 0
+#define FEATURE_DIRECT_LIGHTING 0
 #define FEATURE_PATH_TRACER 1
 //#define FEATURE_BIDIRECTIONAL 1

@@ -36,6 +36,9 @@ public:
   /* blocks until all current tasks are complete. */
   virtual void complete_pending() = 0;
 
+  /* Return the concurrency available to the scheduler. */
+  virtual uint concurrency() const = 0;
+
   virtual ~Scheduler() { }
 };
 

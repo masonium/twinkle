@@ -8,6 +8,10 @@ ifndef CONFIG
 CONFIG = Release
 endif
 
+ifndef MULTITHREADED
+MULTITHREADED = 1
+endif
+
 BINDIR = $(CONFIG)/bin
 OBJDIR = $(CONFIG)/obj
 LIBDIR = $(CONFIG)/lib
@@ -15,10 +19,15 @@ LIBDIR = $(CONFIG)/lib
 CXX = ccache g++
 CXX_VERSION = -std=c++1y
 COMMON_FLAGS = -Wall -Wextra -Wno-unused-parameter $(CXX_VERSION)
-CXXFLAGS := $(COMMON_FLAGS) -Isrc/ -Iextlib/ -ggdb -I/usr/include/luajit-2.0
+CXXFLAGS := $(COMMON_FLAGS) -Isrc/ -Iextlib/ -ggdb -I/usr/include/luajit-2.0 -fno-omit-frame-pointer
+CXXFLAGS += -DFEATURE_MULTITHREADED=${MULTITHREADED}
 NOTESTFLAGS := -fno-exceptions -fno-rtti
-SFLAGS =  -fsyntax-only $(CXXFLAGS)
-LFLAGS = -pthread -lm  -lUnitTest++ -L$(LIBDIR) -ltwinkle -lcpp-optparse -lluajit-5.1
+SFLAGS = -fsyntax-only $(CXXFLAGS)
+LFLAGS := -lUnitTest++ -L$(LIBDIR) -ltwinkle -lcpp-optparse -lluajit-5.1
+
+ifeq (${MULTITHREADED}, 1)
+LFLAGS += -pthread -lm
+endif
 
 ifeq (${CONFIG}, Debug)
 CXXFLAGS += -O0
