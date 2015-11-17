@@ -10,7 +10,6 @@ using std::make_pair;
 
 const int NUM_DISTINCT_ID_COLORS = 20;
 spectrum color_list[NUM_DISTINCT_ID_COLORS];
-static std::mutex color_mutex;
 
 DebugIntegrator::DebugIntegrator(const DebugIntegrator::Options& opt_) : opt(opt_)
 {
@@ -18,10 +17,10 @@ DebugIntegrator::DebugIntegrator(const DebugIntegrator::Options& opt_) : opt(opt
     color_list[i] = spectrum::from_hsv(i * 18, 0.8, 1.0);
 }
 
+/*
 void DebugIntegrator::render_rect(const Camera& cam, const Scene& scene,
                                   const Film::Rect& rect, uint samples_per_pixel) const
 {
-  ShapeColorMap scm;
   UniformSampler sampler;
 
   auto& film = get_thread_film();
@@ -36,12 +35,13 @@ void DebugIntegrator::render_rect(const Camera& cam, const Scene& scene,
       {
         PixelSample ps = cam.sample_pixel(film.width, film.height, px, py, sampler);
 
-        spectrum s = trace_ray(ps.ray, scene, scm, sampler);
+        spectrum s = trace_ray(ps.ray, scene, sampler);
         film.add_sample(ps, s);
       }
     }
   }
 }
+*/
 
 spectrum dir_to_spectrum(const Vec3& dir)
 {
@@ -49,8 +49,8 @@ spectrum dir_to_spectrum(const Vec3& dir)
    return 0.5 * (c + spectrum{1.0});
 }
 
-spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene, 
-                                    ShapeColorMap& scm, Sampler& sampler) const
+spectrum DebugIntegrator::trace_ray(const Scene& scene, const Ray& ray,
+                                    Sampler& sampler) const
 {
   if (opt.type == DI_TIME_INTERSECT)
   {
@@ -80,11 +80,11 @@ spectrum DebugIntegrator::trace_ray(const Ray& ray, const Scene& scene,
     auto shape = isect.get_shape_for_id();
     {
       std::lock_guard<std::mutex> lg(color_mutex);
-      if (scm.find(shape) == scm.end())
-        scm.insert(make_pair(shape, color_list[scm.size() % NUM_DISTINCT_ID_COLORS]));
+      if (color_map.find(shape) == color_map.end())
+        color_map.insert(make_pair(shape, color_list[color_map.size() % NUM_DISTINCT_ID_COLORS]));
     }
 
-    return scm[shape];
+    return color_map[shape];
   }
 
   if (opt.type == DI_NORMAL)

@@ -16,7 +16,7 @@ using std::queue;
 using std::mutex;
 using std::shared_ptr;
 
-class PathTracerIntegrator : public RectIntegrator
+class PathTracerIntegrator : public RayIntegrator
 {
 public:
   struct Options
@@ -34,16 +34,11 @@ public:
   long num_rays_traced() const { return rays_traced; }
   long num_primary_rays_traced() const { return primary_rays_traced; }
 
-  void render_rect(const Camera& cam, const Scene& scene,
-                   const Film::Rect& rect,
-                   uint samples_per_pixel) const;
-
-  void pixel_samples(const Camera& cam, const Scene& scene,
-                         uint x, uint y,
-                         uint samples_per_pixel) const;
+  spectrum trace_ray(const Scene& scene, const Ray& r,
+                     Sampler& sampler) const override;
 
 private:
-  spectrum trace_ray(const Scene& scene, const Ray& r,
+  spectrum _trace_ray(const Scene& scene, const Ray& r,
                      Sampler& sampler, int depth) const;
 
   mutable std::atomic_ullong rays_traced;

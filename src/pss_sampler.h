@@ -5,15 +5,49 @@
 #include "twinkle.h"
 #include "sampler.h"
 #include "misc_types.h"
+#include "film.h"
 
 class PrimarySpaceSampling
 {
-public:
-  PrimarySpaceSampling(scalar total_intensity, scalar large_step_prob);
-
+private:
   class PSSampler;
+  struct Sample;
+
+public:
+  struct Options
+  {
+    scalar large_step_prob;
+  };
+
+  PrimarySpaceSampling(const Options&, scalar ti);
 
   PSSampler nth_sampler(int index, int total);
+  void seed(int);
+
+  Sample finish_sample(const PixelSample&, const spectrum&);
+
+private:
+  using time_t = uint64_t;
+
+  /*
+   * Update the element at coordinate i to the current global time.
+   */
+  scalar update_coord(uint i);
+
+  /*
+   * perturb the scalar by a small value, for small-step changes
+   */
+  static scalar perturb_coord(scalar s, scalar u);
+
+  struct Sample
+  {
+    Sample() : location(0, 0, 0, 0, Ray(Vec3{0}, Vec3{1, 0, 0})) {}
+    Sample(scalar w, spectrum v, PixelSample ps) : weight(w), value(v), location(ps) {}
+
+    scalar weight;
+    spectrum value;
+    PixelSample location;
+  };
 
   class PSSampler : public Sampler
   {
@@ -37,31 +71,13 @@ public:
     void sample_5d(scalar& r1, scalar& r2, scalar& r3, scalar& r4, scalar& r5) override;
 
   private:
+    friend class PrimarySpaceSampling;
     scalar next_coord();
-  };
-
-private:
-  /*
-   * Update the element at coordinate i to the current global time.
-   */
-  scalar update_coord(int i);
-
-  /*
-   * perturb the scalar by a small value, for small-step changes
-   */
-  static scalar perturb_coord(scalar s, scalar u);
-
-  using time_t = uint64_t;
-
-  struct Sample
-  {
-    scalar w;
-    Pixel location;
   };
 
   struct Coord
   {
-    Coord() = default;
+    Coord() : value(0), modify_time(0) { }
     Coord(scalar v, time_t t) :
       value(v), modify_time(t)
     {
@@ -75,17 +91,19 @@ private:
 
   UniformSampler sampler;
 
-  scalar lsp; // probability of a large step on a new sample
+  Options options;
   scalar total_intensity;
 
   time_t global_time; // time of most recently-modified sample (also equivalent
                       // to total number of full samples taken.
   time_t large_step_time; // time since the last large step
+  scalar old_intensity;
 
   std::vector<Coord> coords;
+  std::vector<stack_entry> last_modified;
 
-  std::stack<stack_entry> last_modified;
-  time_t index;
   int large_step;
   Sample old_sample;
 };
+
+using PSSMLT = PrimarySpaceSampling;

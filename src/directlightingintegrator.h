@@ -5,7 +5,7 @@
 #include "scheduler.h"
 #include "film.h"
 
-class DirectLightingIntegrator : public RectIntegrator
+class DirectLightingIntegrator : public RayIntegrator
 {
 public:
   struct Options
@@ -19,14 +19,12 @@ public:
   DirectLightingIntegrator() {}
   DirectLightingIntegrator(const Options& opt);
 
-  void render_rect(const Camera& cam, const Scene& scene,
-                   const Film::Rect& rect,
-                   uint samples_per_pixel) const;
+  spectrum trace_ray(const Scene& scene, const Ray& ray, Sampler& sampler) const;
 
   virtual ~DirectLightingIntegrator() {}
 private:
 
-  spectrum trace_ray(const Scene& scene, const Ray& ray, Sampler& sampler) const;
+
 
   Options options;
 };

@@ -29,8 +29,8 @@ PathTracerIntegrator::PathTracerIntegrator(const PathTracerIntegrator::Options& 
 {
 }
 
-spectrum PathTracerIntegrator::trace_ray(const Scene& scene, const Ray& ray,
-                                         Sampler& sampler, int depth) const
+spectrum PathTracerIntegrator::_trace_ray(const Scene& scene, const Ray& ray,
+                                          Sampler& sampler, int depth) const
 {
   ++rays_traced;
   if (depth == 1)
@@ -96,8 +96,8 @@ spectrum PathTracerIntegrator::trace_ray(const Scene& scene, const Ray& ray,
     scalar nl = fabs(brdf_dir.dot(isect.normal));// max<scalar>(brdf_dir.dot(isect.normal), 0);
     if (brdf_p > 0 && nl > 0)
     {
-      total += trace_ray(scene, Ray{isect.position, brdf_dir}.nudge(),
-                         sampler, depth + 1) *
+      total += _trace_ray(scene, Ray{isect.position, brdf_dir}.nudge(),
+                          sampler, depth + 1) *
         brdf_reflectance *
         spectrum{p_mult / brdf_p * nl};
     }
@@ -106,34 +106,12 @@ spectrum PathTracerIntegrator::trace_ray(const Scene& scene, const Ray& ray,
   return total;
 }
 
-void PathTracerIntegrator::render_rect(const Camera& cam, const Scene& scene,
-                                       const Film::Rect& rect,
-                                       uint samples_per_pixel) const
+spectrum PathTracerIntegrator::trace_ray(const Scene& scene, const Ray& r,
+                                         Sampler& sampler) const
 {
-  for (uint py = rect.y; py < rect.y + rect.height; ++py)
-  {
-    for (uint px = rect.x; px < rect.x + rect.width; ++px)
-    {
-      pixel_samples(cam, scene, px, py, samples_per_pixel);
-    }
-  }
+  return _trace_ray(scene, r, sampler, 1);
 }
 
-void PathTracerIntegrator::pixel_samples(const Camera& cam, const Scene& scene,
-                                         uint x, uint y,
-                                         uint samples_per_pixel) const
-{
-  auto sampler = UniformSampler{};
 
-  auto& film = get_thread_film();
-  
-  for (uint d = 0; d < samples_per_pixel; ++d)
-  {
-    PixelSample ps = cam.sample_pixel(film.width, film.height, x, y, sampler);
-          
-    spectrum s = trace_ray(scene, ps.ray, sampler, 1);
-    film.add_sample(ps, s);
-  }
-}
 
 #endif

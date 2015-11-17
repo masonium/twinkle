@@ -46,13 +46,24 @@ namespace script
 
     int implicit(lua_State* L)
     {
-      LUA_CHECK_NUM_ARGS(L, 3);
+      using namespace std::string_literals;
 
-      auto name = std::string{lua_tostring(L, 1)};
-      scalar lc = lua_tonumber(L, 2);
-      auto box = lua_tobbox(L, 3);
+      LUA_CHECK_RANGE_ARGS(L, 3, 4);
 
-      return script_geometry(L, make_shared<Implicit>(name, lc, box));
+      int argnum = 0;
+      auto name = std::string{lua_tostring(L, ++argnum)};
+      auto grad_name = ""s;
+      if (lua_gettop(L) == 4)
+      {
+        grad_name = lua_tostring(L, ++argnum);
+      }
+      scalar lc = lua_tonumber(L, ++argnum);
+      auto box = lua_tobbox(L, ++argnum);
+
+      if (grad_name.empty())
+        return script_geometry(L, make_shared<Implicit>(name, lc, box));
+      else
+        return script_geometry(L, make_shared<ImplicitWithGrad>(name, grad_name, lc, box));
     }
   }
 }

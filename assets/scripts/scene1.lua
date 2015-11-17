@@ -2,6 +2,11 @@ function my_sphere(x, y, z)
    return math.pow(x*x*x*x + y*y*y*y + z*z*z*z, 0.25) - 1.0
 end
 
+function my_sphere_grad(x, y, z)
+   return x*x*x, y*y*y, z*z*z
+end
+
+
 local implicit_funcs = {}
 
 function implicit_funcs.intersection(f, g)
@@ -36,7 +41,7 @@ mstr = {-2.0, 0.0, 2.0}
 my_sphere_1 = implicit_funcs.translate(my_sphere, mstr[1], mstr[2], mstr[3])
 
 function scene ()
-   -- local s = geom.implicit("my_sphere", 1.0, bounds.bbox({-1.1}, {1.1}))
+   local s = geom.implicit("my_sphere", "my_sphere_grad", 1.0, bounds.bbox({-1.1}, {1.1}))
    local st = geom.implicit("my_sphere_1", 1.0, bounds.bbox({-10.1}, {10.1}))
    local pl = geom.plane({0.0, 1.0, 0.0}, 1.0)
    local s2 = geom.sphere({0.0, 2.0, 0.0}, 1.0)
@@ -48,12 +53,12 @@ function scene ()
       shape(pl, material.diffuse(texture.checker({0.7}, {0.1}, 2.0))),
 --      shape(s2, material.mirror()),
 --      shape(s2, material.color({0.4, 0.1, 0.1})),
-      shape(geom.plane({1.0, 0.0, 1.0}, math.sqrt(2)),
-	    material.color({0.5, 0.5, 0.5}))
+      -- shape(geom.plane({1.0, 0.0, 1.0}, math.sqrt(2)),
+      --            material.color({0.5, 0.5, 0.5}))
    }
 
    local lights = {
---      light.point({0.0, 3.0, 3.0}, {3.0})
+      light.point({0.0, 3.0, 3.0}, {3.0})
    }
 
    local camera = camera.perspective({4.0, 1.0, 4.0}, {0.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, math.pi / 2.0)

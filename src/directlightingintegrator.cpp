@@ -93,29 +93,3 @@ spectrum DirectLightingIntegrator::trace_ray(const Scene& scene, const Ray& ray,
 
   return total / options.lighting_samples;
 }
-
-void DirectLightingIntegrator::render_rect(
-  const Camera& cam, const Scene& scene,
-  const Film::Rect& render_rect, uint samples_per_pixel) const
-{
-  auto sampler = UniformSampler{};
-  auto& film = get_thread_film();
-
-  for (uint x = 0; x < render_rect.width; ++x)
-  {
-    for (uint y = 0; y < render_rect.height; ++y)
-    {
-      for (uint d = 0; d < samples_per_pixel; ++d)
-      {
-        int px = x + render_rect.x;
-        int py = y + render_rect.y;
-
-        PixelSample ps = cam.sample_pixel(film.width, film.height, px, py, sampler);
-
-        spectrum s = trace_ray(scene, ps.ray, sampler);
-
-        film.add_sample(ps, s);
-      }
-    }
-  }
-}

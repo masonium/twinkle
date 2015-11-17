@@ -1,15 +1,16 @@
 #pragma once
 
 #include <unordered_map>
+#include <mutex>
+#include "twinkle.h"
 #include "integrator.h"
 #include "sampler.h"
 
-#define FEATURE_DEBUG_TRACER 1
 #ifdef FEATURE_DEBUG_TRACER
 
 using ShapeColorMap = std::unordered_map<Shape const*, spectrum>;
 
-class DebugIntegrator : public RectIntegrator
+class DebugIntegrator : public RayIntegrator
 {
 public:
   enum Type
@@ -30,14 +31,11 @@ public:
 
   DebugIntegrator(const Options& opt_);
 
-  void render_rect(const Camera& cam, const Scene& scene,
-                   const Film::Rect& rect,
-                   uint samples_per_pixel) const override;
+  spectrum trace_ray(const Scene& scene, const Ray& ray, Sampler& sampler) const override;
 
 private:
-  spectrum trace_ray(const Ray& ray, const Scene& scene,
-                     ShapeColorMap& scm, Sampler& sampler) const;
-
+  mutable std::mutex color_mutex;
+  mutable ShapeColorMap color_map;
   std::unordered_map<Shape const*, int> shape_ids;
   Options opt;
 };

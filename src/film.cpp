@@ -62,9 +62,9 @@ Film::Film(istream& in) : width(0), height(0)
   }
 }
 
-void Film::add_sample(const PixelSample& ps, const spectrum& s)
+void Film::add_sample(const PixelSample& ps, const spectrum& s, scalar w)
 {
-  BoxFilter().add_sample(*this, ps, s);
+  BoxFilter().add_sample(*this, ps, s, w);
 }
 
 vector<spectrum> Film::pixel_list() const
@@ -161,11 +161,12 @@ void Film::clear()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void BoxFilter::add_sample(Film& film, const PixelSample& p, const spectrum& s) const
+void BoxFilter::add_sample(Film& film, const PixelSample& p, 
+                           const spectrum& s, scalar w) const
 {
   Film::AccPixel& fp = film.at(p.x, p.y);
-  fp.total += s;
-  fp.weight += 1;
+  fp.total += s * w;
+  fp.weight += w;
 }
 
 Film::AccPixel& Film::AccPixel::operator+=(const AccPixel& p)

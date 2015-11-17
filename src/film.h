@@ -41,7 +41,7 @@ using SampleVector = vector<PixelSampleValue>;
 class ImageSampleFilter
 {
 public:
-  virtual void add_sample(Film& film, const PixelSample& p, const spectrum& s) const = 0;
+  virtual void add_sample(Film& film, const PixelSample& p, const spectrum& s, scalar w) const = 0;
 
   virtual ~ImageSampleFilter() { }
 };
@@ -53,7 +53,8 @@ public:
 class BoxFilter : public ImageSampleFilter
 {
 public:
-  void add_sample(Film& film, const PixelSample& p, const spectrum& s) const override;
+  void add_sample(Film& film, const PixelSample& p, 
+                  const spectrum& s, scalar w = 1.0) const override;
 };
 
 
@@ -88,7 +89,7 @@ public:
   Film& operator=(Film&& f);
   Film& operator=(const Film& f);
 
-  void add_sample(const PixelSample& ps, const spectrum& s);
+  void add_sample(const PixelSample& ps, const spectrum& s, scalar w = 1.0);
 
   /**
    * Return the (weighted) average instensity over image region.

@@ -5,8 +5,6 @@
 #include "env_light.h"
 #include "materials/rough_glass_material.h"
 #include "util/timer.h"
-#include "script/runner.h"
-#include "script/script_util.h"
 
 using std::shared_ptr;
 using std::make_shared;
@@ -171,8 +169,8 @@ shared_ptr<Camera> model_scene(Scene& scene, const string& model_filename, bool 
   }
 
   //auto plane_mat = make_shared<RoughColorMaterial>(0.0, spectrum{0.2, 0.7, 0.0});
-  auto plane_mat = make_shared<RoughMaterial>(0.0, make_shared<ScriptTexture>("checker"));
-  scene.add(make_shared<Shape>(make_shared<Plane>(Vec3::y_axis, 2), plane_mat));
+  //auto plane_mat = make_shared<RoughMaterial>(0.0, make_shared<ScriptTexture>("checker"));
+  scene.add(make_shared<Shape>(make_shared<Plane>(Vec3::y_axis, 2), COLOR(spectrum{0.9})));
 
   scene.add(make_shared<EnvironmentLight>(make_shared<SolidColor>(spectrum{5.0})));
 
@@ -280,6 +278,10 @@ shared_ptr<Camera> showcase_scene(Scene& scene, int angle)
   return make_shared<PerspectiveCamera>(Vec3(gs * 0.5, gs * .7, -gs * .4), Vec3{gs/2, 0, gs/4}, Vec3::y_axis, PI/2.0);
 }
 
+#if FEATURE_LUA_SCRIPTING
+#include "script/runner.h"
+#include "script/script_util.h"
+
 shared_ptr<Camera> lua_scene(Scene& scene, const string& filename)
 {
   LuaRunner runner(filename.c_str());
@@ -331,3 +333,5 @@ shared_ptr<Camera> lua_scene(Scene& scene, const string& filename)
   
   return camera;
 }
+
+#endif

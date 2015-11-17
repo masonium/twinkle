@@ -20,6 +20,7 @@
 #include "util/timer.h"
 #include "util/running_stats.h"
 #include "thread_state.h"
+#include "pss_sampler.h"
 
 using std::cerr;
 using std::endl;
@@ -56,8 +57,8 @@ auto parse_args(int argc, char**args)
 
   parser.add_option("-w", "--width").action("store").type("int").set_default(400);
   parser.add_option("-h", "--height").action("store").type("int").set_default(300);
-  parser.add_option("-t", "--threads").action("store").type("int").set_default(0);
-  parser.add_option("-s", "--samples").action("store").type("int").set_default(1);
+  parser.add_option("-t", "--threads").action("store").type("int").set_default(1);
+  parser.add_option("-s", "--samples").action("store").type("int").set_default(5);
   parser.add_option("-b", "--benchmark").action("store").type("int").set_default(1);
   parser.add_option("-o", "--output_image").action("store_true").type("bool");
   parser.add_option("-q", "--no_image").action("store_false").dest("output_image");
@@ -92,8 +93,8 @@ int main(int argc, char** args)
   else
     scene = make_shared<BasicScene>();
 
-  //auto cam = model_scene(*scene, "assets/models/tak-cube.obj", false);
-  auto cam = lua_scene(*scene, "assets/scripts/scene1.lua");
+  auto cam = model_scene(*scene, "assets/models/tak-cube.obj", false);
+  //auto cam = lua_scene(*scene, "assets/scripts/scene1.lua");
 
   Film f(WIDTH, HEIGHT);
 
@@ -103,7 +104,7 @@ int main(int argc, char** args)
     num_threads = num_system_procs();
   cerr << "using " << num_threads << " threads.\n";
 
-  unique_ptr<RectIntegrator> igr;
+  unique_ptr<RayIntegrator> igr;
   string igr_type = options["integrator"];
 
   if (igr_type == "path")
@@ -164,7 +165,9 @@ int main(int argc, char** args)
     else
     {
       Timer tm;
-      grid_render(*igr, *cam, *scene, f, *scheduler, 4, per_pixel);
+      PSSMLT::Options opt;
+      opt.large_step_prob = 0.25;
+      pssmlt_render(*igr, *cam, *scene, f, *scheduler, opt, per_pixel);
       render_time = tm.since();
       cerr << "Render Time: " << format_duration(render_time) << endl;
     }

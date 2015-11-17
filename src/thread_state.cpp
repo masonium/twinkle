@@ -12,16 +12,24 @@ public:
   ThreadState() : f(0, 0) {}
 
   ThreadState(int width, int height, const std::string& lua_fn) :
-    f(width, height), _runner(lua_fn) { }
+    f(width, height)
+#if FEATURE_LUA_SCRIPTING
+    ,_runner(lua_fn)
+#endif
+{ }
 
   Film& film() { return f; }
   const Film& film() const { return f; }
 
+#if FEATURE_LUA_SCRIPTING
   LuaRunner& runner() { return _runner; }
+#endif
 
 private:
   Film f;
+#if FEATURE_LUA_SCRIPTING
   LuaRunner _runner;
+#endif
 };
 
 class ThreadStateManager
@@ -40,12 +48,11 @@ private:
   const Film& _film;
   std::string boostrap_filename;
   std::mutex _state_map_mutex;
-  SmallMap<4, std::thread::id, unique_ptr<ThreadState>> _state_map;
+  unordered_map<std::thread::id, unique_ptr<ThreadState>> _state_map;
 };
 
 void ThreadStateManager::register_thread()
 {
-  cerr << sizeof(std::this_thread::get_id()) << endl;
   std::lock_guard<std::mutex> lg(_state_map_mutex);
   _state_map.emplace(std::this_thread::get_id(),
                      make_unique<ThreadState>(_film.width, _film.height, boostrap_filename));
@@ -56,16 +63,18 @@ Film& ThreadStateManager::get_film()
   return _state_map[std::this_thread::get_id()]->film();
 }
 
+#if FEATURE_LUA_SCRIPTING
 LuaRunner& ThreadStateManager::get_lua_runner()
 {
   return _state_map[std::this_thread::get_id()]->runner();
 }
+#endif
 
 void ThreadStateManager::merge_films(Film& f) const
 {
   for (const auto& e: _state_map)
   {
-    f.merge(e->film());
+    f.merge(e.second->film());
   }
 }
 
@@ -86,10 +95,12 @@ Film& get_thread_film()
   return _manager->get_film();
 }
 
+#if FEATURE_LUA_SCRIPTING
 LuaRunner& get_thread_lua_runner()
 {
   return _manager->get_lua_runner();
 }
+#endif
 
 void merge_thread_films(Film& f)
 {

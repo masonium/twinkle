@@ -1,9 +1,12 @@
 #include "pss_sampler.h"
 
 using PSS = PrimarySpaceSampling;
+using std::min;
 
-PSS::PrimarySpaceSampling(scalar t, scalar large_step_prob)
-  : lsp(large_step_prob), total_intensity(t)
+
+PSS::PrimarySpaceSampling(const PSS::Options& opt, scalar ti)
+  : options(opt), total_intensity(ti), global_time(0), large_step_time(0),
+    old_intensity(0), large_step(1)
 {
   coords.resize(100);
   fill(begin(coords), end(coords), Coord(0, 0));
@@ -14,26 +17,30 @@ void PSS::seed(int s)
   sampler.seed(s);
 }
 
-void PSS::new_sample()
+PSS::PSSampler PSS::nth_sampler(int index, int t)
 {
-  index = 0;
+  return PSSampler(*this, index, t);
 }
 
-void PSS::finish_sample(scalar intensity, Pixel p)
+PSS::Sample PSS::finish_sample(const PixelSample& ps, const spectrum& value )
 {
-  scalar accept_prob = old_intesity > 0 ? min<scalar>(1.0, intensity / old_intensity) : 1.0;
+  scalar intensity = value.luminance();
+  scalar accept_prob = old_intensity > 0 ? min<scalar>(1.0, intensity / old_intensity) : 1.0;
 
   // In the original paper, the weight is divided by M, the total expected
   // number of samples. This is because we add all the samples together, rather
   // than averaging them. Since we're going to average the samples together, we
   // shouldn't include that term.
-  scalar w = (a + large_step) / (intensity / total_intensity + lsp);
-  Sample new_sample{w, p};
+  scalar w = (accept_prob + large_step) /
+    (intensity / total_intensity + options.large_step_prob);
+  Sample new_sample{w, value, ps};
 
-  old_sample.weight += (1-a) / (old_intensity / total_intensity + lsp);
+  old_sample.weight += (1 - accept_prob) /
+    (old_intensity / total_intensity + options.large_step_prob);
 
   Sample contrib_sample;
-  // If we accept the new sample, return the old one.
+
+  // If we accept the new sample, return the old one, and clear the stack history.
   if (sampler.sample_1d() < accept_prob)
   {
     old_intensity = intensity;
@@ -43,11 +50,23 @@ void PSS::finish_sample(scalar intensity, Pixel p)
     if (large_step)
       large_step_time = global_time;
     ++global_time;
-    last_modified.clear();
   }
+  else
+  {
+    contrib_sample = new_sample;
+    for (int i = last_modified.size() - 1; i >= 0; --i)
+    {
+      const auto& e = last_modified[i];
+      coords[e.first] = e.second;
+    }
+  }
+  last_modified.clear();
+
+  large_step = sampler.sample_1d() < options.large_step_prob ? 1 : 0;
+  return contrib_sample;
 }
 
-scalar PSS::update_coord(int index)
+scalar PSS::update_coord(uint index)
 {
   if (index >= coords.size())
   {
@@ -66,7 +85,7 @@ scalar PSS::update_coord(int index)
      */
     if (large_step)
     {
-      last_modified.emplace(index, coord);
+      last_modified.emplace_back(index, coord);
       coord.value = sampler.sample_1d();
       coord.modify_time = large_step_time;
     }
@@ -101,7 +120,7 @@ scalar PSS::update_coord(int index)
   return coord.value;
 }
 
-scalar PSSampler::perturb_coord(scalar s, scalar u)
+scalar PSS::perturb_coord(scalar s, scalar u)
 {
   const scalar s1 = 1.0/1024, s2 = 1.0/64;
   const scalar lm = -log(s2 / s1);
@@ -111,6 +130,12 @@ scalar PSSampler::perturb_coord(scalar s, scalar u)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+PSS::PSSampler::PSSampler(PrimarySpaceSampling& pss_, int index_, int stride_)
+  : pss(pss_), initial_index(index_), stride(stride_)
+{
+
+}
+
 void PrimarySpaceSampling::PSSampler::new_sample()
 {
   index = initial_index;
@@ -118,7 +143,7 @@ void PrimarySpaceSampling::PSSampler::new_sample()
 
 scalar PrimarySpaceSampling::PSSampler::next_coord()
 {
-  scalar s = pss.get_coord(index);
+  scalar s = pss.update_coord(index);
   index += stride;
   return s;
 }

@@ -7,6 +7,7 @@
 #include "scene.h"
 #include "film.h"
 #include "sampler.h"
+#include "pss_sampler.h"
 #include "grid_tasks.h"
 #include "scheduler.h"
 #include "util.h"
@@ -14,20 +15,10 @@
 using std::unique_ptr;
 using std::make_shared;
 
-class RenderInfo
-{
-public:
-  RenderInfo(const Camera& cam_, const Scene& scene_, const Film::Rect& rect_)
-    : camera(cam_), scene(scene_), rect(rect_)
-  {
-  }
-  RenderInfo(const RenderInfo&) = delete;
-
-  const Camera& camera;
-  const Scene& scene;
-  const Film::Rect rect;
-};
-
+/**
+ * A rect integrator will render on a region a film, with samples_per_pixel as a
+ * (potentailly amortized) utilization amount.
+ */
 class RectIntegrator
 {
 public:
@@ -36,8 +27,25 @@ public:
                            uint samples_per_pixel) const = 0;
 };
 
-void grid_render(const RectIntegrator& renderer, const Camera& cam, const Scene& scene, Film& film,
-                 Scheduler& scheduler, uint subdiv, uint total_spp);
+/**
+ * A ray integrator is any evaluator that maps rays to radiance along the
+ * ray.
+ */
+class RayIntegrator : public RectIntegrator
+{
+public:
+  void render_rect(const Camera& cam, const Scene& scene,
+                   const Film::Rect& rect,
+                   uint samples_per_pixel) const override;
 
-void pmc_grid_render(const RectIntegrator& renderer, const Camera& cam, const Scene& scene, Film& film,
-                     Scheduler& scheduler, uint subdiv, uint total_spp);
+  virtual spectrum trace_ray(const Scene& scene, const Ray& ray,
+                             Sampler& sampler) const = 0;
+};
+
+
+void grid_render(const RectIntegrator& renderer, const Camera& cam, const Scene& scene,
+                 Film& film, Scheduler& scheduler, uint subdiv, uint total_spp);
+
+void pssmlt_render(const RayIntegrator&, const Camera& cam, const Scene& scene,
+                   Film& film, Scheduler& scheduler, const PSSMLT::Options& opt,
+                   uint total_spp);

@@ -12,6 +12,11 @@ ifndef MULTITHREADED
 MULTITHREADED = 1
 endif
 
+ifndef LUA
+LUA = 0
+endif
+
+
 BINDIR = $(CONFIG)/bin
 OBJDIR = $(CONFIG)/obj
 LIBDIR = $(CONFIG)/lib
@@ -20,10 +25,22 @@ CXX = ccache g++
 CXX_VERSION = -std=c++1y
 COMMON_FLAGS = -Wall -Wextra -Wno-unused-parameter $(CXX_VERSION)
 CXXFLAGS := $(COMMON_FLAGS) -Isrc/ -Iextlib/ -ggdb -I/usr/include/luajit-2.0 -fno-omit-frame-pointer
+
+# This works for MULTITHREADED=1, but makes the command longer.
+ifeq (${MULTITHREADED}, 0)
 CXXFLAGS += -DFEATURE_MULTITHREADED=${MULTITHREADED}
+endif
+
 NOTESTFLAGS := -fno-exceptions -fno-rtti
 SFLAGS = -fsyntax-only $(CXXFLAGS)
-LFLAGS := -lUnitTest++ -L$(LIBDIR) -ltwinkle -lcpp-optparse -lluajit-5.1
+LFLAGS := -lUnitTest++ -L$(LIBDIR) -ltwinkle -lcpp-optparse
+
+ifeq (${LUA}, 0)
+CXXFLAGS += -DFEATURE_LUA_SCRIPTING=${LUA}
+else
+LFLAGS += -lluajit-5.1
+endif
+
 
 ifeq (${MULTITHREADED}, 1)
 LFLAGS += -pthread -lm

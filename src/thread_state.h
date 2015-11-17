@@ -18,5 +18,7 @@ class ThreadStateManager;
 void register_thread_state_manager(const Film& f, const string& lua_f);
 void register_thread();
 Film& get_thread_film();
+#if FEATURE_LUA_SCRIPTING
 LuaRunner& get_thread_lua_runner();
+#endif
 void merge_thread_films(Film& f);
