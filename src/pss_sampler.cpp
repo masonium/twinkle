@@ -3,13 +3,10 @@
 using PSS = PrimarySpaceSampling;
 using std::min;
 
-
 PSS::PrimarySpaceSampling(const PSS::Options& opt, scalar ti)
   : options(opt), total_intensity(ti), global_time(0), large_step_time(0),
     old_intensity(0), large_step(1)
 {
-  coords.resize(100);
-  fill(begin(coords), end(coords), Coord(0, 0));
 }
 
 void PSS::seed(int s)
@@ -71,8 +68,8 @@ scalar PSS::update_coord(uint index)
   if (index >= coords.size())
   {
     scalar u = sampler.sample_1d();
-    coords.resize(index+1);
-    coords.emplace_back(u, global_time);
+    coords.resize(index+1, Coord(0, 0));
+    coords[index] = Coord(u, global_time);
   }
 
   auto& coord = coords[index];
@@ -133,7 +130,7 @@ scalar PSS::perturb_coord(scalar s, scalar u)
 PSS::PSSampler::PSSampler(PrimarySpaceSampling& pss_, int index_, int stride_)
   : pss(pss_), initial_index(index_), stride(stride_)
 {
-
+  assert(initial_index < stride);
 }
 
 void PrimarySpaceSampling::PSSampler::new_sample()

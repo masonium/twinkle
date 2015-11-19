@@ -122,7 +122,7 @@ public:
     PSSMLT pss(options, total_intensity);
     pss.seed(time_worker_seed(worker_id));
 
-    auto sampler = pss.nth_sampler(1, 0);
+    auto sampler = pss.nth_sampler(0, 1);
 
     auto& film = get_thread_film();
 
@@ -159,14 +159,13 @@ void pssmlt_render(const RayIntegrator& igr, const Camera& cam, const Scene& sce
   grid_render(igr, cam, scene, film, scheduler,
               std::max(2u, film.width / 32), grid_spp);
 
-  if (grid_spp == total_spp)
+  if (grid_spp >= total_spp)
     return;
 
   scalar ti = film.average_intensity();
 
   uint64_t total_samples = film.width * film.height * (total_spp - grid_spp);
 
-  vector<shared_ptr<PSSMLTRenderTask>> tasks;
   auto cc = scheduler.concurrency();
 
   std::cerr << "Average intensity of " << ti << "\n";
@@ -180,4 +179,5 @@ void pssmlt_render(const RayIntegrator& igr, const Camera& cam, const Scene& sce
 
   film.clear();
   merge_thread_films(film);
+
 }
