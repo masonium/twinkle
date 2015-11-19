@@ -54,7 +54,6 @@ public:
   Vec3 aspect_forward;
   Vec3 up;
   Vec3 right;
-  scalar aspect;
   const DepthLens dl;
 
 private:

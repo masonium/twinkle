@@ -38,7 +38,7 @@ PerspectiveCamera::PerspectiveCamera(Vec3 pos, Vec3 lookat_, Vec3 up_,
 PixelSample PerspectiveCamera::sample_pixel(uint w, uint h, Sampler& sampler) const
 {
   auto ps = sampler.sample_2d();
-  return from_unit_coord(w, h, ps, sample_core(ps[0] - 0.5, ps[1] - 0.5, aspect, sampler));
+  return from_unit_coord(w, h, ps, sample_core(ps[0] - 0.5, ps[1] - 0.5, scalar(w) / scalar(h), sampler));
 }
 
 PixelSample PerspectiveCamera::sample_pixel(uint w, uint h, int x, int y, Sampler& sampler) const
