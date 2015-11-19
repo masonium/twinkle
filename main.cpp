@@ -64,6 +64,7 @@ auto parse_args(int argc, char**args)
   parser.add_option("-q", "--no_image").action("store_false").dest("output_image");
   parser.add_option("-d", "--debug_type").action("store").choices(debug_map_keys).set_default("normal");
   parser.add_option("-i", "--integrator").action("store").choices(std::vector<string>({"path", "direct", "debug"})).set_default("path");
+  parser.add_option("--pss").action("store_true").type("bool").dest("pssmlt").set_default(false);
   parser.add_option("-m", "--mapper").action("store").choices(std::vector<string>({"linear", "cutoff", "rh_global"})).set_default("linear");
   parser.add_option("--kd").action("store_const").dest("scene_container").set_const("kd");
   parser.add_option("--basic").action("store_const").dest("scene_container").set_const("basic");
@@ -93,8 +94,8 @@ int main(int argc, char** args)
   else
     scene = make_shared<BasicScene>();
 
-  auto cam = model_scene(*scene, "assets/models/tak-cube.obj", false);
-  //auto cam = lua_scene(*scene, "assets/scripts/scene1.lua");
+  //auto cam = model_scene(*scene, "assets/models/tak-cube.obj", false);
+  auto cam = lua_scene(*scene, "assets/scripts/scene1.lua");
 
   Film f(WIDTH, HEIGHT);
 
@@ -167,7 +168,13 @@ int main(int argc, char** args)
       Timer tm;
       PSSMLT::Options opt;
       opt.large_step_prob = 0.25;
-      pssmlt_render(*igr, *cam, *scene, f, *scheduler, opt, per_pixel);
+
+      bool use_pssmlt = options.get("pssmlt").as<bool>();
+      if (use_pssmlt)
+        pssmlt_render(*igr, *cam, *scene, f, *scheduler, opt, per_pixel);
+      else
+        grid_render(*igr, *cam, *scene, f, *scheduler, 4, per_pixel);
+
       render_time = tm.since();
       cerr << "Render Time: " << format_duration(render_time) << endl;
     }
