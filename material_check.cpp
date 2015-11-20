@@ -1,4 +1,5 @@
 #include "material.h"
+#include "materials/multilayered.h"
 #include "film.h"
 #include "geometries.h"
 #include "camera.h"
@@ -26,7 +27,7 @@ void render_material_scene(shared_ptr<Material> m, Film& film)
 
   ConstSampler sampler(0.5, 0.5, 0.5, 0.5, 0.5);
 
-  PointLight pl({0.0, 0.0, sqrt(2)}, spectrum{5.0});
+  PointLight pl({0.5, 0.0, sqrt(2)}, spectrum{25.0});
 
   for (auto y = 0u; y < film.height; ++y)
   {
@@ -55,6 +56,10 @@ void render_material_scene(shared_ptr<Material> m, Film& film)
         spectrum contrib = N.dot(L) * light_em.emission() * refl;
         film.add_sample(ps, contrib);
       }
+      else
+      {
+        film.add_sample(ps, spectrum{0.0});
+      }
     }
   }
 }
@@ -77,7 +82,10 @@ int main(int argc, char** args)
 
   auto tex = make_shared<Checkerboard2D>(spectrum{0.6, 0.1, 0.2},
                                          spectrum{0.2, 0.1, 0.6}, 16.0);
-  auto mat = make_shared<RoughMaterial>(opt.get("roughness").as<float>(), tex);
+  //auto mat = make_shared<RoughMaterial>(opt.get("roughness").as<float>(), tex);
+  auto mat = make_shared<MaterialTLDAdapter>(refraction_index::AIR,
+                                             refraction_index::CROWN_GLASS,
+                                             make_shared<GTR>(0.6));
   Film film(opt.get("width").as<int>(), opt.get("height").as<int>());
 
   render_material_scene(mat, film);
