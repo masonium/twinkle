@@ -40,6 +40,15 @@ inline constexpr scalar sign(scalar val) {
 }
 
 /**
+ * Return the F0 term in the schlick reflection approximation.
+ */
+inline constexpr scalar schlick_r0_term(scalar n1, scalar n2)
+{
+  return square( (n1-n2) / (n1 + n2) );
+}
+
+
+/**
  * Computes the Fresnel coefficient for reflectance of dielectric
  * medium. Assumes that incoming and normal originate from the same point.
  */

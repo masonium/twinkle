@@ -54,7 +54,7 @@ scalar norm(const scalar& s)
 scalar fresnel_reflectance_schlick(const Vec3& incoming, const Vec3& half,
                                    scalar n1, scalar n2)
 {
-  scalar r0 = square( (n1-n2) / (n1 + n2) );
+  scalar r0 = schlick_r0_term(n1, n2);
   scalar d = std::abs(incoming.dot(half));
   scalar ft = 1 - d;
   ft *= ft;
