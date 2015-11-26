@@ -30,6 +30,13 @@ Vec3 RoughMaterial::sample_bsdf(const IntersectionView& isect, const Vec3& incom
   const auto v = brdf->sample(incoming, sampler, p, refl);
   reflectance = texture->at_point(isect) * refl;
   return v;
+
+}
+
+scalar RoughMaterial::pdf(const Vec3& incoming,
+                          const Vec3& outgoing) const
+{
+  return brdf->pdf(incoming, outgoing);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,6 +69,12 @@ Vec3 MirrorMaterial::sample_bsdf(const IntersectionView&, const Vec3& incoming, 
   const auto v = brdf.sample(incoming, sampler, p, refl);
   reflectance = spectrum{refl};
   return v;
+}
+
+scalar MirrorMaterial::pdf(const Vec3& incoming,
+                           const Vec3& outgoing) const
+{
+  return brdf.pdf(incoming, outgoing);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -108,3 +121,8 @@ Vec3 GlassMaterial::sample_bsdf(const IntersectionView&, const Vec3& incoming, S
   }
 }
 
+scalar GlassMaterial::pdf(const Vec3& UNUSED(incoming),
+                          const Vec3& UNUSED(outgoing)) const
+{
+  return 0;
+}

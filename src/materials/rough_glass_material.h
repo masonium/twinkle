@@ -59,6 +59,8 @@ public:
   Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
                    scalar& p, spectrum& reflectance) const override;
 
+  scalar pdf(const Vec3&, const Vec3&) const override { return 0.0; }
+
   RoughGlassBSDF<Distribution> bsdf;
 private:
 

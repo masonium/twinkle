@@ -22,6 +22,13 @@ scalar Lambertian::reflectance(const Vec3& incoming, const Vec3& outgoing) const
   return r;
 }
 
+scalar Lambertian::pdf(const Vec3& incoming, const Vec3& outgoing) const
+{
+  if (incoming.z * outgoing.z < 0)
+    return 0.0f;
+  return fabs(outgoing.z) / PI;
+}
+
 OrenNayar::OrenNayar(scalar refl, scalar rough) :
   A(1 - 0.5 * rough * rough / (rough * rough + 0.57)), 
   B(0.45 * rough * rough / (rough * rough + 0.09)),
@@ -41,6 +48,13 @@ Vec3 OrenNayar::sample(const Vec3& incoming,
   reflectance = this->reflectance(incoming, wo);
 
   return wo;
+}
+
+scalar OrenNayar::pdf(const Vec3& incoming, const Vec3& outgoing) const
+{
+  if (incoming.z * outgoing.z < 0)
+    return 0.0f;
+  return fabs(outgoing.z) / PI;
 }
 
 scalar OrenNayar::reflectance(const Vec3& incoming, const Vec3& outgoing) const

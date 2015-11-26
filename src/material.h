@@ -18,6 +18,8 @@ public:
   virtual Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
                            scalar& p, spectrum& reflectance) const = 0;
 
+  virtual scalar pdf(const Vec3& incoming, const Vec3& outgoing) const = 0;
+
   virtual bool is_emissive(const IntersectionView&) const
   {
     return false;
@@ -42,6 +44,8 @@ public:
   
   Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
                    scalar& p, spectrum& reflectance) const override;
+
+  scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
 
 private:
   unique_ptr<BRDF> brdf;
@@ -72,6 +76,7 @@ public:
   Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
                    scalar& p, spectrum& reflectance) const override;
 
+  scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
 private:
   PerfectMirrorBRDF brdf;
 };
@@ -87,6 +92,7 @@ public:
   Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
                    scalar& p, spectrum& reflectance) const override;
 
+  scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
 private:
   scalar nr_inside, nr_outside;
 };

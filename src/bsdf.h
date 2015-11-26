@@ -12,6 +12,9 @@ public:
 
   virtual Vec3 sample(const Vec3& incoming, Sampler& sampler,
                       scalar& p, scalar& reflectance) const = 0;
+  
+  virtual scalar pdf(const Vec3& incoming, const Vec3& outgoing) const = 0;
+  
   virtual bool is_emissive() const
   {
     return false;
@@ -36,6 +39,8 @@ public:
   Vec3 sample(const Vec3& incoming, Sampler& s,
               scalar& p, scalar& reflectance) const override;
 
+  scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
+
   scalar r;
 };
 
@@ -47,7 +52,9 @@ public:
   
   Vec3 sample(const Vec3& incoming, Sampler& s,
               scalar& p, scalar& reflectance) const override;
-  
+
+  scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
+
 private:
   const scalar A, B;
   const scalar rpi;
@@ -74,6 +81,12 @@ public:
     
     return incoming.reflect_over(Vec3::z_axis);
   }
+
+  scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override
+  {
+    return 0.0f;
+  }
+
 };
 
 namespace refraction_index
