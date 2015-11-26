@@ -2,6 +2,7 @@
 
 #include "material.h"
 #include "sampler.h"
+#include "bsdf.h"
 #include <vector>
 
 using std::vector;
@@ -22,6 +23,8 @@ public:
 
   virtual scalar pdf(const Vec3& incoming, const Vec3& outgoing) const = 0;
 };
+
+using TLD = TransitionLayerDistribution;
 
 
 /*
@@ -67,17 +70,27 @@ private:
  * The material consists of one or more microfacet transition layers, stacked on
  * top of a base layer.
  */
+
 class LayeredMFMaterial : public Material
 {
 public:
   class MFLayer
   {
   public:
-    spectrum reflectance(const Vec3& incoming, const Vec3& outgoing, scalar& G);
+    MFLayer(scalar a, spectrum tint, shared_ptr<TLD> dist) :
+      _tint(tint), _absorption(a), _n_outside(refraction_index::AIR),
+      _n_inside(refraction_index::CROWN_GLASS),
+      _n_sf0(schlick_r0_term(_n_outside, _n_inside)), _tld(dist)
+    {
+    }
+    spectrum reflectance(const Vec3& incoming, const Vec3& outgoing, scalar& G) const;
 
-  private:
+    TransitionSample sample_bsdf(const Vec3& incoming, Sampler& sampler) const;
+
+    scalar pdf(const Vec3& incoming, const Vec3& outgoing) const;
+
     spectrum _tint;
-    scalar _thickness;
+    scalar _absorption;
     scalar _n_outside;
     scalar _n_inside;
     scalar _n_sf0;
@@ -91,6 +104,8 @@ public:
   Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
                    scalar& p, spectrum& reflectance) const override;
 
+  scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
+
   std::string to_string() const override { return "LayeredMicrofacetMaterial"; }
 
 private:
@@ -99,6 +114,7 @@ private:
 
   vector<shared_ptr<MFLayer>> _layers;
   shared_ptr<Material> _base;
+  vector<scalar> cum_sample_probs;
 };
 
 /*

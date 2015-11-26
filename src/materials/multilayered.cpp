@@ -28,7 +28,7 @@ scalar GTR::density(const Vec3& h) const
   scalar d2 = pow(1.0 + (_r2 - 1.0) * h.z * h.z, _gamma);
 
   return n1 / (d1 * d2);
-}
+ }
 
 scalar GTR::g1(const Vec3& v, const Vec3& h) const
 {
@@ -72,9 +72,19 @@ TransitionSample GTR::sample_direction(const Vec3& incoming, Sampler& sampler) c
 
 ////////////////////////////////////////////////////////////////////////////////
 
-spectrum LayeredMFMaterial::MFLayer::reflectance(const Vec3& incoming, const Vec3& outgoing, scalar& G)
+spectrum LayeredMFMaterial::MFLayer::reflectance(const Vec3& incoming, const Vec3& outgoing, scalar& G) const
 {
-  return _tint * _tld->reflectance(_n_sf0, incoming, outgoing, G);
+  return spectrum{_tld->reflectance(_n_sf0, incoming, outgoing, G)};
+}
+
+TransitionSample LayeredMFMaterial::MFLayer::sample_bsdf(const Vec3& incoming, Sampler& sampler) const
+{
+  return _tld->sample_direction(incoming, sampler);
+}
+
+scalar LayeredMFMaterial::MFLayer::pdf(const Vec3& incoming, const Vec3& outgoing) const
+{
+  return _tld->pdf(incoming, outgoing);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -92,21 +102,89 @@ spectrum LayeredMFMaterial::reflectance(const IntersectionView& isect, const Vec
 spectrum LayeredMFMaterial::reflectance(const IntersectionView& isect, const Vec3& incoming, const Vec3& outgoing,
                                         int layer_index) const
 {
+  if (incoming.z < 0 || outgoing.z < 0)
+    return spectrum::zero;
+
   if (layer_index < 0)
     return _base->reflectance(isect, incoming, outgoing);
 
   scalar G;
-  auto outer_refl = _layers[layer_index]->reflectance(incoming, outgoing, G);
-//  scalar T1 = square(_n_outside / _n_inside) * (1 - fresnel_transmittance
-  return spectrum{0.0};
+  auto& layer = _layers[layer_index];
+  auto outer_refl = layer->reflectance(incoming, outgoing, G);
+  scalar n1 = layer->_n_outside, n2 = layer->_n_inside;
+  scalar T = fresnel_transmittance_schlick(incoming, Vec3::z_axis, n1, n2);
+  assert(T >= 0.0);
+  assert(T <= 1.0);
+  scalar T12 = square(n2 / n1) * T;
+
+  auto refr_incoming = refraction_direction(incoming, Vec3::z_axis, n1, n2);
+  auto refr_outgoing = refraction_direction(outgoing, Vec3::z_axis, n1, n2);
+
+  auto inner_refl = reflectance(isect, -refr_incoming, -refr_outgoing, layer_index - 1);
+
+  scalar TIR = (1 - G) + G * square(n1 / n2) * T;
+
+  scalar path_length = 1.0 / refr_outgoing.z + 1.0 / refr_incoming.z;
+  scalar absorption = exp(-layer->_absorption * path_length);
+
+  return outer_refl + T12 * layer->_tint * inner_refl * absorption * TIR;
+  //return spectrum{T12};
 }
 
-Vec3 LayeredMFMaterial::sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
+scalar LayeredMFMaterial::pdf(const Vec3& incoming, const Vec3& outgoing) const
+{
+  return 0;
+}
+/*
+Vec3 LayeredMFMaterial::sample_bsdf(const IntersectionView& view, const Vec3& incoming, Sampler& sampler,
                                     scalar& p, spectrum& reflectance) const
 {
-  p = 0;
-  reflectance = spectrum::zero;
-  return Vec3::zero;
+  // pick a layer to sample from, uniformly
+  uint sample_index = sampler.sample_1d() * (_layers.size() + 1);
+
+  TransitionSample ts;
+  spectrum r;
+
+  const scalar total_layers = _layers.size() + 1;
+
+  // sample from that layer
+  scalar p_layer = 0;
+  if (sample_index < _layers.size())
+  {
+    ts = _layers[sample_index]->sample_bsdf(incoming, sampler);
+    p_layer = ts.p;
+  }
+  else
+  {
+    ts.reflection_dir = _base->sample_bsdf(view, incoming, sampler, p_layer, r);
+  }
+
+  // compute the total pdf
+  for (auto i = 0u; i < _layers.size(); ++i)
+  {
+    if (i != sample_index)
+      p_layer += _layers[i]->pdf(incoming, ts.reflection_dir);
+  }
+  if (sample_index != _layers.size())
+    p_layer += _base->pdf(incoming, ts.reflection_dir);
+
+  reflectance = this->reflectance(view, incoming, ts.reflection_dir);
+  p = p_layer / total_layers;
+
+  return ts.reflection_dir;
+}
+*/
+
+Vec3 LayeredMFMaterial::sample_bsdf(const IntersectionView& view, const Vec3& incoming, Sampler& sampler,
+                                    scalar& p, spectrum& reflectance) const
+{
+  // sample from base layer
+  spectrum r;
+  Vec3 dir = _base->sample_bsdf(view, incoming, sampler, p, r);
+
+  reflectance = this->reflectance(view, incoming, dir);
+
+  return dir;
 }
 
 
