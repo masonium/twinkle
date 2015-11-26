@@ -67,7 +67,7 @@ TEST_OBJS := $(TEST_OBJS:src/%=$(OBJDIR)/%)
 
 CPPPARSE_OBJS := $(OBJDIR)/cpp-optparse/OptionParser.o
 
-EXE_NAMES = twinkle test_twinkle tonemap model_check texture_check material_check
+EXE_NAMES = twinkle test_twinkle tonemap model_check texture_check material_check pdfcomp
 EXES = $(addprefix $(BINDIR)/,$(EXE_NAMES))
 
 STATIC_LIBS = $(LIBDIR)/libtwinkle.a $(LIBDIR)/libcpp-optparse.a
@@ -143,6 +143,10 @@ $(BINDIR)/texture_check: $(OBJDIR)/texture_check.o $(STATIC_LIBS)
 	$(CXX) -o $@ $< $(CXXFLAGS) $(NOTESTFLAGS) $(LFLAGS)
 
 $(BINDIR)/material_check: $(OBJDIR)/material_check.o $(STATIC_LIBS)
+	@mkdir -p $(dir $@)
+	$(CXX) -o $@ $< $(CXXFLAGS) $(NOTESTFLAGS) $(LFLAGS)
+
+$(BINDIR)/pdfcomp: $(OBJDIR)/pdfcomp.o $(STATIC_LIBS)
 	@mkdir -p $(dir $@)
 	$(CXX) -o $@ $< $(CXXFLAGS) $(NOTESTFLAGS) $(LFLAGS)
 
