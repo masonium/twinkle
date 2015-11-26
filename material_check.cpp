@@ -5,6 +5,7 @@
 #include "camera.h"
 #include "light.h"
 #include "texture.h"
+#include "reinhard.h"
 #include <iostream>
 #include <vector>
 #include <memory>
@@ -52,7 +53,7 @@ void render_material_scene(shared_ptr<Material> m, Film& film)
       auto N = isect.normal;
       if (N.dot(L) > 0)
       {
-        auto refl = m->reflectance(isect, -ps.ray.direction.normal(), light_em.direction());
+        auto refl = m->reflectance(isect, -ps.ray.direction.normal(), light_em.direction().normal());
         spectrum contrib = N.dot(L) * light_em.emission() * refl;
         film.add_sample(ps, contrib);
       }
@@ -80,17 +81,26 @@ int main(int argc, char** args)
 {
   auto opt = parse_args(argc, args);
 
-  auto tex = make_shared<Checkerboard2D>(spectrum{0.6, 0.1, 0.2},
-                                         spectrum{0.2, 0.1, 0.6}, 16.0);
-  //auto mat = make_shared<RoughMaterial>(opt.get("roughness").as<float>(), tex);
-  auto mat = make_shared<MaterialTLDAdapter>(refraction_index::AIR,
-                                             refraction_index::CROWN_GLASS,
-                                             make_shared<GTR>(0.6));
+  // auto tex = make_shared<Checkerboard2D>(spectrum{0.6, 0.1, 0.2},
+  //                                        spectrum{0.2, 0.1, 0.6}, 16.0);
+  auto tex = make_shared<SolidColor>(spectrum{0.2, 0.1, 0.8});
+  auto base_mat = make_shared<RoughMaterial>(opt.get("roughness").as<float>(), tex);
+
+
+  auto layer = make_shared<LayeredMFMaterial::MFLayer>(0.0, spectrum{1.0}, make_shared<GTR>(0.2));
+
+  vector<decltype(layer)> layers({layer});
+  auto mat = make_shared<LayeredMFMaterial>(layers, base_mat);
+  // auto mat = make_shared<MaterialTLDAdapter>(
+  //   refraction_index::AIR, refraction_index::CROWN_GLASS, make_shared<GTR>(0.2));
+
   Film film(opt.get("width").as<int>(), opt.get("height").as<int>());
 
   render_material_scene(mat, film);
 
-  film.render_to_ppm(cout, LinearToneMapper());
+  //ReinhardLocal::Options rl_opt;
+  //film.render_to_ppm(cout, ReinhardGlobal());
+film.render_to_ppm(cout, LinearToneMapper());
 
   return 0;
 }
