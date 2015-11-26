@@ -178,6 +178,7 @@ namespace script
     luaL_register(L, "geom", geom_package);
 
     luaL_Reg material_package[] = {{"color", material::color},
+                                   {"glossy_paint", material::glossy_paint},
                                    {"diffuse", material::diffuse},
                                    {"mirror", material::mirror},
                                    {NULL, NULL}};
