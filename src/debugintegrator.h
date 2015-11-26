@@ -20,6 +20,7 @@ public:
     DI_NORMAL,
     DI_DEPTH,
     DI_SPECULAR,
+    DI_SPECULAR_P,
     DI_FIRST_ENV,
     DI_TIME_INTERSECT
   };

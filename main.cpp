@@ -41,6 +41,7 @@ const  map<string, DebugIntegrator::Type> DEBUG_TYPE_MAP({
     {"normal", DebugIntegrator::Type::DI_NORMAL},
     {"depth", DebugIntegrator::Type::DI_DEPTH},
     {"specular", DebugIntegrator::Type::DI_SPECULAR},
+    {"specular_p", DebugIntegrator::Type::DI_SPECULAR_P},
     {"first_env", DebugIntegrator::Type::DI_FIRST_ENV},
     {"time_intersect", DebugIntegrator::Type::DI_TIME_INTERSECT}
   });
