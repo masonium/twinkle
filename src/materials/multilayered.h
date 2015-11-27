@@ -51,15 +51,43 @@ public:
                      const Vec3& outgoing, scalar& shadowing) const override;
 
   scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
+  Vec3 sample_micronormal(Sampler& sampler, scalar& p) const;
 
 private:
   scalar density(const Vec3& h) const;
-  Vec3 sample_micronormal(Sampler& sampler, scalar& p) const;
+
   scalar g1(const Vec3& v, const Vec3& h) const;
 
   const scalar _r2;
   const scalar _gamma;
 };
+
+/*
+ * Varnish/top layer for the multifacet model.
+ */
+class MFLayer
+{
+public:
+  MFLayer(scalar a, spectrum tint, shared_ptr<TLD> dist) :
+    _tint(tint), _absorption(a), _n_outside(refraction_index::AIR),
+    _n_inside(refraction_index::CROWN_GLASS),
+    _n_sf0(schlick_r0_term(_n_outside, _n_inside)), _tld(dist)
+  {
+  }
+  spectrum reflectance(const Vec3& incoming, const Vec3& outgoing, scalar& G) const;
+
+  TransitionSample sample_bsdf(const Vec3& incoming, Sampler& sampler) const;
+
+  scalar pdf(const Vec3& incoming, const Vec3& outgoing) const;
+
+  spectrum _tint;
+  scalar _absorption;
+  scalar _n_outside;
+  scalar _n_inside;
+  scalar _n_sf0;
+  shared_ptr<TransitionLayerDistribution> _tld;
+};
+
 
 /*
  * A multilayered material, based on the model in:
@@ -74,29 +102,6 @@ private:
 class LayeredMFMaterial : public Material
 {
 public:
-  class MFLayer
-  {
-  public:
-    MFLayer(scalar a, spectrum tint, shared_ptr<TLD> dist) :
-      _tint(tint), _absorption(a), _n_outside(refraction_index::AIR),
-      _n_inside(refraction_index::CROWN_GLASS),
-      _n_sf0(schlick_r0_term(_n_outside, _n_inside)), _tld(dist)
-    {
-    }
-    spectrum reflectance(const Vec3& incoming, const Vec3& outgoing, scalar& G) const;
-
-    TransitionSample sample_bsdf(const Vec3& incoming, Sampler& sampler) const;
-
-    scalar pdf(const Vec3& incoming, const Vec3& outgoing) const;
-
-    spectrum _tint;
-    scalar _absorption;
-    scalar _n_outside;
-    scalar _n_inside;
-    scalar _n_sf0;
-    shared_ptr<TransitionLayerDistribution> _tld;
-  };
-
   LayeredMFMaterial(const vector<shared_ptr<MFLayer>>& layers, shared_ptr<Material> base);
 
   spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing) const override;
@@ -110,7 +115,7 @@ public:
 
 private:
   spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing,
-    int layer_index) const;
+                       int layer_index) const;
 
   vector<shared_ptr<MFLayer>> _layers;
   shared_ptr<Material> _base;
@@ -127,6 +132,8 @@ public:
   MaterialTLDAdapter(scalar n_outside, scalar n_inside, shared_ptr<TransitionLayerDistribution> tld);
 
   spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing) const override;
+
+  scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
 
   Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
                    scalar& p, spectrum& reflectance) const override;

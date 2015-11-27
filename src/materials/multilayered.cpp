@@ -3,6 +3,7 @@
 
 GTR::GTR(scalar roughness, scalar gamma) : _r2(roughness * roughness), _gamma(gamma)
 {
+  assert(gamma != 1);
 }
 
 Vec3 GTR::sample_micronormal(Sampler& sampler, scalar& p) const
@@ -33,7 +34,10 @@ scalar GTR::density(const Vec3& h) const
 scalar GTR::g1(const Vec3& v, const Vec3& h) const
 {
   if (h.z > 0 && v.dot(h) > 0)
-    return 2.0 / (1.0 + sqrt(1.0 + _r2 * (1 - 1 / v.z * v.z)));
+  {
+    scalar t2 = 1 / square(v.z) - 1;
+    return 2.0 / (1.0 + sqrt(1.0 + _r2 * t2));
+  }
   return 0.0;
 }
 
@@ -43,7 +47,11 @@ scalar GTR::pdf(const Vec3& incoming, const Vec3& outgoing) const
   if (h.z < 0)
     return 0;
 
-  return density(h) * h.z / (h.dot(outgoing));
+  scalar p = density(h) * h.z / (4.0 * h.dot(outgoing));
+  if (p < 0.1)
+    return 0;
+
+  return p;
 }
 
 scalar GTR::reflectance(scalar schlick_f0, const Vec3& incoming, const Vec3& outgoing, scalar& G) const
@@ -51,7 +59,7 @@ scalar GTR::reflectance(scalar schlick_f0, const Vec3& incoming, const Vec3& out
   auto h = (incoming + outgoing).normal();
   scalar r = h.dot(incoming);
 
-  scalar F = schlick_f0 + (1 - schlick_f0) * pow(1 - r*r, 5);
+  scalar F = schlick_f0 + (1 - schlick_f0) * pow(1 - r, 5);
   scalar D = density(h);
   G = g1(incoming, h) * g1(outgoing, h);
 
@@ -65,24 +73,24 @@ TransitionSample GTR::sample_direction(const Vec3& incoming, Sampler& sampler) c
 
   TransitionSample ts;
   ts.reflection_dir = (2 * (incoming.dot(h))) * h - incoming;
-  ts.p = (ts.reflection_dir.z > 0) ? p : 0;
+  ts.p = (ts.reflection_dir.z > 0) ? pdf(incoming, ts.reflection_dir) : 0;
 
   return ts;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-spectrum LayeredMFMaterial::MFLayer::reflectance(const Vec3& incoming, const Vec3& outgoing, scalar& G) const
+spectrum MFLayer::reflectance(const Vec3& incoming, const Vec3& outgoing, scalar& G) const
 {
   return spectrum{_tld->reflectance(_n_sf0, incoming, outgoing, G)};
 }
 
-TransitionSample LayeredMFMaterial::MFLayer::sample_bsdf(const Vec3& incoming, Sampler& sampler) const
+TransitionSample MFLayer::sample_bsdf(const Vec3& incoming, Sampler& sampler) const
 {
   return _tld->sample_direction(incoming, sampler);
 }
 
-scalar LayeredMFMaterial::MFLayer::pdf(const Vec3& incoming, const Vec3& outgoing) const
+scalar MFLayer::pdf(const Vec3& incoming, const Vec3& outgoing) const
 {
   return _tld->pdf(incoming, outgoing);
 }
@@ -196,6 +204,11 @@ MaterialTLDAdapter::MaterialTLDAdapter(scalar n_outside, scalar n_inside,
   _sf0 = schlick_r0_term(n_outside, n_inside);
 }
 
+scalar MaterialTLDAdapter::pdf(const Vec3& incoming, const Vec3& outgoing) const
+{
+  return _tld->pdf(incoming, outgoing);
+}
+
 spectrum MaterialTLDAdapter::reflectance(const IntersectionView& UNUSED(isect), const Vec3& incoming,
                                          const Vec3& outgoing) const
 {
@@ -203,19 +216,18 @@ spectrum MaterialTLDAdapter::reflectance(const IntersectionView& UNUSED(isect), 
   return spectrum{_tld->reflectance(_sf0, incoming, outgoing, G)};
 }
 
-Vec3 MaterialTLDAdapter::sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
+Vec3 MaterialTLDAdapter::sample_bsdf(const IntersectionView& isect, const Vec3& incoming, Sampler& sampler,
                                      scalar& p, spectrum& reflectance) const
 {
   auto ts = _tld->sample_direction(incoming, sampler);
   p = ts.p;
-  if (ts.p < 0)
+  if (ts.p <= 0)
   {
     reflectance = spectrum::zero;
   }
   else
   {
-    scalar G;
-    reflectance = spectrum{_tld->reflectance(_sf0, incoming, ts.reflection_dir, G)};
+    reflectance = spectrum{this->reflectance(isect, incoming, ts.reflection_dir)};
   }
   return ts.reflection_dir;
 }
