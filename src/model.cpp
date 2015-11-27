@@ -488,7 +488,7 @@ vertex_ref parse_obj_vertex_ref(string token) {
     ref.p = std::stoi(token) - 1;
     return ref;
   }
-  ref.p = std::stoi(token.substr(pos)) - 1;
+  ref.p = std::stoi(token.substr(0, pos)) - 1;
 
   auto tpos = token.find('/', pos+1);
   if (tpos == string::npos)
