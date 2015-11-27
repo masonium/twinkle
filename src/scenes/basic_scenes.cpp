@@ -131,7 +131,7 @@ shared_ptr<Camera> model_scene(Scene& scene, const string& model_filename, bool 
 {
   RawModel m;
   Timer tm;
-  if (!m.load_obj_model(model_filename).success)
+  if (!m.load(model_filename).success)
   {
     cerr << "could not load model." << model_filename << endl;
     exit(1);
@@ -231,7 +231,7 @@ shared_ptr<Camera> showcase_scene(Scene& scene, int angle)
 
   RawModel model;
   auto filename = "/home/mason/workspace/twinkle/assets/models/tak-cube.obj";
-  if (!model.load_obj_model(filename).success)
+  if (!model.load(filename).success)
   {
     cerr << "could not load " << filename << endl;
     exit(1);

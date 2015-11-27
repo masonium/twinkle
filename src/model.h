@@ -39,6 +39,7 @@ struct RawModelLoadStatus
   bool has_tex;
 };
 
+
 class RawModel
 {
 public:
@@ -47,8 +48,28 @@ public:
   RawModelLoadStatus load_raw_model(const vector<Vertex>& verts,
                                     const vector<Triangle>& tris,
                                     bool has_normal, bool has_tex);
-  RawModelLoadStatus load_obj_model(string filename);
-  RawModelLoadStatus load_stl_model(string filename);
+
+  enum class FileFormat : uint8_t
+  {
+    GUESS = 0,
+      STL = 1,
+      OBJ = 2
+      };
+
+  /**
+   * Load, possibly intellgently, based on the file suffix.
+   */
+  RawModelLoadStatus load(string filename, FileFormat format = FileFormat::GUESS);
+
+  /**
+   * Load Wavefront obj files.
+   */
+  RawModelLoadStatus load_from_obj(string filename);
+
+  /**
+   * Load .stl files.
+   */
+  RawModelLoadStatus load_from_stl(string filename);
 
   RawModel merge_vertices(scalar eps = EPSILON) const;
 

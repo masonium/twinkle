@@ -174,6 +174,7 @@ namespace script
     luaL_Reg geom_package[] = {{"sphere", geometry::sphere},
                                {"plane", geometry::plane},
                                {"implicit", geometry::implicit},
+                               {"mesh", geometry::mesh},
                                {NULL, NULL}};
     luaL_register(L, "geom", geom_package);
 

@@ -44,7 +44,7 @@ inline constexpr scalar sign(scalar val) {
  */
 inline constexpr scalar schlick_r0_term(scalar n1, scalar n2)
 {
-  return square( (n1-n2) / (n1 + n2) );
+  return square( (n1 - n2) / (n1 + n2) );
 }
 
 

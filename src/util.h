@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <iterator>
+#include <string>
 
 using std::iterator_traits;
 using std::forward_iterator_tag;
@@ -33,6 +34,8 @@ inline void hash_combine(std::size_t& seed, const T& v)
     std::hash<T> hasher;
     seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
 }
+
+std::string lowercase(const std::string&);
 
 #ifdef __GNUC__
 #  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))

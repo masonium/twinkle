@@ -80,7 +80,33 @@ RawModelLoadStatus RawModel::load_raw_model(const vector<Vertex>& verts,
   return RawModelLoadStatus{.success=true, .has_normals=true, .has_tex=has_tex};
 }
 
-RawModelLoadStatus RawModel::load_obj_model(string filename)
+RawModelLoadStatus RawModel::load(string filename, FileFormat format)
+{
+  RawModelLoadStatus failure;
+  failure.success = false;
+
+  if (format == FileFormat::GUESS)
+  {
+    auto pos = filename.find_last_of(".");
+    if (pos == string::npos)
+      return failure;
+    
+    string extension = lowercase(filename.substr(pos+1));
+    if (extension == "stl")
+      format = FileFormat::STL;
+    else if (extension == "obj")
+      format = FileFormat::OBJ;
+  }
+
+  if (format == FileFormat::STL)
+    return load_from_stl(filename);
+  else if (format == FileFormat::OBJ)
+    return load_from_obj(filename);
+  else
+    return failure;
+}
+
+RawModelLoadStatus RawModel::load_from_obj(string filename)
 {
   const unordered_set<string> ignore_lines({"g", "usemtl", "s", "mtllib"});
   RawModelLoadStatus mls;
@@ -189,7 +215,7 @@ RawModelLoadStatus RawModel::load_obj_model(string filename)
   return mls;
 }
 
-RawModelLoadStatus RawModel::load_stl_model(string filename)
+RawModelLoadStatus RawModel::load_from_stl(string filename)
 {
   RawModelLoadStatus mls;
   mls.success = false;

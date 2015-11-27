@@ -1,7 +1,11 @@
 #include "util.h"
 #include <cstdio>
+#include <algorithm>
 #include <cstdlib>
 #include <thread>
+#include <cstdio>
+
+using std::string;
 
 class ProcWrapper
 {
@@ -24,4 +28,13 @@ private:
 uint num_system_procs()
 {
   return std::thread::hardware_concurrency();
+}
+
+string lowercase(const string& s)
+{
+  string ret;
+  ret.resize(s.size());
+  std::transform(s.begin(), s.end(), ret.begin(), tolower);
+
+  return ret;
 }

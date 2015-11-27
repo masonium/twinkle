@@ -44,6 +44,23 @@ namespace script
       return script_geometry(L, make_shared<Plane>(v, d));
     }
 
+    int mesh(lua_State* L)
+    {
+      LUA_CHECK_RANGE_ARGS(L, 1, 2);
+
+      const char* s = lua_tostring(L, 1);
+
+      if (lua_gettop(L) == 2)
+      {
+        auto box = lua_tobbox(L, 2);
+        return script_geometry(L, load_mesh(s, box));
+      }
+      else
+      {
+        return script_geometry(L, load_mesh(s));
+      }
+    }
+
     int implicit(lua_State* L)
     {
       using namespace std::string_literals;

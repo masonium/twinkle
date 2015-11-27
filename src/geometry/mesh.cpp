@@ -6,12 +6,7 @@ using std::copy;
 
 MeshTri::MeshTri(const Mesh* m, const int v[3]) :
   mesh(m)
-//  e1(mesh->pos(v[1]) - mesh->pos(v[0])),
-//  e2(mesh->pos(v[2]) - mesh->pos(v[0]))
 {
-//  Vec3 N = e1.cross(e2);
-//  inv_a_double = 1.0 / N.norm();
-//  n = N * inv_a_double;
   copy(v, v+3, vi);
 }
 
