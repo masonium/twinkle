@@ -9,5 +9,6 @@ namespace script
     int color(lua_State* L);
     int checker(lua_State* L);
     int grid(lua_State* L);
+    int image(lua_State* L);
   }
 }

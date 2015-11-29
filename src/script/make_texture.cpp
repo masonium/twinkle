@@ -1,6 +1,6 @@
 #include "script/make_texture.h"
 #include "script/script_util.h"
-#include "texture.h"
+#include "textures.h"
 
 using std::make_shared;
 
@@ -38,6 +38,15 @@ namespace script
       auto border_pct = lua_tonumber(L, 4);
 
       return script_texture(L, make_shared<GridTexture2D>(s1, s2, gs, border_pct));
+    }
+
+    int image(lua_State* L)
+    {
+      LUA_CHECK_NUM_ARGS(L, 1);
+
+      auto filename = lua_tostring(L, 1);
+
+      return script_texture(L, make_shared<ImageTexture2D>(filename));
     }
   }
 }

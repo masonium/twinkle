@@ -25,6 +25,11 @@ const scalar SCALAR_MIN = std::numeric_limits<scalar>::min();
 #define FEATURE_LUA_SCRIPTING 1
 #endif
 
+
+#ifndef FEATURE_IMAGE_LOADING
+#define FEATURE_IMAGE_LOADING 1
+#endif
+
 #define FEATURE_DEBUG_TRACER 1
 #define FEATURE_DIRECT_LIGHTING 1
 #define FEATURE_PATH_TRACER 1

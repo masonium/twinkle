@@ -16,6 +16,9 @@ ifndef LUA
 LUA = 1
 endif
 
+ifndef IMAGE
+IMAGE = 1
+endif
 
 BINDIR = $(CONFIG)/bin
 OBJDIR = $(CONFIG)/obj
@@ -41,6 +44,12 @@ else
 LFLAGS += -llua5.1
 endif
 
+ifeq (${IMAGE}, 1)
+CXXFLAGS += $(shell Magick++-config --cxxflags)
+LFLAGS += $(shell Magick++-config --libs)
+else
+CXXFLAGS += -DFEATURE_IMAGE_LOADING=0
+endif
 
 ifeq (${MULTITHREADED}, 1)
 LFLAGS += -pthread -lm

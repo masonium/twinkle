@@ -17,9 +17,9 @@ Mat33 Mat33::y_to_z = Mat33::rotate_match(Vec3::y_axis, Vec3::z_axis);
 
 Vec3::Vec3(const Vec3& rhs) : VectorT3<Vec3>{rhs}
 {
-  x = rhs.x;
-  y = rhs.y;
-  z = rhs.z;
+  // x = rhs.x;
+  // y = rhs.y;
+  // z = rhs.z;
 }
 
 Vec3& Vec3::operator=(const Vec3& rhs)

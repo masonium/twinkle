@@ -78,14 +78,5 @@ namespace script
 
       return script_envlight(L, make_shared<EnvironmentLight>(make_shared<SolidColor>(spec)));
     }
-
-    // int texture(lua_State* L)
-    // {
-    //   LUA_CHECK_NUM_ARGS(L, 1);
-
-    //   auto tex = lua_totexture(L, 1);
-
-    //   return script_envlight(L, make_shared<EnvironmentLight>(tex));
-    // }
   }
 }

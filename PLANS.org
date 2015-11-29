@@ -16,8 +16,8 @@
 - [ ] plastic (cook-torrance)
 
 ** Textures
-- [ ] image-based
-- [ ] function-basedd
+- [X] image-based
+- [X] function-based
 - [ ] worley-noise
 - [ ] new sky texture
 
@@ -35,14 +35,14 @@
   - [X] lights
   - [ ] envlights
   - [ ] color material
-  - [ ] implicit
+  - [X] implicit
 - [X] push luastate into generic renderer
 
 ** Internal advancements
 - [X] invert rendering algorithm (grid_render takes integrator as input, instead of reverse)
 - [X] push scheduler as argument to renderer
 - [X] lua state into
-- [ ] Mesh or KDMesh based on number of triangles
+- [X] Mesh or KDMesh based on number of triangles
 - [ ] condensing of nested transforms into transform shapes
   - [ ] RTTI for shapes (tagging)
 - [X] cache-friendly 8-byte kdtree-node
