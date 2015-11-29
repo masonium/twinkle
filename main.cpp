@@ -70,6 +70,8 @@ auto parse_args(int argc, char**args)
   parser.add_option("--kd").action("store_const").dest("scene_container").set_const("kd");
   parser.add_option("--basic").action("store_const").dest("scene_container").set_const("basic");
 
+  parser.add_option("-f", "--scene").action("store").dest("scene").set_default("assets/scripts/scene1.lua");
+
   parser.set_defaults("output_image", "true");
   parser.set_defaults("scene_container", "kd");
 
@@ -95,12 +97,18 @@ int main(int argc, char** args)
   else
     scene = make_shared<BasicScene>();
 
-  //auto cam = model_scene(*scene, "assets/models/tak-cube.obj", false);
-  auto cam = lua_scene(*scene, "assets/scripts/scene1.lua");
+  string scene_filename = options.get("scene").as<string>();
+
+  shared_ptr<Camera> cam;
+  {
+    Timer tm;
+    cam = lua_scene(*scene, scene_filename);
+    cerr << "Loaded scene in " << format_duration(tm.since()) << "\n";
+  }
 
   Film f(WIDTH, HEIGHT);
 
-  register_thread_state_manager(f, "assets/scripts/scene1.lua");
+  register_thread_state_manager(f, scene_filename);
   auto num_threads = options.get("threads").as<int>();
   if (num_threads == 0)
     num_threads = num_system_procs();
