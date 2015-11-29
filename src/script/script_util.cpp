@@ -172,6 +172,7 @@ namespace script
     luaL_register(L, "bounds", bounds_package);
 
     luaL_Reg geom_package[] = {{"sphere", geometry::sphere},
+                               {"quad", geometry::quad},
                                {"plane", geometry::plane},
                                {"implicit", geometry::implicit},
                                {"mesh", geometry::mesh},
@@ -203,6 +204,7 @@ namespace script
     luaL_Reg texture_package[] = {{"checker", texture::checker},
                                   {"color", texture::color},
                                   {"grid", texture::grid},
+                                  {"image", texture::image},
                                   {NULL, NULL}};
     luaL_register(L, "texture", texture_package);
 

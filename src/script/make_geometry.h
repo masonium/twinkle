@@ -12,6 +12,7 @@ namespace script
   namespace geometry
   {
     int sphere(lua_State*);
+    int quad(lua_State*);
     int plane(lua_State*);
     int implicit(lua_State*);
     int mesh(lua_State*);

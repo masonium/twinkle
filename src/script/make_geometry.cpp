@@ -34,6 +34,15 @@ namespace script
       return script_geometry(L, make_shared<Sphere>(v, r));
     }
 
+    int quad(lua_State* L)
+    {
+      LUA_CHECK_NUM_ARGS(L, 2);
+      auto v1 = lua_tovector(L, 1);
+      auto v2 = lua_tovector(L, 2);
+
+      return script_geometry(L, make_quad(v1, v2));
+    }
+
     int plane(lua_State* L)
     {
       LUA_CHECK_NUM_ARGS(L, 2);
