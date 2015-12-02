@@ -1,6 +1,9 @@
 #pragma once
 
+#include <iostream>
 #include "twinkle.h"
+
+using std::ostream;
 
 class Vec2
 {
@@ -16,6 +19,9 @@ public:
     return c[i];
   }
 
+  Vec2& operator+=(const Vec2& v);
+  Vec2& operator*=(scalar f);
+
   union
   {
     scalar c[2];
@@ -29,3 +35,10 @@ public:
     };
   };
 };
+
+Vec2 operator +(const Vec2& v, const Vec2& w);
+
+Vec2 operator *(const Vec2& v, scalar f);
+Vec2 operator *(scalar f, const Vec2& v);
+
+ostream& operator <<(ostream& o, const Vec2& v);
