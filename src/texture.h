@@ -36,13 +36,13 @@ private:
 class Checkerboard2D : public Texture2D
 {
 public:
-  Checkerboard2D(spectrum a, spectrum b, int gs, int gsy = 0);
+  Checkerboard2D(spectrum a, spectrum b, scalar cs, scalar csy = 0.0);
 
   spectrum at_coord(const Vec2& uv) const override;
 
 private:
   spectrum c1, c2;
-  int grid_size_x, grid_size_y;
+  scalar check_size_x, check_size_y;
 };
 
 class Gradient2D : public Texture2D
@@ -60,15 +60,15 @@ class GridTexture2D : public Texture2D
 {
 public:
   GridTexture2D(spectrum solid_, spectrum border_,
-                scalar grid_size_, scalar border_pct_) 
-    : solid(solid_), border(border_), grid_size(grid_size_),
+                scalar check_size_, scalar border_pct_) 
+    : solid(solid_), border(border_), check_size(check_size_),
       border_pct(border_pct_) {}
 
   spectrum at_coord(const Vec2& uv) const override;
   
 private:
   const spectrum solid, border;
-  const scalar grid_size, border_pct;
+  const scalar check_size, border_pct;
 };
 
 class NormalTexture : public Texture

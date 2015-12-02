@@ -16,21 +16,21 @@ spectrum SolidColor::at_coord(const Vec2& UNUSED(uv)) const
   return color;
 }
 
-Checkerboard2D::Checkerboard2D(spectrum a, spectrum b, int gsx, int gsy)
-  : c1(a), c2(b), grid_size_x(gsx), grid_size_y(gsy > 0 ? gsy : gsx)
+Checkerboard2D::Checkerboard2D(spectrum a, spectrum b, scalar csx, scalar csy)
+  : c1(a), c2(b), check_size_x(csx), check_size_y(csy > 0 ? csy : csx)
 {
 }
 
 spectrum Checkerboard2D::at_coord(const Vec2& uv) const
 {
-  int m = std::floor(uv.u * grid_size_x) + std::floor(uv.v * grid_size_y);
+  int m = std::floor(uv.u / check_size_x) + std::floor(uv.v / check_size_y);
   return m % 2 == 0 ? c1 : c2;
 }
 
 spectrum GridTexture2D::at_coord(const Vec2& uv) const
 {
-  scalar xf = fmod(fabs(uv.u) * grid_size, 1.0);
-  scalar yf = fmod(fabs(uv.v) * grid_size, 1.0);
+  scalar xf = fmod(fabs(uv.u) / check_size, 1.0);
+  scalar yf = fmod(fabs(uv.v) / check_size, 1.0);
 
   if (min(xf, yf) < border_pct * 0.5 || max(xf, yf) > (1 - border_pct * 0.5))
     return border;
