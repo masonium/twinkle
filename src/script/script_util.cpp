@@ -176,6 +176,8 @@ namespace script
                                {"plane", geometry::plane},
                                {"implicit", geometry::implicit},
                                {"mesh", geometry::mesh},
+                               {"heightfield", geometry::heightfield},
+                               {"parametric", geometry::parametric},
                                {NULL, NULL}};
     luaL_register(L, "geom", geom_package);
 

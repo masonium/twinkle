@@ -16,5 +16,7 @@ namespace script
     int plane(lua_State*);
     int implicit(lua_State*);
     int mesh(lua_State*);
+    int heightfield(lua_State*);
+    int parametric(lua_State*);
   }
 }
