@@ -50,10 +50,7 @@ class Gradient2D : public Texture2D
 public:
   Gradient2D() { }
 
-  spectrum at_coord(const Vec2& uv) const override
-  {
-    return spectrum{uv.u, 0, uv.v};
-  }
+  spectrum at_coord(const Vec2& uv) const override;
 };
 
 class GridTexture2D : public Texture2D

@@ -43,3 +43,8 @@ spectrum NormalTexture::at_point(const IntersectionView& isect) const
   const auto& normal = 0.5 * (isect.normal + Vec3(1.0));
   return spectrum{normal.x, normal.y, normal.z};
 }
+
+spectrum Gradient2D::at_coord(const Vec2& uv) const
+{
+  return spectrum{uv.u, 0, uv.v};
+}
