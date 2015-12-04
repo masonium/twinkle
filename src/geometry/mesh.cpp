@@ -4,7 +4,7 @@
 
 using std::copy;
 
-MeshTri::MeshTri(const Mesh* m, int f, const int v[3]) :
+MeshTri::MeshTri(const Mesh* m, int f, const uint v[3]) :
   mesh(m), ti(f)
 {
   copy(v, v+3, vi);

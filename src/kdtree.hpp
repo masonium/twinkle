@@ -348,7 +348,7 @@ namespace kd
   }
 
 ////////////////////////////////////////////////////////////////////////////////
-  template<typename T>
+  template <typename T>
   Tree<T>::Tree(const vector<element_type>& objects, const TreeOptions& opt) :
     root(nullptr), bound(Vec3::zero, Vec3::zero), _height(0)
   {

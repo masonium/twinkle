@@ -29,7 +29,7 @@ struct Vertex
 
 struct Triangle
 {
-  int v[3];
+  uint v[3];
 };
 
 struct RawModelLoadStatus

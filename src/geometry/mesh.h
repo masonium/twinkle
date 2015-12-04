@@ -104,7 +104,7 @@ protected:
 class MeshTri
 {
 public:
-  MeshTri(const Mesh* m, int f, const int v[3]);
+  MeshTri(const Mesh* m, int f, const uint v[3]);
 
   scalar_fp intersect(const Ray& r, scalar_fp max_t, SubGeo&) const ;
 
@@ -128,6 +128,6 @@ private:
   const Vec3& _p(int i) const { return mesh->pos(vi[i]); }
 
   const Mesh* mesh;
-  int vi[3];
+  uint vi[3];
   int ti;
 };
