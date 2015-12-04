@@ -36,6 +36,8 @@ namespace bounds
      */
     static AABB box_union(const AABB& a, const AABB& b);
 
+    AABB union_with(const AABB&) const;
+
     const Vec3& min() const { return bounds[0]; }
     Vec3& min() { return bounds[0]; }
 

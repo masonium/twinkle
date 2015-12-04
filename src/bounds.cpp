@@ -30,6 +30,12 @@ namespace bounds
     return AABB(::min(a.min(), b.min()), ::max(a.max(), b.max()));
   }
 
+  AABB AABB::union_with(const AABB& a) const
+  {
+    return box_union(*this, a);
+  }
+
+
   bool AABB::intersect(const Ray& r, scalar& t0, scalar& t1) const
   {
     return ray_box_intersection(r, bounds, t0, t1);

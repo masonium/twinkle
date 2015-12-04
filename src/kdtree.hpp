@@ -365,6 +365,17 @@ namespace kd
 
       bound = accumulate(boxes.begin() + 1, boxes.end(), boxes[0], bounds::AABB::box_union);
 
+      for (uint i = 0u; i < 3; ++i)
+      {
+        if (bound.size()[i] < 2 * EPSILON)
+        {
+          auto center = bound.center();
+          auto half_size = bound.size() / 2;
+          half_size[i] = EPSILON;
+          bound = bounds::AABB(center - half_size, center + half_size);
+        }
+      }
+
       root = unique_ptr<node_type>(new node_type(*this, indices, boxes, bound, opt));
       _height = root->height(*this);
     }
