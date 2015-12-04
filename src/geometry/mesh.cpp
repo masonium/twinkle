@@ -1,8 +1,12 @@
 #include <algorithm>
+#include <iterator>
+#include <iostream>
 #include "mesh.h"
 #include "geometry/isect_util.h"
 
 using std::copy;
+using std::ostream_iterator;
+using std::cerr;
 
 MeshTri::MeshTri(const Mesh* m, int f, const uint v[3]) :
   mesh(m), ti(f)
@@ -13,10 +17,12 @@ MeshTri::MeshTri(const Mesh* m, int f, const uint v[3]) :
 scalar_fp ray_triangle_intersection_accel(const Ray& ray, scalar_fp max_t, const MeshTriAccel& accel)
 {
   auto u = (accel.k + 1) % 3, v = (accel.k + 2) % 3;
-  auto denom = 1.0 / (ray.direction[u] * accel.nu + ray.direction[v] * accel.nv + ray.direction[accel.k]);
+  auto denom = (ray.direction[u] * accel.nu + ray.direction[v] * accel.nv + ray.direction[accel.k]);
+  if (fabs(denom) < 0.0001)
+    return sfp_none;
   auto num = accel.nd - ray.position[u] * accel.nu - ray.position[v] * accel.nv - ray.position[accel.k];
   
-  scalar t = num * denom;
+  scalar t = num / denom;
   if (t < EPSILON)
     return sfp_none;
 
@@ -28,11 +34,11 @@ scalar_fp ray_triangle_intersection_accel(const Ray& ray, scalar_fp max_t, const
   scalar hv = ray.position[v] + ray.direction[v] * t;
 
   scalar beta = hu * accel.b_nu + hv * accel.b_nv + accel.b_d;
-  if (beta < 0 || beta > 1)
+  if (beta < 0)
     return sfp_none;
 
   scalar gamma = hu * accel.c_nu + hv * accel.c_nv + accel.c_d;
-  if (gamma < 0 || gamma > 1)
+  if (gamma < 0)
     return sfp_none;
 
   scalar alpha = 1 - beta - gamma;
@@ -58,23 +64,22 @@ bounds::AABB MeshTri::get_bounding_box() const
                       max(max(_p(0), _p(1)), _p(2)));
 }
 
-
 void MeshTri::texture_coord(const Vec3& pos, const Vec3& normal,
-                            scalar& u, scalar& v) const
+                            scalar& uv_u, scalar& uv_v) const
 {
-  Vec3 e1(_p(1) - _p(0));
-  Vec3 e2(_p(2) - _p(0));
-  Vec3 N = e1.cross(e2);
-  scalar inv_a_double = 1.0 / N.norm();
-  Vec3 n = N * inv_a_double;
+  const auto& accel = mesh->accel(ti);
 
-  const Vec3 P = pos - _p(0);
-  const Vec3 n1 = e1.cross(P), n2 = P.cross(e2);
-  scalar bu  = n1.dot(n) * inv_a_double, bv = n2.dot(n) * inv_a_double;
-  Vec3 bary{1 - (bu + bv), bv, bu};
+  auto u = (accel.k + 1) % 3, v = (accel.k + 2) % 3;
+  scalar hu = pos[u];
+  scalar hv = pos[v];
 
-  u = mesh->uv(vi[0])[0] * bary.v[0] + mesh->uv(vi[1])[0] * bary.v[1] + mesh->uv(vi[2])[0] * bary.v[2];
-  v = mesh->uv(vi[0])[1] * bary.v[0] + mesh->uv(vi[1])[1] * bary.v[1] + mesh->uv(vi[2])[1] * bary.v[2];
+  scalar beta = hu * accel.b_nu + hv * accel.b_nv + accel.b_d;
+  scalar gamma = hu * accel.c_nu + hv * accel.c_nv + accel.c_d;
+  scalar alpha = 1 - beta - gamma;
+
+  auto uv = mesh->uv(vi[0]) * alpha + mesh->uv(vi[1]) * gamma + mesh->uv(vi[2]) * beta;
+  uv_u = uv[0];
+  uv_v = uv[1];
 }
 
 
@@ -147,4 +152,3 @@ MeshTriAccel::MeshTriAccel(const Vec3& p0, const Vec3& p1, const Vec3& p2)
   this->c_nv = -c[u] * inv_area;
   this->c_d = (c[u] * p0[v] - c[v] * p0[u]) * inv_area;
 }
-
