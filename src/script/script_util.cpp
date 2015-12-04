@@ -204,7 +204,9 @@ namespace script
     luaL_Reg texture_package[] = {{"checker", texture::checker},
                                   {"color", texture::color},
                                   {"grid", texture::grid},
+                                  {"gradient", texture::gradient},
                                   {"image", texture::image},
+                                  {"normal", texture::normal},
                                   {NULL, NULL}};
     luaL_register(L, "texture", texture_package);
 

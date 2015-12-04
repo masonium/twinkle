@@ -17,6 +17,20 @@ namespace script
       return script_texture(L, make_shared<SolidColor>(spec));
     }
 
+    int normal(lua_State* L)
+    {
+      LUA_CHECK_NUM_ARGS(L, 0);
+
+      return script_texture(L, make_shared<NormalTexture>());
+    }
+
+    int gradient(lua_State* L)
+    {
+      LUA_CHECK_NUM_ARGS(L, 0);
+
+      return script_texture(L, make_shared<Gradient2D>());
+    }
+
     int checker(lua_State* L)
     {
       LUA_CHECK_NUM_ARGS(L, 3);
