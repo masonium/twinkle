@@ -1,13 +1,14 @@
 #include "images.h"
 #include "util/filesystem.h"
-#include <Magick++.h>
 #include <iostream>
 
-using Magick::Color;
+
 using std::cerr;
 using std::endl;
 
 #if FEATURE_IMAGE_LOADING
+#include <Magick++.h>
+using Magick::Color;
 
 Color to_magick(const spectrum& c)
 {
