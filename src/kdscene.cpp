@@ -6,8 +6,6 @@ using std::numeric_limits;
 using std::min;
 using std::make_unique;
 
-#if FEATURE_KD_SCENE == 1
-
 KDScene::KDScene()
 {
 }
@@ -107,5 +105,3 @@ spectrum KDScene::environment_light_emission(const Vec3& dir) const
 {
   return env_light_ ? env_light_->emission(dir) : spectrum::zero;
 }
-
-#endif

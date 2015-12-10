@@ -5,9 +5,6 @@
 
 using std::unique_ptr;
 
-#define FEATURE_KD_SCENE 1
-#if FEATURE_KD_SCENE == 1
-
 class KDScene : public Scene
 {
 public:
@@ -47,5 +44,3 @@ private:
   vector<shared_ptr<const Light>> lights_;
   shared_ptr<const EnvironmentLight> env_light_;
 };
-
-#endif
