@@ -4,15 +4,18 @@
 #include "spectrum.h"
 #include "vec3.h"
 #include "texture.h"
+#include "light.h"
 
 using std::shared_ptr;
 
 class EnvironmentLight
 {
 public:
-  EnvironmentLight(shared_ptr<Texture2D> tex) : texture(tex) { }
+  EnvironmentLight(shared_ptr<const Texture2D> tex) : texture(tex) { }
 
   spectrum emission(const Vec3& dir) const;
 
-  shared_ptr<Texture2D> texture;
+  LightSample sample_emission(const Intersection&, Sampler&) const;
+
+  shared_ptr<const Texture2D> texture;
 };
