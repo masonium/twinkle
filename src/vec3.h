@@ -32,6 +32,19 @@ public:
   scalar min() const { return std::min(x, std::min(y, z)); }
   scalar max() const { return std::max(x, std::max(y, z)); }
 
+  /**
+   * Return the index of the minumum element, with a preference for the lower
+   * indexed elements.
+   */
+  int min_element() const;
+
+  /**
+   * Return the index of the maximum element, with a preference for the lower
+   * indexed elements.
+   */
+  int max_element() const;
+
+
   Vec3 elem_div(const Vec3& rhs) const
   {
     return Vec3{x / rhs.x, y / rhs.y, z / rhs.z};

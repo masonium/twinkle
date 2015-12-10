@@ -119,7 +119,7 @@ public:
 
   bool operator==(const vec_type& other) const
   {
-    return x == other.x && y == other.y && z == other.z;
+    return (x == other.x) && (y == other.y) && (z == other.z);
   }
 
   bool is_bounded() const

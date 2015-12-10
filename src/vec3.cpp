@@ -29,6 +29,23 @@ Vec3& Vec3::operator=(const Vec3& rhs)
   z = rhs.z;
   return *this;
 }
+
+int Vec3::min_element() const
+{
+  if (x <= y)
+    return x <= z ? 0 : 2;
+  else
+    return y <= z ? 1 : 2;
+}
+
+int Vec3::max_element() const
+{
+  if (x >= y)
+    return x >= z ? 0 : 2;
+  else
+     return y >= z ? 1 : 2;
+}
+
 /**
  * Compute a vector from euler angles. Assumes that (0, 0, 1) is the north pole
  * (i.e. at phi = 0). The resultant vector is normalized.
