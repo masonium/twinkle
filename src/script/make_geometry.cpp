@@ -35,6 +35,28 @@ namespace script
       return script_geometry(L, make_shared<Sphere>(v, r));
     }
 
+    int box(lua_State* L)
+    {
+      LUA_CHECK_RANGE_ARGS(L, 1, 2);
+
+      switch (lua_gettop(L))
+      {
+      case 1:
+        {
+          auto bb = lua_tobbox(L, 1);
+          return script_geometry(L, make_shared<Box>(bb));
+        }
+      case 2:
+      default:
+        {
+          auto v_min = lua_tovector(L, 1);
+          auto v_max = lua_tovector(L, 2);
+    
+          return script_geometry(L, make_shared<Box>(::bounds::AABB(v_min, v_max)));
+        }
+      }
+    }
+
     int quad(lua_State* L)
     {
       LUA_CHECK_NUM_ARGS(L, 2);

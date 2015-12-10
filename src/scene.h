@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <vector>
-#include "math_util.h"
 #include "shape.h"
 #include "light.h"
 #include "env_light.h"

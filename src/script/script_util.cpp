@@ -173,6 +173,7 @@ namespace script
 
     luaL_Reg geom_package[] = {{"sphere", geometry::sphere},
                                {"quad", geometry::quad},
+                               {"box", geometry::box},
                                {"plane", geometry::plane},
                                {"implicit", geometry::implicit},
                                {"mesh", geometry::mesh},

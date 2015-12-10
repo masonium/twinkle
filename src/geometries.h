@@ -7,4 +7,5 @@
 #include "geometry/kdmesh.h"
 #include "geometry/quad.h"
 #include "geometry/implicit.h"
+#include "geometry/box.h"
 #include "geometry/geometry_util.h"
