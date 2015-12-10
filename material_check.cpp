@@ -86,8 +86,7 @@ int main(int argc, char** args)
   auto tex = make_shared<SolidColor>(spectrum{0.2, 0.1, 0.8});
   auto base_mat = make_shared<RoughMaterial>(opt.get("roughness").as<float>(), tex);
 
-
-  auto layer = make_shared<LayeredMFMaterial::MFLayer>(0.0, spectrum{1.0}, make_shared<GTR>(0.2));
+  auto layer = make_shared<MFLayer>(0.0, spectrum{1.0}, make_shared<GTR>(0.1));
 
   vector<decltype(layer)> layers({layer});
   auto mat = make_shared<LayeredMFMaterial>(layers, base_mat);
@@ -100,7 +99,7 @@ int main(int argc, char** args)
 
   //ReinhardLocal::Options rl_opt;
   //film.render_to_ppm(cout, ReinhardGlobal());
-film.render_to_ppm(cout, LinearToneMapper());
+  film.render_to_ppm(cout, LinearToneMapper());
 
   return 0;
 }
