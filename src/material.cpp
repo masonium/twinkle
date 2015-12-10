@@ -1,4 +1,5 @@
 #include "material.h"
+#include "textures.h"
 #include "bsdf.h"
 #include "util.h"
 #include <sstream>

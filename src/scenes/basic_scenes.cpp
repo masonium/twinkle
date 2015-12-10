@@ -1,6 +1,6 @@
 #include "basic_scenes.h"
 #include "geometries.h"
-#include "textures/skytexture.h"
+#include "textures.h"
 #include "script/proc_texture.h"
 #include "env_light.h"
 #include "materials/rough_glass_material.h"

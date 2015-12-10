@@ -1,4 +1,4 @@
-#include "image_texture.h"
+#include "textures/image_texture.h"
 #include "util/images.h"
 #include <cassert>
 

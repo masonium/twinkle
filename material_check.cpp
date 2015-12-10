@@ -4,7 +4,7 @@
 #include "geometries.h"
 #include "camera.h"
 #include "light.h"
-#include "texture.h"
+#include "textures.h"
 #include "reinhard.h"
 #include <iostream>
 #include <vector>
