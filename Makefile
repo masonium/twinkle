@@ -44,15 +44,15 @@ else
 LFLAGS += -llua5.1
 endif
 
+ifeq (${MULTITHREADED}, 1)
+LFLAGS += -pthread -lm
+endif
+
 ifeq (${IMAGE}, 1)
 CXXFLAGS += $(shell Magick++-config --cxxflags)
 LFLAGS += $(shell Magick++-config --libs)
 else
 CXXFLAGS += -DFEATURE_IMAGE_LOADING=0
-endif
-
-ifeq (${MULTITHREADED}, 1)
-LFLAGS += -pthread -lm
 endif
 
 ifeq (${CONFIG}, Debug)
