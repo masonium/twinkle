@@ -4,23 +4,25 @@
 #include <memory>
 #include <sstream>
 
-#include "camera.h"
+
+#include "directlightingintegrator.h"
 #include "debugintegrator.h"
+#include "path_tracer.h"
+
+#include "camera.h"
+
 #include "scene.h"
 #include "kdscene.h"
-#include "bsdf.h"
-#include "path_tracer.h"
-#include "directlightingintegrator.h"
-#include "util.h"
-#include "model.h"
-#include "material.h"
+
 #include "scenes/basic_scenes.h"
 #include "reinhard.h"
-#include "cpp-optparse/OptionParser.h"
+
 #include "util/timer.h"
 #include "util/running_stats.h"
 #include "thread_state.h"
 #include "pss_sampler.h"
+
+#include "cpp-optparse/OptionParser.h"
 
 using std::cerr;
 using std::endl;

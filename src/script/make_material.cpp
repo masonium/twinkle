@@ -2,7 +2,6 @@
 #include <memory>
 #include "material.h"
 #include "materials/multilayered.h"
-#include "env_light.h"
 #include "script/make_material.h"
 #include "script/script_util.h"
 
@@ -20,12 +19,29 @@ namespace script
       return script_material(L, make_shared<RoughColorMaterial>(0.0, s));
     }
 
+    int dielectric(lua_State* L)
+    {
+      LUA_CHECK_RANGE_ARGS(L, 0, 2);
+
+      int i = 0;
+      scalar ref_in = refraction_index::CROWN_GLASS;
+      scalar ref_out = refraction_index::AIR;
+      if (lua_gettop(L) > 0)
+      {
+        ref_in = lua_tonumber(L, i++);
+        if (lua_gettop(L) > 1)
+          ref_out = lua_tonumber(L, i++);
+      }
+
+      return script_material(L, make_shared<GlassMaterial>(ref_in, ref_out));
+    }
+
     int glossy_paint(lua_State* L)
     {
       LUA_CHECK_NUM_ARGS(L, 1);
       auto tex = lua_totexture(L, 1);
 
-      auto layer = make_shared<LayeredMFMaterial::MFLayer>(
+      auto layer = make_shared<MFLayer>(
         0.0, spectrum{1.0}, make_shared<GTR>(0.2));
 
       vector<decltype(layer)> layers({layer});
