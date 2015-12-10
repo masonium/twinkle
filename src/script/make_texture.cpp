@@ -44,14 +44,17 @@ namespace script
 
     int grid(lua_State* L)
     {
-      LUA_CHECK_NUM_ARGS(L, 4);
+      LUA_CHECK_RANGE_ARGS(L, 4, 5);
 
-      auto s1 = lua_tospectrum(L, 1);
-      auto s2 = lua_tospectrum(L, 2);
-      auto gs = lua_tonumber(L, 3);
-      auto border_pct = lua_tonumber(L, 4);
+      int i = 1;
+      auto s1 = lua_tospectrum(L, i++);
+      auto s2 = lua_tospectrum(L, i++);
+      auto gs = lua_tonumber(L, i++);
+      auto gsy = (lua_gettop(L) == 5) ? lua_tonumber(L, i++) : gs;
 
-      return script_texture(L, make_shared<GridTexture2D>(s1, s2, gs, border_pct));
+      auto border_pct = lua_tonumber(L, i++);
+
+      return script_texture(L, make_shared<GridTexture2D>(s1, s2, gs, gsy, border_pct));
     }
 
     int image(lua_State* L)

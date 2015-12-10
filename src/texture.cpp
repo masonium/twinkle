@@ -29,8 +29,8 @@ spectrum Checkerboard2D::at_coord(const Vec2& uv) const
 
 spectrum GridTexture2D::at_coord(const Vec2& uv) const
 {
-  scalar xf = fmod(fabs(uv.u) / check_size, 1.0);
-  scalar yf = fmod(fabs(uv.v) / check_size, 1.0);
+  scalar xf = fmod(fabs(uv.u) / csx, 1.0);
+  scalar yf = fmod(fabs(uv.v) / csy, 1.0);
 
   if (min(xf, yf) < border_pct * 0.5 || max(xf, yf) > (1 - border_pct * 0.5))
     return border;

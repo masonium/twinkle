@@ -58,14 +58,21 @@ class GridTexture2D : public Texture2D
 public:
   GridTexture2D(spectrum solid_, spectrum border_,
                 scalar check_size_, scalar border_pct_) 
-    : solid(solid_), border(border_), check_size(check_size_),
+    : solid(solid_), border(border_), csx(check_size_),
+      csy(check_size_),
       border_pct(border_pct_) {}
+
+  GridTexture2D(spectrum solid_, spectrum border_,
+                scalar check_size_x_, scalar check_size_y_, 
+                scalar border_pct_) 
+    : solid(solid_), border(border_), csx(check_size_x_),
+      csy(check_size_y_), border_pct(border_pct_) {}
 
   spectrum at_coord(const Vec2& uv) const override;
   
 private:
   const spectrum solid, border;
-  const scalar check_size, border_pct;
+  const scalar csx, csy, border_pct;
 };
 
 class NormalTexture : public Texture
