@@ -3,7 +3,6 @@
 #include "vec3.h"
 #include "light.h"
 #include "camera.h"
-#include "env_light.h"
 #include "script/script_util.h"
 
 using std::make_shared;
@@ -65,18 +64,6 @@ namespace script
       auto light = make_shared<DirectionalLight>(pos, spec);
 
       return script_light(L, light);
-    }
-  }
-
-  namespace env_light
-  {
-    int color(lua_State* L)
-    {
-      LUA_CHECK_NUM_ARGS(L, 1);
-
-      auto spec = lua_tospectrum(L, 1);
-
-      return script_envlight(L, make_shared<EnvironmentLight>(make_shared<SolidColor>(spec)));
     }
   }
 }

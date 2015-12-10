@@ -1,6 +1,3 @@
-#include <lua.hpp>
-#include <iostream>
-#include <cassert>
 #include "util/manager.h"
 #include "script/script_util.h"
 #include "vec3.h"
@@ -10,6 +7,9 @@
 #include "script/make_material.h"
 #include "script/make_scene.h"
 #include "script/make_texture.h"
+#include <lua.hpp>
+#include <iostream>
+#include <cassert>
 
 using std::cerr;
 using std::make_shared;
@@ -187,11 +187,6 @@ namespace script
                                    {"mirror", material::mirror},
                                    {NULL, NULL}};
     luaL_register(L, "material", material_package);
-
-    luaL_Reg envlight_package[] = {{"color", env_light::color},
-//                                  "texture", env_light::texture},
-                                   {NULL, NULL}};
-    luaL_register(L, "envlight", envlight_package);
 
     luaL_Reg camera_package[] = {{"spherical", camera::spherical},
                                  {"perspective", camera::perspective},
