@@ -289,7 +289,7 @@ shared_ptr<Camera> lua_scene(Scene& scene, const string& filename)
   auto L = runner.state();
   lua_getglobal(L, "scene");
   assert(lua_isfunction(L, -1));
-  assert(lua_pcall(L, 0, 1, 0) == 0);
+  lua_call(L, 0, 1);
 
   // shapes
   script::lua_gettablefield(L, -1, "shapes");
@@ -317,7 +317,6 @@ shared_ptr<Camera> lua_scene(Scene& scene, const string& filename)
   {
     lua_rawgeti(L, -1, i+1);
     auto obj = script::lua_tolight(L, -1);
-    cerr << obj->to_string() << endl;
     lua_pop(L, 1);
     scene.add(obj);
   }
