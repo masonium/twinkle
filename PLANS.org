@@ -4,7 +4,8 @@
 * TODO Visible Features
 ** Shapes
 - [ ] box primitive
-- [ ] heightmap (based on kd-mesh)
+- [X] parametric mesh
+- [X] heightmap (based on kd-mesh)
 - [X] implicit built-ins
   - [X] torus
   - [X] rounded box
@@ -14,6 +15,7 @@
 ** Materials
 - [ ] rough glass material
 - [ ] plastic (cook-torrance)
+- [ ] layered brdf
 
 ** Textures
 - [X] image-based
@@ -34,7 +36,7 @@
   - [X] plane
   - [X] lights
   - [ ] envlights
-  - [ ] color material
+  - [X] color material
   - [X] implicit
 - [X] push luastate into generic renderer
 
@@ -44,12 +46,14 @@
 - [X] lua state into
 - [X] Mesh or KDMesh based on number of triangles
 - [ ] condensing of nested transforms into transform shapes
-  - [ ] RTTI for shapes (tagging)
+  - [ ] RTTI for all (possibly implement, possibly built-in)
 - [X] cache-friendly 8-byte kdtree-node
 - [ ] cache-coherent kd-tree (re)organization
 - [ ] population monte-carlo for grid-render
 - [ ] population monte-carlo for pixel-choice of direct lighting
 - [ ] triangle fan implementation (faster mesh rendering)
+- [ ] convert environment map to normal light (improved sampling)
+
 
 * Scenes
 - [X] 'showcase-scene': all available shapes
