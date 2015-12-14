@@ -122,6 +122,8 @@ void Mesh::texture_coord(SubGeo subgeo, const Vec3& pos, const Vec3& normal,
   return tris[subgeo].texture_coord(pos, normal, u, v);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 MeshTriAccel::MeshTriAccel(const Vec3& p0, const Vec3& p1, const Vec3& p2)
 {
   const auto b = p1 - p0;

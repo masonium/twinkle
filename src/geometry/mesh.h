@@ -34,8 +34,6 @@ struct MeshTriAccel
   int32_t pad2;
 };
 
-MeshTriAccel compute_meshtri_accel(const Vec3& p0, const Vec3& p1, const Vec3& p2);
-
 class Mesh : public Geometry
 {
 public:
@@ -43,11 +41,18 @@ public:
   Mesh(T&& model) : is_diff(model.has_tex())
   {
     verts = model.verts();
+    auto temp_tris = model.tris();
     auto i = 0u;
-    for (const auto& a: model.tris())
+    for (const auto& a: temp_tris)
     {
+      auto p0 = verts[a.v[0]].position;
+      auto p1 = verts[a.v[1]].position;
+      auto p2 = verts[a.v[2]].position;
+      if (p0 == p1 || p1 == p2 || p0 == p2)
+        continue;
+
       tris.emplace_back(this, i++, a.v);
-      accels.emplace_back(verts[a.v[0]].position, verts[a.v[1]].position, verts[a.v[2]].position);
+      accels.emplace_back(p0, p1, p2);
     }
   }
   virtual scalar_fp intersect(const Ray& r, scalar_fp max_t, SubGeo& geom) const override;
