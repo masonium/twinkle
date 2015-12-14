@@ -1,6 +1,5 @@
 function scene()
    local q1 = geom.quad({1.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
-   --local q1 = geom.sphere({0.0}, 1.0);
 
    local shapes = { shape(q1, material.diffuse(texture.image("assets/images/whitemarble.jpg"))) }
 
