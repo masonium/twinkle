@@ -43,22 +43,7 @@ spectrum DirectLightingIntegrator::trace_ray(const Scene& scene, const Ray& ray,
   int cum_samples = 0;
   int local_light_samples;
 
-  if (scene.env_light())
-  {
-    if (num_lights > 0)
-    {
-      if (options.env_light_weight > 0)
-        local_light_samples = (1 - min<scalar>(options.env_light_weight, 1.0)) * options.lighting_samples;
-      else
-        local_light_samples = options.lighting_samples * static_cast<scalar>(num_lights) / (num_lights + 1);
-    }
-    else
-      local_light_samples = 0;
-  }
-  else
-  {
-    local_light_samples = options.lighting_samples;
-  }
+  local_light_samples = options.lighting_samples;
 
   for (auto light: lights)
   {
@@ -75,20 +60,6 @@ spectrum DirectLightingIntegrator::trace_ray(const Scene& scene, const Ray& ray,
         total += (NL / se.p()) * se.emission() * isect.reflectance(se.direction(), view_vector);
     }
     ++i;
-  }
-
-  int num_env_samples = options.lighting_samples - local_light_samples;
-  auto normal_rotation = Mat33::rotate_match(Vec3::z_axis, isect_normal);
-  Vec3 new_pos = isect.position + isect_normal * 0.0001;
-  for (int s = 0; s < num_env_samples; ++s)
-  {
-    scalar l_p;
-    Vec3 l_dir = normal_rotation * cosine_weighted_hemisphere_sample(shading_sampler.sample_2d(), l_p);
-    auto refl = isect.reflectance(l_dir, view_vector);
-
-    auto light_ray = Ray{new_pos, l_dir};
-    if (!scene.intersect(light_ray).is())
-      total += (l_dir.dot(isect_normal) / l_p) * refl * scene.environment_light_emission(l_dir);
   }
 
   return total / options.lighting_samples;

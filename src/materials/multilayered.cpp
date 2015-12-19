@@ -97,7 +97,7 @@ scalar MFLayer::pdf(const Vec3& incoming, const Vec3& outgoing) const
 
 ////////////////////////////////////////////////////////////////////////////////
 
-LayeredMFMaterial::LayeredMFMaterial(const vector<shared_ptr<MFLayer>>& layers, shared_ptr<Material> base)
+LayeredMFMaterial::LayeredMFMaterial(const vector<shared_ptr<MFLayer>>& layers, Material* base)
   : _layers(layers), _base(base)
 {
 }

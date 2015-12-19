@@ -101,7 +101,7 @@ int main(int argc, char** args)
 
   string scene_filename = options.get("scene").as<string>();
 
-  shared_ptr<Camera> cam;
+  Camera* cam;
   {
     Timer tm;
     cam = lua_scene(*scene, scene_filename);

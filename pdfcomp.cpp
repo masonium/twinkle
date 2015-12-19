@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cassert>
+#include "textures.h"
 #include "materials/multilayered.h"
 #include "geometries.h"
 #include "sampler.h"
@@ -194,7 +195,7 @@ scalar compute_rho_hd(shared_ptr<Material> mat, const Vec3& incoming, uint num_s
   spectrum r;
 
   auto p = make_shared<Plane>(Vec3(0, 0, 1), 0.0);
-  Shape s(p, mat);
+  Shape s(p.get(), mat.get());
   Ray ray(incoming, -incoming);
   UniformSampler sampler;
 

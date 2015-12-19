@@ -13,10 +13,10 @@ using std::shared_ptr;
 
 class Intersection;
 
-class Shape
+class Shape : public Base
 {
 public:
-  Shape(shared_ptr<const Geometry> prim, shared_ptr<const Material> mat)
+  Shape(const Geometry* prim, const Material* mat)
     : geometry(prim), material(mat)
   {
   }
@@ -53,6 +53,6 @@ public:
     return s.str();
   }
   
-  shared_ptr<const Geometry> geometry;
-  shared_ptr<const Material> material;
+  const Geometry* geometry;
+  const Material* material;
 };

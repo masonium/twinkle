@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base.h"
 #include "spectrum.h"
 #include "texture.h"
 #include "shape.h"
@@ -40,7 +41,7 @@ private:
   OcclusionType occ_type;
 };
 
-class Light
+class Light : public Base
 {
 public:
   virtual LightSample sample_emission(const Intersection& isect, Sampler&) const = 0;

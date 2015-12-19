@@ -9,7 +9,7 @@ using std::make_shared;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RoughMaterial::RoughMaterial(scalar roughness_, shared_ptr<Texture> tex_) :
+RoughMaterial::RoughMaterial(scalar roughness_, Texture* tex_) :
   texture(tex_)
 {
   if (roughness_ > 0)
@@ -43,7 +43,7 @@ scalar RoughMaterial::pdf(const Vec3& incoming,
 ////////////////////////////////////////////////////////////////////////////////
 
 RoughColorMaterial::RoughColorMaterial(scalar roughness, const spectrum& color) :
-  RoughMaterial(roughness, make_shared<SolidColor>(color)), c(color)
+  RoughMaterial(roughness, make_entity<SolidColor>(color).get()), c(color)
 {
 
 }

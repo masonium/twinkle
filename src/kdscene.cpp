@@ -6,23 +6,21 @@ using std::numeric_limits;
 using std::min;
 using std::make_unique;
 
-KDScene::KDScene()
+KDScene::KDScene() : env_light_(nullptr)
 {
 }
 
-void KDScene::add(shared_ptr<const Shape> shape)
+void KDScene::add(const Shape* shape)
 {
   shape_vector_.push_back(shape);
 }
 
-void KDScene::add(shared_ptr<const Light> light)
+void KDScene::add(const Light* light)
 {
   lights_.push_back(light);
-}
-
-void KDScene::add(shared_ptr<const EnvironmentLight> env_light_)
-{
-  this->env_light_ = env_light_;
+  const auto env = dynamic_cast<const EnvironmentLight*>(light);
+  if (env)
+    env_light_ = env;
 }
 
 void KDScene::prepare()
@@ -31,14 +29,14 @@ void KDScene::prepare()
   for (const auto& shape: shape_vector_)
   {
     if (shape->is_bounded())
-      bounded_shapes.push_back(shape.get());
+      bounded_shapes.push_back(shape);
     else
       unbounded_shapes_.push_back(shape);
   }
   shape_tree_ = make_unique<kd::Tree<Shape>>(bounded_shapes, kd::TreeOptions());
 }
 
-const vector<shared_ptr<const Light>>& KDScene::lights() const
+const vector<const Light*>& KDScene::lights() const
 {
   return lights_;
 }
@@ -55,7 +53,7 @@ Light const* KDScene::sample_light(scalar r1, scalar& light_prob) const
   light_prob = 1.0 / lights_.size();
 
   auto max_light_idx = lights_.size() - 1;
-  return lights_[min(max_light_idx, decltype(max_light_idx)(r1 * lights_.size()))].get();
+  return lights_[min(max_light_idx, decltype(max_light_idx)(r1 * lights_.size()))];
 }
 
 optional<Intersection> KDScene::intersect(const Ray& ray) const
@@ -77,7 +75,7 @@ optional<Intersection> KDScene::intersect(const Ray& ray) const
     if (t < best_t)
     {
       best_t = t;
-      best_shape = s.get();
+      best_shape = s;
       best_geom = g;
     }
   }

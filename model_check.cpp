@@ -2,6 +2,7 @@
 #include "model.h"
 #include "scheduler.h"
 #include "material.h"
+#include "textures.h"
 #include "spectrum.h"
 #include "kdtree.h"
 #include "geometries.h"

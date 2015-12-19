@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <iostream>
+#include "base.h"
 #include "math_util.h"
 #include "spectrum.h"
 #include "film.h"
@@ -12,7 +13,7 @@
 using std::vector;
 using std::ostream;
 
-class Camera
+class Camera : public Base
 {
 public:
   // Return a pixel sample from anywhere on the image plane.

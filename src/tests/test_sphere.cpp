@@ -1,5 +1,6 @@
 #include "tests/test_util.h"
 #include "geometry/sphere.h"
+#include "textures.h"
 #include "scene.h"
 
 namespace
@@ -8,16 +9,18 @@ namespace
   {
   public:
     SingleSphereFixture() : sphere(make_shared<Sphere>(Vec3{0.0, 0.0, 0.0}, 1.0)),
-                            ray{Vec3{5.0, 0.0, 0.0}, Vec3{-2.0, 0.0, 0.0}},
-                            shape(make_shared<Shape>(sphere,
-                                                     make_shared<RoughColorMaterial>(0, spectrum{1.0})))
+                            mat(make_shared<RoughColorMaterial>(0, spectrum{1.0})),
+                            shape(make_shared<Shape>(sphere.get(), mat.get())),
+                            ray{Vec3{5.0, 0.0, 0.0}, Vec3{-2.0, 0.0, 0.0}}
     {
-      scene.add(shape);
+      scene.add(shape.get());
     }
+
     BasicScene scene;
     shared_ptr<Sphere> sphere;
-    Ray ray;
+    shared_ptr<Material> mat;
     shared_ptr<Shape> shape;
+    Ray ray;
   };
 
   TEST_FIXTURE(SingleSphereFixture, scene_test)

@@ -102,7 +102,7 @@ public:
 class LayeredMFMaterial : public Material
 {
 public:
-  LayeredMFMaterial(const vector<shared_ptr<MFLayer>>& layers, shared_ptr<Material> base);
+  LayeredMFMaterial(const vector<shared_ptr<MFLayer>>& layers, Material* base);
 
   spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing) const override;
 
@@ -118,7 +118,7 @@ private:
                        int layer_index) const;
 
   vector<shared_ptr<MFLayer>> _layers;
-  shared_ptr<Material> _base;
+  Material* _base;
   vector<scalar> cum_sample_probs;
 };
 

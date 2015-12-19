@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include "base.h"
 #include "spectrum.h"
 #include "bsdf.h"
 #include "intersection.h"
@@ -10,7 +11,7 @@
 using std::shared_ptr;
 using std::unique_ptr;
 
-class Material
+class Material : public Base
 {
 public:
   virtual spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing) const = 0;
@@ -30,7 +31,7 @@ public:
     return spectrum::zero;
   }
 
-  virtual std::string to_string() const { return "Material"; }
+  virtual std::string to_string() const override { return "Material"; }
 
   virtual ~Material() {}
 };
@@ -38,7 +39,7 @@ public:
 class RoughMaterial : public Material
 {
 public:
-  RoughMaterial(scalar roughness, shared_ptr<Texture> tex);
+  RoughMaterial(scalar roughness, Texture* tex);
 
   spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing) const override;
   
@@ -49,10 +50,10 @@ public:
 
 private:
   unique_ptr<BRDF> brdf;
-  shared_ptr<Texture> texture;
+  Texture* texture;
 };
 
-
+class SolidColor;
 class RoughColorMaterial : public RoughMaterial
 {
 public:
@@ -62,6 +63,7 @@ public:
 
 private:
   spectrum c;
+  unique_ptr<SolidColor> sc;
 };
 
 class MirrorMaterial : public Material

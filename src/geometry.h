@@ -3,6 +3,7 @@
 #include <limits>
 #include <memory>
 #include <util/manager.h>
+#include "base.h"
 #include "util.h"
 #include "geometry/isect_util.h"
 #include "vec3.h"
@@ -15,7 +16,7 @@ using std::numeric_limits;
 using SubGeo = int64_t;
 const SubGeo SUBGEO_NONE = -1;
 
-class Geometry
+class Geometry : public Base
 {
 public:
   virtual scalar_fp intersect(const Ray& r, scalar_fp max_t, SubGeo& geom) const = 0;
@@ -34,12 +35,10 @@ public:
 
   virtual bounds::AABB get_bounding_box() const { return bounds::AABB::infinite; }
 
-  virtual std::string to_string() const { return "Shape{}"; }
+  virtual string to_string() const override { return "Shape{}"; }
 
   virtual ~Geometry() {}
 };
-
-using GeometryManager = Manager<Geometry>;
 
 class SimpleGeometry : public Geometry
 {
@@ -69,4 +68,3 @@ public:
   virtual ~SimpleGeometry() { }
 };
 
-GeometryManager::key_type script_geoemtry(shared_ptr<Geometry>);

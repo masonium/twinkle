@@ -46,13 +46,13 @@ namespace script
   /*
     The lua_to* functions act exaclty as the standard lua_to* functions.
   */
-  shared_ptr<EnvironmentLight> lua_toenvlight(lua_State*, int);
-  shared_ptr<Geometry> lua_togeometry(lua_State*, int);
-  shared_ptr<Material> lua_tomaterial(lua_State*, int);
-  shared_ptr<Shape> lua_toshape(lua_State*, int);
-  shared_ptr<Texture> lua_totexture(lua_State*, int);
-  shared_ptr<Camera> lua_tocamera(lua_State*, int);
-  shared_ptr<Light> lua_tolight(lua_State*, int);
+  EnvironmentLight* lua_toenvlight(lua_State*, int);
+  Geometry* lua_togeometry(lua_State*, int);
+  Material* lua_tomaterial(lua_State*, int);
+  Shape* lua_toshape(lua_State*, int);
+  Texture* lua_totexture(lua_State*, int);
+  Camera* lua_tocamera(lua_State*, int);
+  Light* lua_tolight(lua_State*, int);
 
   ::bounds::AABB lua_tobbox(lua_State*, int);
 

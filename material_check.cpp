@@ -22,8 +22,9 @@ using std::endl;
  */
 void render_material_scene(shared_ptr<Material> m, Film& film)
 {
+  auto g = make_shared<Sphere>(Vec3{0.0, 0.0, 0.0}, 1.0);
 
-  Shape shape(make_shared<Sphere>(Vec3{0.0, 0.0, 0.0}, 1.0), m);
+  Shape shape(g.get(), m.get());
   PerspectiveCamera cam(Vec3{0.0, 0.0, sqrt(2.0)}, Vec3::zero, Vec3::y_axis, PI/2);
 
   ConstSampler sampler(0.5, 0.5, 0.5, 0.5, 0.5);
@@ -84,12 +85,12 @@ int main(int argc, char** args)
   // auto tex = make_shared<Checkerboard2D>(spectrum{0.6, 0.1, 0.2},
   //                                        spectrum{0.2, 0.1, 0.6}, 16.0);
   auto tex = make_shared<SolidColor>(spectrum{0.2, 0.1, 0.8});
-  auto base_mat = make_shared<RoughMaterial>(opt.get("roughness").as<float>(), tex);
+  auto base_mat = make_shared<RoughMaterial>(opt.get("roughness").as<float>(), tex.get());
 
   auto layer = make_shared<MFLayer>(0.0, spectrum{1.0}, make_shared<GTR>(0.1));
 
   vector<decltype(layer)> layers({layer});
-  auto mat = make_shared<LayeredMFMaterial>(layers, base_mat);
+  auto mat = make_shared<LayeredMFMaterial>(layers, base_mat.get());
   // auto mat = make_shared<MaterialTLDAdapter>(
   //   refraction_index::AIR, refraction_index::CROWN_GLASS, make_shared<GTR>(0.2));
 

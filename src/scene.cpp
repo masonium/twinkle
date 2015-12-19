@@ -9,21 +9,22 @@ BasicScene::BasicScene()
 {
 }
 
-void BasicScene::add(shared_ptr<const Shape> shape)
+void BasicScene::add(const Shape* shape)
 {
   shapes_.push_back(shape);
 }
 
-void BasicScene::add(shared_ptr<const Light> light)
+void BasicScene::add(const Light* light)
 {
   lights_.push_back(light);
-}
-void BasicScene::add(shared_ptr<const EnvironmentLight> env_light_)
-{
-  this->env_light_ = env_light_;
+  // const auto env = dynamic_cast<const EnvironmentLight*>(light);
+  // if (env)
+  // {
+  //   env_lights_.push_back(env);
+  // }
 }
 
-const vector<shared_ptr<const Light>>& BasicScene::lights() const
+const vector<const Light*>& BasicScene::lights() const
 {
   return lights_;
 }
@@ -40,13 +41,13 @@ Light const* BasicScene::sample_light(scalar r1, scalar& light_prob) const
   light_prob = scalar{1.0} / lights_.size();
 
   auto max_light_idx = lights_.size() - 1;
-  return lights_[min(max_light_idx, decltype(max_light_idx)(r1 * lights_.size()))].get();
+  return lights_[min(max_light_idx, decltype(max_light_idx)(r1 * lights_.size()))];
 }
 
 
 optional<Intersection> BasicScene::intersect(const Ray& ray) const
 {
-  shared_ptr<const Shape> best_shape{nullptr};
+  const Shape* best_shape = nullptr;
   SubGeo best_geom = 0;
   scalar_fp best_t = sfp_none;
 
@@ -62,11 +63,15 @@ optional<Intersection> BasicScene::intersect(const Ray& ray) const
     }
   }
   if (best_shape != nullptr)
-    return Intersection(best_shape.get(), best_geom, ray, best_t.get());
+    return Intersection(best_shape, best_geom, ray, best_t.get());
   return none_tag;
 }
 
 spectrum BasicScene::environment_light_emission(const Vec3& dir) const
 {
-  return env_light_ ?  env_light_->emission(dir) : spectrum{0.0};
+  spectrum s{0.0};
+  for (const auto& env: env_lights_)
+    s += env->emission(dir);
+
+  return s;
 }

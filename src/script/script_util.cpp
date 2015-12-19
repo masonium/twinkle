@@ -1,5 +1,8 @@
+#include "base.h"
 #include "util/manager.h"
 #include "script/script_util.h"
+#include "env_light.h"
+#include "camera.h"
 #include "vec3.h"
 #include "spectrum.h"
 #include "shape.h"
@@ -16,10 +19,9 @@ using std::make_shared;
 
 namespace script
 {
-  template <typename T>
-  int script_sharedptr(lua_State* L, shared_ptr<T> obj)
+  int script_managedptr(lua_State* L, shared_ptr<Base> obj)
   {
-    auto& mgr = Manager<T>::instance();
+    auto& mgr = EntityManager::instance();
     auto ret = mgr.save(obj);
     auto user_data = lua_newuserdata(L, sizeof(ret));
     *reinterpret_cast<decltype(ret)*>(user_data) = ret;
@@ -27,14 +29,14 @@ namespace script
   }
 
   template <typename T>
-  shared_ptr<T> lua_tosharedptr(lua_State* L, int index)
+  T* lua_tomanagedptr(lua_State* L, int index)
   {
     assert(lua_isuserdata(L, index));
 
-    auto& mgr = Manager<T>::instance();
-    using key_t = typename Manager<T>::key_type;
+    auto& mgr = EntityManager::instance();
+    using key_t = EntityManager::key_type;
     key_t* user_data_key = reinterpret_cast<key_t*>(lua_touserdata(L, index));
-    return mgr.at(*user_data_key);
+    return dynamic_cast<T*>(mgr.at(*user_data_key));
   }
 
   template <typename T>
@@ -56,13 +58,13 @@ namespace script
  * define the lua pusher/popper for a given type
  */
 #define LUA_METHODS(CLASSNAME, SHORTNAME) \
-  int script_##SHORTNAME(lua_State* L, shared_ptr<CLASSNAME> obj) \
+  int script_##SHORTNAME(lua_State* L, shared_ptr<CLASSNAME> obj)       \
   { \
-    return script_sharedptr(L, obj); \
+    return script_managedptr(L, obj); \
   } \
-  shared_ptr<CLASSNAME> lua_to##SHORTNAME(lua_State* L, int index) \
+  CLASSNAME* lua_to##SHORTNAME(lua_State* L, int index) \
   { \
-    return lua_tosharedptr<CLASSNAME>(L, index); \
+    return lua_tomanagedptr<CLASSNAME>(L, index); \
   }
 
 #define LUA_NATIVE_METHODS(CLASSNAME, SHORTNAME) \

@@ -1,6 +1,7 @@
 #include <lua.hpp>
 #include <memory>
 #include "material.h"
+#include "textures.h"
 #include "materials/multilayered.h"
 #include "script/make_material.h"
 #include "script/script_util.h"
@@ -46,8 +47,9 @@ namespace script
 
       vector<decltype(layer)> layers({layer});
 
-      auto base_mat = make_shared<RoughMaterial>(0.0, tex);
-      return script_material(L, make_shared<LayeredMFMaterial>(layers, base_mat));
+      auto base_mat = make_entity<RoughMaterial>(0.0, tex);
+
+      return script_material(L, make_entity<LayeredMFMaterial>(layers, base_mat.get()));
     }
 
     int diffuse(lua_State* L)
@@ -58,7 +60,7 @@ namespace script
       if (lua_gettop(L) == 2)
         roughness = lua_tonumber(L, 2);
 
-      return script_material(L, make_shared<RoughMaterial>(roughness, tex));
+      return script_material(L, make_entity<RoughMaterial>(roughness, tex));
     }
 
     int mirror(lua_State* L)
@@ -67,5 +69,4 @@ namespace script
       return script_material(L, make_shared<MirrorMaterial>());
     }
   }
-
 }
