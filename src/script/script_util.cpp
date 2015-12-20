@@ -181,6 +181,10 @@ namespace script
                                {"mesh", geometry::mesh},
                                {"heightfield", geometry::heightfield},
                                {"parametric", geometry::parametric},
+
+                               {"translate", geometry::transform::translate},
+                               {"scale", geometry::transform::scale},
+                               {"rotate_aa", geometry::transform::rotate_aa},
                                {NULL, NULL}};
     luaL_register(L, "geom", geom_package);
 

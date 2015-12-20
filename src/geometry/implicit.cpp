@@ -1,6 +1,7 @@
 #include "implicit.h"
 #include "math_util.h"
 #include "transformed.h"
+#include "util/manager.h"
 #include <memory>
 
 static const scalar MIN_STEP = 0.0001;
@@ -111,7 +112,7 @@ shared_ptr<Geometry> make_torus(Vec3 normal, scalar outer_radius, scalar inner_r
   const auto lb = Vec3{-Rxz, -inner_radius, -Rxz};
 
   return make_shared<Transformed>(
-    make_shared<ImplicitSurface>(sdf, grad, 1.0, bounds::AABB{lb, -lb}),
+    make_entity<ImplicitSurface>(sdf, grad, 1.0, bounds::AABB{lb, -lb}).get(),
     Transform{Mat33::rotate_match(Vec3::y_axis, normal), Vec3::zero});
 }
 

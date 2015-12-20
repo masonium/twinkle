@@ -19,5 +19,12 @@ namespace script
     int mesh(lua_State*);
     int heightfield(lua_State*);
     int parametric(lua_State*);
+
+    namespace transform
+    {
+      int rotate_aa(lua_State*);
+      int translate(lua_State*);
+      int scale(lua_State*);
+    }
   }
 }

@@ -13,8 +13,8 @@ using std::shared_ptr;
 class Transformed : public Geometry
 {
 public:
-  Transformed(shared_ptr<Transformed> ptr, Transform tr);
-  Transformed(shared_ptr<const Geometry> ptr, Transform tr);
+  Transformed(Transformed* ptr, Transform tr);
+  Transformed(const Geometry* ptr, Transform tr);
 
   virtual scalar_fp intersect(const Ray& r, scalar_fp max_t, SubGeo& geo) const override;
 
@@ -34,15 +34,15 @@ public:
 
   Transform transformation() const;
 
-  shared_ptr<const Geometry> underlying() const { return geometry; }
+  const Geometry* underlying() const { return geometry; }
 
 private:
-  shared_ptr<const Geometry> geometry;
+  const Geometry* geometry;
   Transform tform;
 };
 
-shared_ptr<Transformed> rotate(shared_ptr<const Geometry>, Vec3 axis, scalar angle);
+shared_ptr<Transformed> rotate(const Geometry*, Vec3 axis, scalar angle);
 
-shared_ptr<Transformed> translate(shared_ptr<const Geometry>, Vec3 displacement);
+shared_ptr<Transformed> translate(const Geometry*, Vec3 displacement);
 
-shared_ptr<Transformed> scale(shared_ptr<const Geometry>, Vec3 sf);
+shared_ptr<Transformed> scale(const Geometry*, Vec3 sf);

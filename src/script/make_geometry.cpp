@@ -169,6 +169,37 @@ namespace script
                                                 ud, vd));
     }
 
+    namespace transform
+    {
+      int scale(lua_State* L)
+      {
+        LUA_CHECK_NUM_ARGS(L, 2);
+
+        auto geom = lua_togeometry(L, 1);
+        auto sf = lua_tovector(L, 2);
+
+        return script_geometry(L, ::scale(geom, sf));
+      }
+      int translate(lua_State* L)
+      {
+        LUA_CHECK_NUM_ARGS(L, 2);
+
+        auto geom = lua_togeometry(L, 1);
+        auto tf = lua_tovector(L, 2);
+
+        return script_geometry(L, ::translate(geom, tf));
+      }
+      int rotate_aa(lua_State* L)
+      {
+        LUA_CHECK_NUM_ARGS(L, 2);
+
+        auto geom = lua_togeometry(L, 1);
+        auto axis = lua_tovector(L, 2);
+        auto angle = lua_tonumber(L, 3);
+
+        return script_geometry(L, ::rotate(geom, axis.normal(), angle));
+      }
+    }
   }
 }
 

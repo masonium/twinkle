@@ -2,14 +2,16 @@
 
 using std::make_shared;
 
-Transformed::Transformed(shared_ptr<const Geometry> ptr, Transform tr)
+Transformed::Transformed(const Geometry* ptr, Transform tr)
   : geometry(ptr), tform(tr)
 {
+  assert(geometry);
 }
 
-Transformed::Transformed(shared_ptr<Transformed> ptr, Transform tr)
+Transformed::Transformed(Transformed* ptr, Transform tr)
   : geometry(ptr->geometry), tform(tr * ptr->tform)
 {
+  assert(geometry);
 }
 
 scalar_fp Transformed::intersect(const Ray& r, scalar_fp max_t, SubGeo& geom) const
@@ -67,19 +69,25 @@ Transform Transformed::transformation() const
  * be cleaned up.
  */
 
-shared_ptr<Transformed> rotate(shared_ptr<const Geometry> geom, Vec3 axis, scalar angle)
+shared_ptr<Transformed> condensed(const Geometry* geom, const Transform& trans)
+{
+  auto tr = dynamic_cast<const Transformed*>(geom);
+  return make_shared<Transformed>(tr ? tr : geom, trans);
+}
+
+shared_ptr<Transformed> rotate(const Geometry* geom, Vec3 axis, scalar angle)
 {
   auto rot = Transform{Mat33::from_axis_angle(axis.normal(), angle), Vec3::zero};
-  return make_shared<Transformed>(geom, rot);
+  return condensed(geom, rot);
 }
 
-shared_ptr<Transformed> translate(shared_ptr<const Geometry> geom, Vec3 displacement)
+shared_ptr<Transformed> translate(const Geometry* geom, Vec3 displacement)
 {
-  return make_shared<Transformed>(geom, Transform{Mat33::identity, displacement});
+  return condensed(geom, Transform{Mat33::identity, displacement});
 }
 
-shared_ptr<Transformed> scale(shared_ptr<const Geometry> geom, Vec3 scale_factors)
+shared_ptr<Transformed> scale(const Geometry* geom, Vec3 scale_factors)
 {
   auto scale = Transform{Mat33::from_diagonal(scale_factors), Vec3::zero};
-  return make_shared<Transformed>(geom, scale);
+  return condensed(geom, scale);
 }
