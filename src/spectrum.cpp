@@ -1,7 +1,9 @@
-#include "spectrum.h"
 #include <iostream>
+#include "spectrum.h"
+#include "util.h"
 
 using std::cout;
+using std::cerr;
 
 const spectrum spectrum::zero{0.0};
 const spectrum spectrum::one{1.0};
@@ -91,6 +93,23 @@ spectrum spectrum::max(const spectrum &a, const spectrum& b)
 scalar spectrum::luminance() const
 {
   return CIE_RGB_TO_XYZ[1][0] * x + CIE_RGB_TO_XYZ[1][1] * y + CIE_RGB_TO_XYZ[1][2] * z;
+}
+
+scalar tvi(scalar luminance)
+{
+  luminance = std::max<scalar>(luminance, 0.00001);
+
+  scalar logl = log10(luminance);
+  scalar log_tvi;
+  if (logl <= -3.94)
+    log_tvi = -2.86;
+  else if (logl >= -1.44)
+    log_tvi = logl - 0.395;
+  else
+    log_tvi = pow(0.405 * logl + 1.6, 2.18) - 2.86;
+
+  scalar t = pow(10, log_tvi);
+  return t;
 }
 
 spectrum spectrum::rescale_luminance(scalar nl) const

@@ -72,22 +72,32 @@ public:
 
   struct AccPixel  // short for AccumulationPixel
   {
-    AccPixel() = default;
-    AccPixel(scalar w, const spectrum& t) : weight(w), total(t) { }
+    AccPixel();
+    AccPixel(const spectrum& t, scalar w = 1.0) : 
+      weight(w), total(t), mean(t.luminance()), ss(0), count(1) { }
 
     AccPixel& operator +=(const AccPixel&);
     AccPixel operator +(const AccPixel&) const;
 
+    void add_sample(const spectrum& v, scalar w);
+
+    scalar variance() const;
+    scalar perceptual_variance() const;
+
     scalar weight;
     spectrum total;
+    scalar mean;
+    scalar ss;
+    uint count;
   };
   
   Film(uint w_, uint h_);
   Film(istream& in);
 
   Film(const Film& f);
-  Film& operator=(Film&& f);
-  Film& operator=(const Film& f);
+
+  Film as_weights() const;
+  Film as_pv() const;
 
   void add_sample(const PixelSample& ps, const spectrum& s, scalar w = 1.0);
 

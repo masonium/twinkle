@@ -132,4 +132,7 @@ public:
 
 };
 
+scalar tvi(scalar luminance);
+
 ostream&  operator<<(ostream& out, spectrum s);
+

@@ -4,6 +4,7 @@
 #include <cstring>
 #include <mutex>
 #include <cassert>
+#include "util.h"
 #include "film.h"
 
 using std::transform;
@@ -13,6 +14,7 @@ using std::cout;
 using std::ostream_iterator;
 using std::accumulate;
 using std::cerr;
+using std::endl;
 
 Film::Film(uint w_, uint h_)
   : width(w_), height(h_), plate(w_ * h_)
@@ -22,22 +24,6 @@ Film::Film(uint w_, uint h_)
 Film::Film(const Film& f)
   : width(f.width), height(f.height), plate(f.plate)
 {
-}
-
-Film& Film::operator=(const Film& f)
-{
-  width = f.width;
-  height = f.height;
-  plate = f.plate;
-  return *this;
-}
-
-Film& Film::operator=(Film&& f)
-{
-  width = f.width;
-  height = f.height;
-  swap(plate, f.plate);
-  return *this;
 }
 
 Film::Film(istream& in) : width(0), height(0)
@@ -58,7 +44,7 @@ Film::Film(istream& in) : width(0), height(0)
   plate.resize(width*height);
   for (uint32_t i = 0; i < width * height; ++i)
   {
-    plate[i] = AccPixel{ scalar(1.0), spectrum::deserialize(in) };
+    plate[i] = AccPixel{ spectrum::deserialize(in) };
   }
 }
 
@@ -100,11 +86,11 @@ scalar Film::average_intensity() const
   return r;
 }
 
-
 void Film::render_to_ppm(ostream& out, const ToneMapper& mapper)
 {
   vector<spectrum> final = pixel_list();
   mapper.tonemap(final, final, width, height);
+  auto pl = pixel_list();
   out << "P3 " << width << " " << height << " 255\n";
 
   for (int y = height - 1; y >= 0; --y)
@@ -112,6 +98,13 @@ void Film::render_to_ppm(ostream& out, const ToneMapper& mapper)
     for(uint x = 0; x < width; ++x)
     {
       const auto& c = final[index(x, y)];//.clamp(0, 1);
+      if (std::isnan(c.x))
+      {
+        cerr << x << ", " << y << ", " << c.x << std::endl;
+        const auto& p = plate[index(x, y)];
+        cerr << p.mean << ", " << p.ss << ", " << p.weight << std::endl;
+      }
+
       assert(c.x >= 0);
       assert(c.y >= 0);
       assert(c.z >= 0);
@@ -153,6 +146,32 @@ void Film::render_to_console(ostream& out) const
   }
 }
 
+Film Film::as_weights() const
+{
+  Film f(this->width, this->height);
+  transform(plate.begin(), plate.end(),
+            f.plate.begin(),
+            [] (const auto& pixel)
+            {
+              return AccPixel(spectrum{pixel.weight});
+            });
+
+  return f;
+}
+
+Film Film::as_pv() const
+{
+  Film f(this->width, this->height);
+  transform(plate.begin(), plate.end(),
+            f.plate.begin(),
+            [] (const auto& pixel)
+            {
+              return AccPixel(spectrum{pixel.perceptual_variance()});
+            });
+
+  return f;
+}
+
 void Film::clear()
 {
   fill(plate.begin(), plate.end(), AccPixel());
@@ -165,16 +184,66 @@ void BoxFilter::add_sample(Film& film, const PixelSample& p,
                            const spectrum& s, scalar w) const
 {
   Film::AccPixel& fp = film.at(p.x, p.y);
-  fp.total += s * w;
-  fp.weight += w;
+  fp.add_sample(s, w);
+}
+
+Film::AccPixel::AccPixel()
+  : weight(0), total(0.0), mean(0), ss(0), count(0)
+{
+
 }
 
 Film::AccPixel& Film::AccPixel::operator+=(const AccPixel& p)
 {
+  const scalar tw = weight + p.weight;
+
+  if (p.weight == 0)
+    return *this;
+
+  const scalar delta = (p.mean - mean);
+
+  mean +=  delta * p.weight / tw;
+  ss += p.ss + delta * delta * weight * p.weight / tw;
+  count += p.count;
   total += p.total;
-  weight += p.weight;
+  weight = tw;
+
   return *this;
 }
+
+void Film::AccPixel::add_sample(const spectrum& v, scalar w)
+{
+  if (unlikely(w == 0))
+    return;
+
+  total += v * w;
+  scalar tw = weight + w;
+
+  scalar c = v.luminance();
+  scalar d = c - mean;
+  scalar R = d * w / tw;
+  mean += R;
+  ss += weight * d * R;
+  count += 1;
+  weight = tw;
+}
+
+scalar Film::AccPixel::variance() const
+{
+  if (unlikely(weight <= 0))
+    return 0;
+
+  return (ss / weight);
+}
+
+scalar Film::AccPixel::perceptual_variance() const
+{
+  if (unlikely(weight <= 0))
+    return 0;
+
+  return (ss / weight) / tvi(mean);
+}
+
 Film::AccPixel Film::AccPixel::operator+(const AccPixel& p) const
 {
   AccPixel x(*this);

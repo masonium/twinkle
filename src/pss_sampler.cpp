@@ -19,7 +19,7 @@ PSS::PSSampler PSS::nth_sampler(int index, int t)
   return PSSampler(*this, index, t);
 }
 
-PSS::Sample PSS::finish_sample(const PixelSample& ps, const spectrum& value )
+PSS::Sample PSS::finish_sample(const PixelSample& ps, const spectrum& value)
 {
   scalar intensity = value.luminance();
   scalar accept_prob = old_intensity > 0 ? min<scalar>(1.0, intensity / old_intensity) : 1.0;

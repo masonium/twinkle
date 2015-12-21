@@ -4,7 +4,6 @@
 #include <memory>
 #include <sstream>
 
-
 #include "directlightingintegrator.h"
 #include "debugintegrator.h"
 #include "path_tracer.h"
@@ -73,6 +72,9 @@ auto parse_args(int argc, char**args)
   parser.add_option("--basic").action("store_const").dest("scene_container").set_const("basic");
 
   parser.add_option("-f", "--scene").action("store").dest("scene").set_default("assets/scripts/scene1.lua");
+
+  parser.add_option("--weights").action("store_true").set_default(false);
+  parser.add_option("--pv").action("store_true").set_default(false);
 
   parser.set_defaults("output_image", "true");
   parser.set_defaults("scene_container", "kd");
@@ -190,6 +192,16 @@ int main(int argc, char** args)
       cerr << "Render Time: " << format_duration(render_time) << endl;
     }
   }
+
+  if (options.get("weights").as<bool>())
+  {
+    f = f.as_weights();
+  }
+  else if (options.get("pv").as<bool>())
+  {
+    f = f.as_pv();
+  }
+
 
   shared_ptr<ToneMapper> mapper;
   string map_type = options.get("mapper");
