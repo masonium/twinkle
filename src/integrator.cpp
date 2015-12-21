@@ -152,15 +152,21 @@ void pssmlt_render(const RayIntegrator& igr, const Camera& cam, const Scene& sce
                    Film& film, Scheduler& scheduler, const PSSMLT::Options& opt,
                    uint total_spp)
 {
-  uint grid_spp = min(4u, total_spp);
+  float fgrid_spp = pow(total_spp, 1.0/2.5);
 
+  if (fgrid_spp < 4)
+  {
+    std::cerr << "Too few samples per pixel (" << fgrid_spp << ") for PSSSMLT. Running grid_render\n";
+    grid_render(igr, cam, scene, film, scheduler, std::max(2u, film.width / 32),
+                total_spp);
+    return;
+  }
+
+  int grid_spp = fgrid_spp;
   std::cerr << "Running Grid Render with SPP = " << grid_spp << "\n";
 
   grid_render(igr, cam, scene, film, scheduler,
               std::max(2u, film.width / 32), grid_spp);
-
-  if (grid_spp >= total_spp)
-    return;
 
   scalar ti = film.average_intensity();
 
