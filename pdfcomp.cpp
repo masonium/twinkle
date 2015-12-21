@@ -190,12 +190,12 @@ void compare_tld(const GTR& tld, uint num_samples)
 }
 
 
-scalar compute_rho_hd(shared_ptr<Material> mat, const Vec3& incoming, uint num_samples)
+scalar compute_rho_hd(const Material* mat, const Vec3& incoming, uint num_samples)
 {
   spectrum r;
 
   auto p = make_shared<Plane>(Vec3(0, 0, 1), 0.0);
-  Shape s(p.get(), mat.get());
+  Shape s(p.get(), mat);
   Ray ray(incoming, -incoming);
   UniformSampler sampler;
 
@@ -235,7 +235,7 @@ int main(int argc, char** args)
     scalar angle = deg * PI / 180.0;
     auto incoming = Vec3(sin(angle), 0.0, cos(angle)).normal();
 
-    cerr << setw(4) << deg << ": " << compute_rho_hd(mat, incoming, 1000000)
+    cerr << setw(4) << deg << ": " << compute_rho_hd(mat.get(), incoming, 1000000)
          << " "
          << fresnel_reflectance_schlick(incoming, Vec3::z_axis, AIR, CROWN_GLASS)
          << endl;
