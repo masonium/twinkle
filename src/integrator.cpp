@@ -101,7 +101,40 @@ void grid_render(const RectIntegrator& renderer, const Camera& cam, const Scene&
   scheduler.complete_pending();
 
   merge_thread_films(film);
+
+  int samples_spp = 4;
+  auto samples = film.samples_by_variance(samples_spp);
+
+  film.clear();
+  for (auto i = 0u, y = 0u; y < film.height; ++y)
+    for (auto x = 0u; x < film.width; ++x, ++i)
+    {
+      PixelSample ps(x, y, 0, 0, Ray(Vec3::zero, Vec3::z_axis));
+      film.add_sample(ps, spectrum{samples[i]/float(samples_spp)}, 1.0);
+    }
 }
+////////////////////////////////////////////////////////////////////////////////
+class PMCRenderTask : public LocalTask
+{
+public:
+  PMCRenderTask(const RayIntegrator& igr,
+                   const Camera& cam, const Scene& sc,
+                   const PMCGridOptions& opt)
+    : integrator(igr), camera(cam), scene(sc), options(opt)
+  {
+  }
+
+  void run(uint worker_id) override
+  {
+
+  }
+
+private:
+  const RayIntegrator& integrator;
+  const Camera& camera;
+  const Scene& scene;
+  PMCGridOptions options;
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 

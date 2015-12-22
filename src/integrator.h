@@ -46,6 +46,16 @@ public:
 void grid_render(const RectIntegrator& renderer, const Camera& cam, const Scene& scene,
                  Film& film, Scheduler& scheduler, uint subdiv, uint total_spp);
 
+struct PMCGridOptions
+{
+  int initial_spp;
+  int total_spp;
+  int follow_spp;
+};
+
+void pmc_render(const RayIntegrator&, const Camera& cam, const Scene& scene,
+                Film& film,  Scheduler& scheduler, const PMCGridOptions& opt);
+
 void pssmlt_render(const RayIntegrator&, const Camera& cam, const Scene& scene,
                    Film& film, Scheduler& scheduler, const PSSMLT::Options& opt,
                    uint total_spp);
