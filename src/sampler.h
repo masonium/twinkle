@@ -2,6 +2,7 @@
 
 #include "math_util.h"
 #include <random>
+#include <chrono>
 
 /*
  * Samplers return random numbers, with an amortized uniform distribution.
@@ -108,6 +109,22 @@ private:
   const int bases[5];
   const scalar inv_bases[5];
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// time seeds
+std::chrono::system_clock::duration::rep time_seed();
+
+////////////////////////////////////////////////////////////////////////////////
+// random-number generation using built-ins
+template <typename T>
+T random_real(scalar a, scalar b)
+{
+  return std::uniform_real_distribution<T>(a, b)( std::mt19937_64() );
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
 Vec3 cosine_weighted_hemisphere_sample(const Sample2D& sample);
 Vec3 cosine_weighted_hemisphere_sample(const Sample2D& sample, scalar& p);
 
@@ -120,3 +137,6 @@ class Vec2;
 
 Vec2 uniform_sample_disc(const Sample2D& sample);
 Vec2 uniform_sample_disc(const Sample2D& sample, scalar& p);
+
+using std::vector;
+vector<uint> multinomial_distribution(const vector<double>& p_org, uint64_t num_draws);

@@ -6,6 +6,8 @@
 #include <cassert>
 #include "util.h"
 #include "film.h"
+#include "sampler.h"
+#include "reinhard.h"
 
 using std::transform;
 using std::back_inserter;
@@ -170,6 +172,62 @@ Film Film::as_pv() const
             });
 
   return f;
+}
+
+vector<uint> Film::samples_by_variance(uint spp) const
+{
+  uint64_t total_samples = spp * width * height;
+
+  // FIX: This number should be dependent on spp.
+  const double epsilon = 0.001;
+
+  vector<double> weights(plate.size());
+
+  // The weights are proportional to the (tonemapped) perceptual variances, with
+  // a small epsilon to ensure a minimum number of samples for every pixel.
+  {
+    vector<spectrum> variances(plate.size());
+    transform(plate.begin(), plate.end(), variances.begin(),
+              [] (const auto& pixel) { return spectrum(pixel.perceptual_variance()); });
+
+    vector<spectrum> ov(plate.size());
+    //ReinhardGlobal().tonemap(variances, ov, width, height);
+    ov = variances;
+    
+    double tv = accumulate(ov.begin(), ov.end(), 0.0, 
+                           [](double v, const spectrum& s) { return v + s.x; });
+    cerr << "Total variance: " << tv << "\n";
+
+    transform(ov.begin(), ov.end(), weights.begin(),
+              [=] (const auto& v) { return epsilon + (1-epsilon) * v.x / tv; });
+
+    scalar tw = accumulate(weights.begin(), weights.end(), 0.0);
+
+    transform(weights.begin(), weights.end(), weights.begin(),
+              [=] (const auto& w) { return w / tw * total_samples; });
+  }
+
+  cerr << "Starting with " << total_samples << " samples.\n";
+
+  vector<uint> samples(plate.size(), 0);
+  int64_t remaining_samples = total_samples;
+  for (uint i = 0u; i < samples.size(); ++i)
+  {
+    scalar f = std::floor(weights[i]);
+    samples[i] = f;
+    remaining_samples -= samples[i];
+    weights[i] -= f;
+  }
+
+  cerr << "Now at " << remaining_samples << " samples.\n";
+
+  // Get the samples from the residual distribution
+  auto residual_samples = multinomial_distribution(weights, remaining_samples);
+
+  transform(samples.begin(), samples.end(), residual_samples.begin(), samples.begin(),
+            [](auto s, auto r) { return s + r; });
+
+  return samples;
 }
 
 void Film::clear()

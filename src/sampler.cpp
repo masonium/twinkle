@@ -3,6 +3,8 @@
 #include "vec2.h"
 #include "util.h"
 #include <cmath>
+#include <algorithm>
+#include <stack>
 
 using std::max;
 
@@ -202,3 +204,87 @@ Vec2 uniform_sample_disc(const Sample2D& sample, scalar& p)
   return Vec2(r * cos(theta), r * sin(theta));
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+std::chrono::system_clock::duration::rep time_seed()
+{
+  return std::chrono::system_clock::now().time_since_epoch().count();
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+// multinomial sampling via the alias method
+using std::vector;
+vector<uint> multinomial_distribution(const vector<double>& p_orig, uint64_t num_draws)
+{
+  using std::cerr;
+  using std::endl;
+  using std::ostream_iterator;
+
+  UniformSampler s;
+  s.seed(time_seed());
+
+  const auto n = p_orig.size();
+  vector<double> p(n);
+  const double tp = accumulate(p_orig.begin(), p_orig.end(), 0.0);
+
+  std::transform(p_orig.begin(), p_orig.end(), p.begin(),
+                 [=] (double x) { return x / tp * n; });
+
+  vector<int> alias(n);
+  vector<double> prob(n);
+
+  std::stack<uint> small, large;
+
+  // Construct the tables.
+  for (auto i = 0u; i < n; ++i)
+  {
+    if (p[i] < 1)
+      small.push(i);
+    else
+      large.push(i);
+  }
+
+  while (!large.empty() && !small.empty())
+  {
+    auto g = large.top(), l = small.top();
+    large.pop();
+    small.pop();
+    prob[l] = p[l];
+    alias[l] = g;
+    p[g] = (p[g] + p[l]) - 1.0;
+    if (p[g] < 1)
+      small.push(g);
+    else
+      large.push(g);
+  }
+  while (!large.empty())
+  {
+    prob[large.top()] = 1;
+    large.pop();
+  }
+  while (!small.empty())
+  {
+    prob[small.top()] = 1;
+    small.pop();
+  }
+
+  std::mt19937_64 eng;
+  std::uniform_int_distribution<decltype(n)> slot_dist(0, n-1);
+  std::uniform_real_distribution<double> alias_dist(0, 1.0);
+
+  vector<uint> draws(n);
+
+  // Execute the distribution;
+  for (auto i = 0u; i < num_draws; ++i)
+  {
+    int slot = slot_dist(eng);
+    if (alias_dist(eng) < prob[slot])
+      ++draws[slot];
+    else
+      ++draws[alias[slot]];
+  }
+
+  return draws;
+}

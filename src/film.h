@@ -84,6 +84,8 @@ public:
     scalar variance() const;
     scalar perceptual_variance() const;
 
+    spectrum value() const { return total / weight; }
+
     scalar weight;
     spectrum total;
     scalar mean;
@@ -95,6 +97,8 @@ public:
   Film(istream& in);
 
   Film(const Film& f);
+
+  vector<uint> samples_by_variance(uint spp) const;
 
   Film as_weights() const;
   Film as_pv() const;
