@@ -174,7 +174,7 @@ Film Film::as_pv() const
   return f;
 }
 
-vector<uint> Film::samples_by_variance(uint spp) const
+Array2D<uint> Film::samples_by_variance(uint spp) const
 {
   uint64_t total_samples = spp * width * height;
 
@@ -227,7 +227,7 @@ vector<uint> Film::samples_by_variance(uint spp) const
   transform(samples.begin(), samples.end(), residual_samples.begin(), samples.begin(),
             [](auto s, auto r) { return s + r; });
 
-  return samples;
+  return Array2D<uint>(width, height, samples);
 }
 
 void Film::clear()

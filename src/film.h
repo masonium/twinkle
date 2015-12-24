@@ -8,6 +8,7 @@
 #include "spectrum.h"
 #include "ray.h"
 #include "tonemap.h"
+#include "util/array.h"
 
 using std::atomic;
 using std::vector;
@@ -98,7 +99,7 @@ public:
 
   Film(const Film& f);
 
-  vector<uint> samples_by_variance(uint spp) const;
+  Array2D<uint> samples_by_variance(uint spp) const;
 
   Film as_weights() const;
   Film as_pv() const;

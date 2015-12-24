@@ -38,7 +38,10 @@ vector<Film::Rect> subtasks_from_grid(uint width, uint height, uint num_threads)
 {
   grid_subtask_options opt;
 
-  opt.grid_subdivision = 2;
+  if (num_threads == 1)
+    opt.grid_subdivision = 1;
+  else
+    opt.grid_subdivision = max<uint>(2, min(width, height) / 32);
 
   return subtasks_from_grid(width, height, opt);
 }

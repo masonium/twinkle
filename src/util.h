@@ -28,6 +28,26 @@ private:
   T i;
 };
 
+/*
+ */
+template <typename T>
+class Identity
+{
+public:
+  Identity(const T& t) : val(t)
+  {
+  }
+
+  template <typename... Args>
+  T operator() (Args&&... args) const
+  {
+    return val;
+  }
+
+private:
+  T val;
+};
+
 template <class T>
 inline void hash_combine(std::size_t& seed, const T& v)
 {

@@ -43,14 +43,14 @@ public:
 };
 
 
-void grid_render(const RectIntegrator& renderer, const Camera& cam, const Scene& scene,
-                 Film& film, Scheduler& scheduler, uint subdiv, uint total_spp);
+void grid_render(const RayIntegrator& renderer, const Camera& cam, const Scene& scene,
+                 Film& film, Scheduler& scheduler, uint total_spp);
 
 struct PMCGridOptions
 {
-  int initial_spp;
-  int total_spp;
-  int follow_spp;
+  uint initial_spp;
+  uint follow_spp;
+  uint num_iterations;
 };
 
 void pmc_render(const RayIntegrator&, const Camera& cam, const Scene& scene,

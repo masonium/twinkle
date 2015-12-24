@@ -168,7 +168,7 @@ int main(int argc, char** args)
       {
         Film f(WIDTH, HEIGHT);
         Timer tm;
-        grid_render(*igr, *cam, *scene, f, *scheduler, 4, per_pixel);
+        grid_render(*igr, *cam, *scene, f, *scheduler, per_pixel);
         if (i >= toss)
           stats.update(tm.since());
       }
@@ -186,7 +186,7 @@ int main(int argc, char** args)
       if (use_pssmlt)
         pssmlt_render(*igr, *cam, *scene, f, *scheduler, opt, per_pixel);
       else
-        grid_render(*igr, *cam, *scene, f, *scheduler, 4, per_pixel);
+        grid_render(*igr, *cam, *scene, f, *scheduler, per_pixel);
 
       render_time = tm.since();
       cerr << "Render Time: " << format_duration(render_time) << endl;

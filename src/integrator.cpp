@@ -52,48 +52,64 @@ public:
   const Film::Rect rect;
 };
 
-template <class T>
-class GridRenderTask : public LocalTask
+////////////////////////////////////////////////////////////////////////////////
+template <typename Counter>
+class RayRenderTask : public LocalTask
 {
 public:
-  GridRenderTask(const T& owner_, const RenderInfo& ri_,
-                 const Film::Rect& rect_, uint spp_)
-    : owner(owner_), ri(ri_), rect(rect_), spp(spp_)
+  RayRenderTask(const RayIntegrator& _ri, const RenderInfo& _rinfo,
+                const Film::Rect& _rect, const Counter& _samples)
+    : igr(_ri), rinfo(_rinfo), rect(_rect), samples(_samples)
   {
   }
 
-
-  void run(uint UNUSED(worker_id)) override
+  void run(uint worker_id) override
   {
-    owner.render_rect(ri.camera, ri.scene, rect, spp);
+    UniformSampler sampler;
+    sampler.seed(time_worker_seed(worker_id));
+    auto& film = get_thread_film();
+
+    for (auto y = rect.y; y < rect.y + rect.height; ++y)
+    {
+      for (auto x = rect.x; x < rect.x + rect.width; ++x)
+      {
+        auto num_samples = samples(x, y);
+        for (auto d = 0u; d < num_samples; ++d)
+        {
+          auto ps = rinfo.camera.sample_pixel(rinfo.rect.width, rinfo.rect.height, x, y, sampler);
+          auto s = igr.trace_ray(rinfo.scene, ps.ray, sampler);
+          film.add_sample(ps, s, 1.0);
+        }
+      }
+    }
   }
 
 private:
-  const T& owner;
-  const RenderInfo& ri;
-  Film::Rect rect;
-  uint spp;
+  const RayIntegrator& igr;
+  const RenderInfo& rinfo;
+  const Film::Rect rect;
+  const Counter& samples;
 };
 
-void grid_render(const RectIntegrator& renderer, const Camera& cam, const Scene& scene,
-                 Film& film, Scheduler& scheduler, uint subdiv, uint total_spp)
+template <typename Counter>
+void grid_render_by_counter(const RayIntegrator& renderer, const Camera& cam,
+                            const Scene& scene, Film& film, Scheduler& scheduler,
+                            const Counter& counter)
 {
   using std::for_each;
   using std::transform;
 
   RenderInfo ri{cam, scene, film.rect()};
 
-  grid_subtask_options opt;
-  opt.grid_subdivision = subdiv;
-  auto subrects = subtasks_from_grid(film.width, film.height, opt);
+  auto subrects = subtasks_from_grid(film.width, film.height, scheduler.concurrency());
 
-  using RT = GridRenderTask<RectIntegrator>;
+  using RT = RayRenderTask<Counter>;
   vector<shared_ptr<RT>> render_tasks;
   render_tasks.resize(subrects.size());
 
   transform(subrects.begin(), subrects.end(), render_tasks.begin(),
             [&](auto& rect) { return make_shared<RT>(renderer, ri,
-                                                     rect, total_spp); });
+                                                     rect, counter); });
 
   for_each(render_tasks.begin(), render_tasks.end(),
            [&](auto& task) { scheduler.add_task(task); });
@@ -101,40 +117,33 @@ void grid_render(const RectIntegrator& renderer, const Camera& cam, const Scene&
   scheduler.complete_pending();
 
   merge_thread_films(film);
-
-  int samples_spp = 4;
-  auto samples = film.samples_by_variance(samples_spp);
-
-  film.clear();
-  for (auto i = 0u, y = 0u; y < film.height; ++y)
-    for (auto x = 0u; x < film.width; ++x, ++i)
-    {
-      PixelSample ps(x, y, 0, 0, Ray(Vec3::zero, Vec3::z_axis));
-      film.add_sample(ps, spectrum{samples[i]/float(samples_spp)}, 1.0);
-    }
 }
-////////////////////////////////////////////////////////////////////////////////
-class PMCRenderTask : public LocalTask
+
+void grid_render(const RayIntegrator& renderer, const Camera& cam,
+                 const Scene& scene, Film& film, Scheduler& scheduler,
+                 uint total_spp)
 {
-public:
-  PMCRenderTask(const RayIntegrator& igr,
-                   const Camera& cam, const Scene& sc,
-                   const PMCGridOptions& opt)
-    : integrator(igr), camera(cam), scene(sc), options(opt)
+  grid_render_by_counter(renderer, cam, scene, film, scheduler, Identity<uint>(total_spp));
+}
+
+void pmc_render_iteration(const RayIntegrator& igr, const Camera& cam, const Scene& scene,
+                          Film& film, Scheduler& scheduler, const Array2D<uint>& samples)
+{
+  film.clear();
+  grid_render_by_counter(igr, cam, scene, film, scheduler, samples);
+}
+
+void pmc_render(const RayIntegrator& igr, const Camera& cam, const Scene& scene,
+                Film& film,  Scheduler& scheduler, const PMCGridOptions& opt)
+{
+  grid_render(igr, cam, scene, film, scheduler, opt.initial_spp);
+
+  for (auto i = 0u; i < opt.num_iterations; ++i)
   {
+    auto samples = film.samples_by_variance(opt.follow_spp);
+    pmc_render_iteration(igr, cam, scene, film, scheduler, samples);
   }
-
-  void run(uint worker_id) override
-  {
-
-  }
-
-private:
-  const RayIntegrator& integrator;
-  const Camera& camera;
-  const Scene& scene;
-  PMCGridOptions options;
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -190,16 +199,14 @@ void pssmlt_render(const RayIntegrator& igr, const Camera& cam, const Scene& sce
   if (fgrid_spp < 4)
   {
     std::cerr << "Too few samples per pixel (" << fgrid_spp << ") for PSSSMLT. Running grid_render\n";
-    grid_render(igr, cam, scene, film, scheduler, std::max(2u, film.width / 32),
-                total_spp);
+    grid_render(igr, cam, scene, film, scheduler, total_spp);
     return;
   }
 
   int grid_spp = fgrid_spp;
   std::cerr << "Running Grid Render with SPP = " << grid_spp << "\n";
 
-  grid_render(igr, cam, scene, film, scheduler,
-              std::max(2u, film.width / 32), grid_spp);
+  grid_render(igr, cam, scene, film, scheduler, grid_spp);
 
   scalar ti = film.average_intensity();
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "math_util.h"
 #include <random>
 #include <chrono>
+#include "math_util.h"
 
 /*
  * Samplers return random numbers, with an amortized uniform distribution.
