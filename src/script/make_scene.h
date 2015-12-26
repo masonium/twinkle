@@ -14,5 +14,6 @@ namespace script
   {
     int point(lua_State* L);
     int directional(lua_State* L);
+    int environment(lua_State* L);
   }
 }

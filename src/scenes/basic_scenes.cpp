@@ -69,10 +69,6 @@ Camera* lua_scene(Scene& scene, const string& filename)
 
   auto camera = script::lua_tocamera(L, -1);
   
-  auto env_light = make_entity<EnvironmentLight>(make_shared<SolidColor>(spectrum{2.0}));
-
-  scene.add(env_light.get());
-  
   return camera;
 }
 

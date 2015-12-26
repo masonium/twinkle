@@ -2,6 +2,7 @@
 #include "make_scene.h"
 #include "vec3.h"
 #include "light.h"
+#include "env_light.h"
 #include "camera.h"
 #include "script/script_util.h"
 
@@ -65,5 +66,18 @@ namespace script
 
       return script_light(L, light);
     }
+
+    int environment(lua_State* L)
+    {
+      LUA_CHECK_NUM_ARGS(L, 1);
+
+      auto tex = lua_totexture(L, 1);
+      auto tex2d = reinterpret_cast<const Texture2D*>(tex);
+      assert(tex2d);
+      auto light = make_shared<EnvironmentLight>(tex2d);
+
+      return script_light(L, light);
+    }
+
   }
 }

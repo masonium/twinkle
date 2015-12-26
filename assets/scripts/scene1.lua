@@ -49,7 +49,8 @@ function scene ()
 
    local shapes = {
       shape(m, material.diffuse(texture.color({0.2, 0.2, 0.8}))),
-      shape(pl, material.diffuse( texture.grid({0.7}, {0.1}, 1.0, 0.05))),
+      -- shape(m, material.dielectric()),
+      shape(pl, material.diffuse(texture.grid({0.7}, {0.1}, 1.0, 0.05))),
       --shape(pl, material.diffuse( texture.image("assets/images/whitemarble.jpg")))
       -- shape(geom.plane({1.0, 0.0, 1.0}, math.sqrt(2)),
       --                 material.color({0.5, 0.5, 0.5}))
@@ -58,7 +59,8 @@ function scene ()
    local lights = {
       light.point({0.0, 3.0, 3.0}, {1.0}),
       light.point({0.0, 2.9, -3.1}, {1.0}),
-      light.point({3.0, 2.8, -3.4}, {1.0})
+      light.point({3.0, 2.8, -3.4}, {1.0}),
+      light.environment(texture.color({2.0}))
    }
 
    local camera = camera.perspective({1.5, 1.5, 1.5}, {0.75, 0.3, 0.75}, {0.0, 1.0, 0.0}, math.pi / 2.0)

@@ -10,6 +10,11 @@ spectrum EnvironmentLight::emission(const Vec3& dir) const
 
   return texture->at_coord(Vec2(theta / (2*PI), phi / M_PI));
 }
+EnvironmentLight::EnvironmentLight(const Texture2D* tex) :
+  texture(tex)
+{
+  assert(tex != nullptr);
+}
 
 LightSample EnvironmentLight::sample_emission(const Intersection& isect, Sampler& sampler) const
 {

@@ -4,7 +4,6 @@ function scene()
    local m = material.dielectric()
 
    local shapes = {
---      shape(q1, m),
       shape(geom.translate(q1, {2.5, 0.0, 0.0}),
 		 material.glossy_paint(texture.color({0.1, 0.2, 0.6}))),
       shape(geom.translate(q1, {2.5, 2.5, 0.0}), material.mirror()),
@@ -12,7 +11,9 @@ function scene()
       shape(geom.plane({0, 1, 0}, 0), material.diffuse(texture.grid({0.8}, {0.3}, 0.25, 0.05)))
    }
 
-   local lights = { light.point({0, 2, 5}, {2.0}) }
+   local lights = { light.point({0, 2, 5}, {2.0}),
+		    light.environment(texture.color({0.1}))
+   }
 
    local pos = {4.0, 1.5, 4.3}
    local camera = camera.perspective(pos, {0.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, math.pi/2)

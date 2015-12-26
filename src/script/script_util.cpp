@@ -203,6 +203,7 @@ namespace script
 
     luaL_Reg light_package[] = {{"point", light::point},
                                 {"directional", light::directional},
+                                {"environment", light::environment},
                                 {NULL, NULL}};
     luaL_register(L, "light", light_package);
 

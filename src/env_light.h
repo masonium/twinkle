@@ -11,11 +11,11 @@ using std::shared_ptr;
 class EnvironmentLight : public Light
 {
 public:
-  EnvironmentLight(shared_ptr<const Texture2D> tex) : texture(tex) { }
+  EnvironmentLight(const Texture2D* tex);
 
   spectrum emission(const Vec3& dir) const;
 
   LightSample sample_emission(const Intersection&, Sampler&) const override;
 
-  shared_ptr<const Texture2D> texture;
+  const Texture2D* texture;
 };
