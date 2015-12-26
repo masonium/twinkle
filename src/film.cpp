@@ -100,9 +100,9 @@ void Film::render_to_ppm(ostream& out, const ToneMapper& mapper)
     for(uint x = 0; x < width; ++x)
     {
       const auto& c = final[index(x, y)];//.clamp(0, 1);
-      if (std::isnan(c.x))
+      if (std::isnan(c.x) || c.x < 0 || c.y < 0 || c.z < 0)
       {
-        cerr << x << ", " << y << ", " << c.x << std::endl;
+        cerr << x << ", " << y << ", " << c << std::endl;
         const auto& p = plate[index(x, y)];
         cerr << p.mean << ", " << p.ss << ", " << p.weight << std::endl;
       }
@@ -196,7 +196,7 @@ Array2D<uint> Film::samples_by_variance(uint spp) const
     
     double tv = accumulate(ov.begin(), ov.end(), 0.0, 
                            [](double v, const spectrum& s) { return v + s.x; });
-    cerr << "Total variance: " << tv << "\n";
+    //cerr << "Average variance: " << tv / (width * height) << "\n";
 
     transform(ov.begin(), ov.end(), weights.begin(),
               [=] (const auto& v) { return epsilon + (1-epsilon) * v.x / tv; });
@@ -207,8 +207,6 @@ Array2D<uint> Film::samples_by_variance(uint spp) const
               [=] (const auto& w) { return w / tw * total_samples; });
   }
 
-  cerr << "Starting with " << total_samples << " samples.\n";
-
   vector<uint> samples(plate.size(), 0);
   int64_t remaining_samples = total_samples;
   for (uint i = 0u; i < samples.size(); ++i)
@@ -218,8 +216,6 @@ Array2D<uint> Film::samples_by_variance(uint spp) const
     remaining_samples -= samples[i];
     weights[i] -= f;
   }
-
-  cerr << "Now at " << remaining_samples << " samples.\n";
 
   // Get the samples from the residual distribution
   auto residual_samples = multinomial_distribution(weights, remaining_samples);
@@ -277,13 +273,21 @@ void Film::AccPixel::add_sample(const spectrum& v, scalar w)
   total += v * w;
   scalar tw = weight + w;
 
-  scalar c = v.luminance();
-  scalar d = c - mean;
-  scalar R = d * w / tw;
+  const scalar c = v.luminance();
+  const scalar d = c - mean;
+  const scalar R = d * w / tw;
   mean += R;
   ss += weight * d * R;
   count += 1;
   weight = tw;
+  
+  if (isnan(mean))
+  {
+    cerr << w << " " << c << " " << d << " " << tw << " " << R << "\n";
+  }
+
+  assert(!isnan(mean));
+//  assert(!isnan(ss));
 }
 
 scalar Film::AccPixel::variance() const
