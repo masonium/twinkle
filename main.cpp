@@ -67,6 +67,7 @@ auto parse_args(int argc, char**args)
   parser.add_option("-d", "--debug_type").action("store").choices(debug_map_keys).set_default("normal");
   parser.add_option("-i", "--integrator").action("store").choices(std::vector<string>({"path", "direct", "debug"})).set_default("path");
   parser.add_option("--pss").action("store_true").type("bool").dest("pssmlt").set_default(false);
+  parser.add_option("--pmc").action("store_true").type("bool").dest("pmc").set_default(false);
   parser.add_option("-m", "--mapper").action("store").choices(std::vector<string>({"linear", "cutoff", "rh_global"})).set_default("linear");
   parser.add_option("--kd").action("store_const").dest("scene_container").set_const("kd");
   parser.add_option("--basic").action("store_const").dest("scene_container").set_const("basic");
@@ -179,12 +180,31 @@ int main(int argc, char** args)
     else
     {
       Timer tm;
-      PSSMLT::Options opt;
-      opt.large_step_prob = 0.25;
 
       bool use_pssmlt = options.get("pssmlt").as<bool>();
+      bool use_pmc = options.get("pmc").as<bool>(); 
       if (use_pssmlt)
+      {
+        PSSMLT::Options opt;
+        opt.large_step_prob = 0.25;
         pssmlt_render(*igr, *cam, *scene, f, *scheduler, opt, per_pixel);
+      }
+      else if (use_pmc)
+      {
+        PMCGridOptions pmc_opt;
+        if (per_pixel <= 4)
+        {
+          pmc_opt.initial_spp = per_pixel;
+          pmc_opt.num_iterations = 0;
+        }
+        else
+        {
+          pmc_opt.initial_spp = 4;
+          pmc_opt.follow_spp = 4;
+          pmc_opt.num_iterations = (per_pixel - pmc_opt.initial_spp) / pmc_opt.follow_spp;
+        }
+        pmc_render(*igr, *cam, *scene, f, *scheduler, pmc_opt);
+      }
       else
         grid_render(*igr, *cam, *scene, f, *scheduler, per_pixel);
 
