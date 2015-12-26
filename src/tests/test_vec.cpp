@@ -1,5 +1,6 @@
 #include "test_util.h"
 #include "math_util.h"
+#include "vec2.h"
 
 namespace
 {
@@ -111,6 +112,23 @@ namespace
         x.to_euler(t2, p2);
         CHECK_CLOSE(theta, t2, EPS);
         CHECK_CLOSE(phi, p2, EPS);
+      }
+    }
+
+    TEST(Vec_from_to_euler_uv)
+    {
+      for (int i = 0; i < 20; ++i)
+      {
+        auto v = random_normal();
+        CHECK_VEC(from_euler_uv(to_euler_uv(v)), v);
+      }
+    }
+    TEST(Vec_to_from_euler_uv)
+    {
+      for (int i = 0; i < 20; ++i)
+      {
+        auto uv = Vec2(rf(), rf());
+        CHECK_VEC2(to_euler_uv(from_euler_uv(uv)), uv);
       }
     }
   }

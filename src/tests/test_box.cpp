@@ -1,5 +1,6 @@
 #include "test_util.h"
 #include "bounds.h"
+#include "geometry/box.h"
 
 namespace
 {
@@ -24,6 +25,19 @@ namespace
     scalar t0, t1;
     bool isect = box.intersect(r, t0, t1);
     CHECK(!isect);
+  }
+
+  TEST(box_normal)
+  {
+    Box b(bounds::AABB(Vec3(0.0), Vec3(1.0)));
+
+    CHECK_VEC(b.normal(0, Vec3{0.0, 0.3, 0.5}), -Vec3::x_axis);
+    CHECK_VEC(b.normal(0, Vec3{0.3, 0.0, 0.5}), -Vec3::y_axis);
+    CHECK_VEC(b.normal(0, Vec3{0.3, 0.5, 0.0}), -Vec3::z_axis);
+
+    CHECK_VEC(b.normal(0, Vec3{1.0, 0.3, 0.5}), Vec3::x_axis);
+    CHECK_VEC(b.normal(0, Vec3{0.3, 1.0, 0.5}), Vec3::y_axis);
+    CHECK_VEC(b.normal(0, Vec3{0.3, 0.5, 1.0}), Vec3::z_axis);
   }
 
   TEST(box_middle)
