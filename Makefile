@@ -36,7 +36,7 @@ endif
 
 NOTESTFLAGS := -fno-exceptions -fno-rtti
 SFLAGS = -fsyntax-only $(CXXFLAGS)
-LFLAGS := -lUnitTest++ -L$(LIBDIR) -ltwinkle -lcpp-optparse
+LFLAGS := -lUnitTest++ -L$(LIBDIR) -ltwinkle -lcpp-optparse -lhosekwilkie
 
 ifeq (${LUA}, 0)
 CXXFLAGS += -DFEATURE_LUA_SCRIPTING=${LUA}
@@ -75,11 +75,12 @@ TEST_OBJS := $(TEST_SRCS:.cpp=.o)
 TEST_OBJS := $(TEST_OBJS:src/%=$(OBJDIR)/%)
 
 CPPPARSE_OBJS := $(OBJDIR)/cpp-optparse/OptionParser.o
+HOSEKWILKIE_OBJS := $(OBJDIR)/hosekwilkie/ArHosekSkyModel.o
 
 EXE_NAMES = twinkle test_twinkle tonemap model_check texture_check material_check pdfcomp
 EXES = $(addprefix $(BINDIR)/,$(EXE_NAMES))
 
-STATIC_LIBS = $(LIBDIR)/libtwinkle.a $(LIBDIR)/libcpp-optparse.a
+STATIC_LIBS = $(LIBDIR)/libtwinkle.a $(LIBDIR)/libcpp-optparse.a $(LIBDIR)/libhosekwilkie.a
 
 all: $(EXES)
 
@@ -104,6 +105,10 @@ DEPS := $(TWINKLE_OBJS:.o=.dep)
 VPATH = .:src:src/shapes:src/textures:src/tests:src/geometry:src/materials
 
 $(LIBDIR)/libcpp-optparse.a: $(CPPPARSE_OBJS)
+	@mkdir -p $(dir $@)
+	ar rcs $@ $^
+
+$(LIBDIR)/libhosekwilkie.a: $(HOSEKWILKIE_OBJS)
 	@mkdir -p $(dir $@)
 	ar rcs $@ $^
 
