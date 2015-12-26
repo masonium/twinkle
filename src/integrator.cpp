@@ -129,7 +129,6 @@ void grid_render(const RayIntegrator& renderer, const Camera& cam,
 void pmc_render_iteration(const RayIntegrator& igr, const Camera& cam, const Scene& scene,
                           Film& film, Scheduler& scheduler, const Array2D<uint>& samples)
 {
-  film.clear();
   grid_render_by_counter(igr, cam, scene, film, scheduler, samples);
 }
 
@@ -141,6 +140,7 @@ void pmc_render(const RayIntegrator& igr, const Camera& cam, const Scene& scene,
   for (auto i = 0u; i < opt.num_iterations; ++i)
   {
     auto samples = film.samples_by_variance(opt.follow_spp);
+    film.clear();
     pmc_render_iteration(igr, cam, scene, film, scheduler, samples);
   }
 }

@@ -117,6 +117,26 @@ public:
     return static_cast<vec_type>(x /= a); 
   }
 
+  bool operator>=(scalar a) const
+  {
+    return x >= a && y >= a && z >= a;
+  }
+
+  bool operator>(scalar a) const
+  {
+    return x > a && y > a && z > a;
+  }
+
+  bool operator<=(scalar a) const
+  {
+    return x <= a && y <= a && z <= a;
+  }
+
+  bool operator<(scalar a) const
+  {
+    return x < a && y < a && z < a;
+  }
+
   bool operator==(const vec_type& other) const
   {
     return (x == other.x) && (y == other.y) && (z == other.z);
@@ -126,6 +146,11 @@ public:
   {
     return x != SCALAR_MAX && x != SCALAR_MIN && y != SCALAR_MAX &&
       y != SCALAR_MIN && z != SCALAR_MAX && z != SCALAR_MIN;
+  }
+
+  bool isnan() const
+  {
+    return std::isnan(x) || std::isnan(y) || std::isnan(z);
   }
 
   scalar dot(const vec_type& other) const

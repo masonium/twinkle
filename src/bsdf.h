@@ -14,15 +14,6 @@ public:
                       scalar& p, scalar& reflectance) const = 0;
   
   virtual scalar pdf(const Vec3& incoming, const Vec3& outgoing) const = 0;
-  
-  virtual bool is_emissive() const
-  {
-    return false;
-  }
-  virtual scalar emission() const
-  {
-    return 0;
-  }
 
   virtual ~BRDF() { }
 };
@@ -75,8 +66,14 @@ public:
   Vec3 sample(const Vec3& incoming, Sampler& s,
               scalar& p, scalar& reflectance) const override
   {
+    if (incoming.z <= 0)
+    {
+      p = 0.0;
+      reflectance = 0;
+      return Vec3::zero;
+    }
+
     p = 1.0;
-    
     reflectance = 1.0 / incoming.z;
     
     return incoming.reflect_over(Vec3::z_axis);
@@ -86,7 +83,6 @@ public:
   {
     return 0.0f;
   }
-
 };
 
 namespace refraction_index

@@ -55,7 +55,7 @@ spectrum PathTracerIntegrator::_trace_ray(const Scene& scene, const Ray& ray,
   if (light_prob > 0)
   {
     LightSample ls = light->sample_emission(isect, sampler);
-    if (ls)
+    if (ls && ls.p() > 0)
     {
       if (!ls.is_occluded(scene))
       {
