@@ -10,16 +10,32 @@ class Array2D
 public:
   using value_type = T;
 
-  Array2D(uint w, uint h) : _w(w), _data(w*h)
+  Array2D(size_t w, size_t h) : _w(w), _data(w*h)
   {
   }
 
   template <typename container_type>
-  Array2D(uint w, uint h, container_type&& data) :
+  Array2D(size_t w, size_t h, container_type&& data) :
     _w(w), _data(data)
   {
     assert(_data.size() == w * h);
   }
+
+  size_t width() const
+  {
+    return _w;
+  }
+
+  size_t height() const
+  {
+    return _data.size() / _w;
+  }
+
+  auto begin() { return _data.begin(); }
+  auto end() { return _data.end(); }
+
+  auto begin() const { return _data.begin(); }
+  auto end() const { return _data.end(); }
 
   T& operator()(int i, int j)
   {
