@@ -16,6 +16,7 @@ const scalar PId2 = PI / 2.0;
 #define SCALAR_EPSILON 0.00001
 
 class Vec3;
+class Vec2;
 class Ray;
 
 scalar approx_gt(scalar x, scalar y);
@@ -70,6 +71,9 @@ T lerp(const T& a, const T& b, scalar x)
 {
   return a + (b-a) * x;
 }
+
+Vec2 to_euler_uv(const Vec3& dir);
+Vec3 from_euler_uv(const Vec2& dir);
 
 /**
  * Maps from [0, 1] to [0,1], using a third-order polynomial (First derivative

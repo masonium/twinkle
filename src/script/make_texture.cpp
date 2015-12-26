@@ -65,5 +65,14 @@ namespace script
 
       return script_texture(L, make_shared<ImageTexture2D>(filename));
     }
+
+    int hoseksky(lua_State* L)
+    {
+      LUA_CHECK_NUM_ARGS(L, 2);
+      auto sun_dir = lua_tovector(L, 1);
+      auto turbidity = lua_tonumber(L, 2);
+
+      return script_texture(L, make_shared<HosekSkyTexture>(sun_dir, turbidity, false));
+    }
   }
 }

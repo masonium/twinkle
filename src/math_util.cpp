@@ -1,10 +1,12 @@
 #include "math_util.h"
 #include "vec3.h"
+#include "vec2.h"
 #include "mat33.h"
 #include "ray.h"
 #include <vector>
 #include <cassert>
 #include <algorithm>
+#include <cmath>
 
 using std::transform;
 using std::vector;
@@ -25,6 +27,19 @@ scalar qf(scalar a, scalar b, scalar c)
   if (small > 0)
     return small / (2.0 * a);
   return (-b + sd) / (2.0 * a);
+}
+
+Vec2 to_euler_uv(const Vec3& dir)
+{
+  scalar theta, phi;
+  std::tie(theta, phi) = dir.to_euler();
+
+  return Vec2(theta / (2*PI), phi / M_PI);
+}
+
+Vec3 from_euler_uv(const Vec2& uv)
+{
+  return Vec3::from_euler(uv.u * 2 * M_PI, uv.v * M_PI);
 }
 
 scalar clamp(scalar x, scalar m, scalar M)

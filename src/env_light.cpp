@@ -5,10 +5,7 @@ using std::tie;
 
 spectrum EnvironmentLight::emission(const Vec3& dir) const
 {
-  scalar theta, phi;
-  tie(theta, phi) = dir.to_euler();
-
-  return texture->at_coord(Vec2(theta / (2*PI), phi / M_PI));
+  return texture->at_coord(to_euler_uv(dir));
 }
 EnvironmentLight::EnvironmentLight(const Texture2D* tex) :
   texture(tex)

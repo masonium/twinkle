@@ -12,5 +12,6 @@ namespace script
     int gradient(lua_State* L);
     int image(lua_State* L);
     int normal(lua_State* L);
+    int hoseksky(lua_State* L);
   }
 }

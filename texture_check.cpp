@@ -4,6 +4,7 @@
 #include "tonemap.h"
 #include "reinhard.h"
 #include "textures/skytexture.h"
+#include "textures/hosekskytexture.h"
 #include "cpp-optparse/OptionParser.h"
 #include <random>
 
@@ -42,14 +43,16 @@ int main(int argc, char** args)
   parser.usage("generate textures");
   parser.version("0.0.0");
 
-  vector<string> texture_choices({"noise", "sky"});
-  vector<string> mapper_choices({"linear", "rh_local"});
+  vector<string> texture_choices({"noise", "sky", "hoseksky"});
+  vector<string> mapper_choices({"linear", "rh_global", "rh_local"});
 
   parser.add_option("-w", "--width").action("store").type("int").set_default("400");
   parser.add_option("-h", "--height").action("store").type("int").set_default("300");
   parser.add_option("--type").action("store").choices(texture_choices).set_default("noise");
   parser.add_option("--mapper").action("store").choices(mapper_choices).set_default("linear");
   parser.add_option("-a", "--angle").action("store").type("float").set_default("0");
+  parser.add_option("-t", "--turbidity").action("store").type("float").set_default("7.0")
+    .help("turbidity of the sky models");
 
   auto& options = parser.parse_args(argc, args);
 
@@ -66,9 +69,15 @@ int main(int argc, char** args)
     cerr << "making noise";
     tex = make_unique<NoiseTexture>();
   }
-  else
+  else if (tex_type == "sky")
   {
-    tex = make_unique<ShirleySkyTexture>(Vec3::from_euler(3*PI/4, angle * PI / 180), 8);
+    double turbidity = options.get("turbidity").as<double>();
+    tex = make_unique<ShirleySkyTexture>(Vec3::from_euler(3*PI/4, angle * PI / 180), turbidity);
+  }
+  else // if (tex_type == "hoseksky")
+  {
+    double turbidity = options.get("turbidity").as<double>();
+    tex = make_unique<HosekSkyTexture>(Vec3::from_euler(3*PI/4, angle * PI / 180), turbidity, false);
   }
 
   Ray r(Vec3::zero, Vec3::zero);
@@ -83,6 +92,9 @@ int main(int argc, char** args)
       auto uv = Vec2(x / sw, (y / sh));
 
       auto s = tex->at_coord(uv);
+      if (s.isnan())
+        cerr << x << ", " << y << ": " << s << "\n" << std::flush;
+      assert(!s.isnan());
       f.add_sample(PixelSample(x, y, 0.5, 0.5, r), s);
 
       scalar p = s.luminance();
@@ -97,6 +109,8 @@ int main(int argc, char** args)
   shared_ptr<ToneMapper> mapper;
   if (options.get("mapper") == "linear")
     mapper = make_shared<LinearToneMapper>();
+  else if (options.get("mapper") == "rh_global")
+    mapper = make_shared<ReinhardGlobal>();
   else
     mapper = make_shared<ReinhardLocal>(ReinhardLocal::Options());
   f.render_to_ppm(cout, *mapper);

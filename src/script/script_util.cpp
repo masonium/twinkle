@@ -213,6 +213,7 @@ namespace script
                                   {"gradient", texture::gradient},
                                   {"image", texture::image},
                                   {"normal", texture::normal},
+                                  {"hoseksky", texture::hoseksky},
                                   {NULL, NULL}};
     luaL_register(L, "texture", texture_package);
 
