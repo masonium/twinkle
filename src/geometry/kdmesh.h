@@ -13,6 +13,8 @@ public:
 
   bounds::AABB get_bounding_box() const override;
 
+  virtual string to_string() const override { return "KDMesh"; }
+
   virtual ~KDMesh() {}
 
   KDMesh(const KDMesh&) = delete;

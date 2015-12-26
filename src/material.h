@@ -79,6 +79,8 @@ public:
                    scalar& p, spectrum& reflectance) const override;
 
   scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
+
+  virtual string to_string() const override { return "Mirror"; }
 private:
   PerfectMirrorBRDF brdf;
 };
