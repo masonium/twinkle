@@ -66,7 +66,13 @@ auto parse_args(int argc, char**args)
   parser.add_option("-q", "--no_image").action("store_false").dest("output_image");
   parser.add_option("-d", "--debug_type").action("store").choices(debug_map_keys).set_default("normal");
   parser.add_option("-i", "--integrator").action("store").choices(std::vector<string>({"path", "direct", "debug"})).set_default("path");
-  parser.add_option("--pss").action("store_true").type("bool").dest("pssmlt").set_default(false);
+  parser.add_option("--pssmlt").action("store_true").type("bool").dest("pssmlt").set_default(false)
+    .help("use primary space sampling metropolis light transport");
+
+  parser.add_option("--pss_large_step").action("store").type("float")
+    .dest("pss_large_step").set_default("0.25")
+    .help("PSS large step probability");
+
   parser.add_option("--pmc").action("store_true").type("bool").dest("pmc").set_default(false);
   parser.add_option("-m", "--mapper").action("store").choices(std::vector<string>({"linear", "cutoff", "rh_global"})).set_default("linear");
   parser.add_option("--kd").action("store_const").dest("scene_container").set_const("kd");
@@ -186,7 +192,7 @@ int main(int argc, char** args)
       if (use_pssmlt)
       {
         PSSMLT::Options opt;
-        opt.large_step_prob = 0.25;
+        opt.large_step_prob = options.get("pssmlt").as<scalar>();
         pssmlt_render(*igr, *cam, *scene, f, *scheduler, opt, per_pixel);
       }
       else if (use_pmc)
