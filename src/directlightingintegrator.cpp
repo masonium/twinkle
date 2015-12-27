@@ -39,6 +39,8 @@ spectrum DirectLightingIntegrator::trace_ray(const Scene& scene, const Ray& ray,
 
   spectrum total(0.0);
 
+  total += isect.emission();
+
   int i = 0;
   int cum_samples = 0;
   int local_light_samples;
