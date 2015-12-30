@@ -42,15 +42,15 @@ spectrum PathTracerIntegrator::_trace_ray(const Scene& scene, const Ray& ray,
     return scene.environment_light_emission(-ray_dir_origin);
 
   auto isect = isect_opt.get();
-  if (isect.is_emissive())
-    return isect.emission();
+
+  spectrum total(0);
+
+  total += isect.emission();
 
   // direct lighting: randomly choose a light, and contribute
   // the light from that shape if appropriate
   scalar light_prob;
   const auto light = scene.sample_light(sampler.sample_1d(), light_prob);
-
-  spectrum total(0);
 
   if (light_prob > 0)
   {
