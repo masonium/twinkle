@@ -44,11 +44,6 @@ Vec3 Intersection::sample_bsdf(const Vec3& incoming, Sampler& sampler,
   return outgoing;
 }
 
-bool Intersection::is_emissive() const
-{
-  return shape->material->is_emissive(*this);
-}
-
 spectrum Intersection::emission() const
 {
   return shape->material->emission(*this);

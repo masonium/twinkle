@@ -193,6 +193,7 @@ namespace script
                                    {"dielectric", material::dielectric},
                                    {"diffuse", material::diffuse},
                                    {"mirror", material::mirror},
+                                   {"emissive", material::emissive},
                                    {NULL, NULL}};
     luaL_register(L, "material", material_package);
 

@@ -20,11 +20,6 @@ public:
                            scalar& p, spectrum& reflectance) const = 0;
 
   virtual scalar pdf(const Vec3& incoming, const Vec3& outgoing) const = 0;
-
-  virtual bool is_emissive(const IntersectionView&) const
-  {
-    return false;
-  }
   
   virtual spectrum emission(const IntersectionView&) const
   {
@@ -101,20 +96,21 @@ private:
   scalar nr_inside, nr_outside;
 };
 
-/*
+
 class EmissiveMaterial : public Material
 {
 public:
-  EmissiveMaterial(spectrum e) : emit(e) {}
+  EmissiveMaterial(const Texture*);
 
-  bool is_emissive() const override { return true; }
+  spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing) const override;
 
-  spectrum emission(const Intersection& isect) const  override
-  {
-    return emit;
-  }
+  Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
+                   scalar& p, spectrum& reflectance) const override;
+
+  scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
+
+  spectrum emission(const IntersectionView& isect) const override;
   
 private:
-  spectrum emit;
+  const Texture* texture;
 };
-*/

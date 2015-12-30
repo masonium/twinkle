@@ -26,11 +26,6 @@ public:
     return geometry->intersect(r, max_t, subgeo);
   }
 
-  bool is_emissive(const IntersectionView& isect) const
-  {
-    return material->is_emissive(isect);
-  }
-
   spectrum emission(const IntersectionView& isect) const
   {
     return material->emission(isect);

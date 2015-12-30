@@ -63,6 +63,14 @@ namespace script
       return script_material(L, make_entity<RoughMaterial>(roughness, tex));
     }
 
+    int emissive(lua_State* L)
+    {
+      LUA_CHECK_RANGE_ARGS(L, 1, 2);
+      auto tex = lua_totexture(L, 1);
+
+      return script_material(L, make_entity<EmissiveMaterial>(tex));
+    }
+
     int mirror(lua_State* L)
     {
       LUA_CHECK_NUM_ARGS(L, 0);

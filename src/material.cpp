@@ -127,3 +127,34 @@ scalar GlassMaterial::pdf(const Vec3& UNUSED(incoming),
 {
   return 0;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+EmissiveMaterial::EmissiveMaterial(const Texture* tex) : 
+  texture(tex)
+{
+}
+
+spectrum EmissiveMaterial::reflectance(const IntersectionView&, 
+                                       const Vec3&, const Vec3&) const
+{
+  return spectrum::zero;
+}
+
+Vec3 EmissiveMaterial::sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
+                                   scalar& p, spectrum& reflectance) const
+{
+  p = 0;
+  reflectance = spectrum{0.0};
+  return Vec3::zero;
+}
+
+scalar EmissiveMaterial::pdf(const Vec3&, const Vec3&) const
+{
+  return 0.0;
+}
+
+spectrum EmissiveMaterial::emission(const IntersectionView& isect) const
+{
+  return texture->at_point(isect);
+}
+  
