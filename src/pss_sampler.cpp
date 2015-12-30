@@ -48,6 +48,7 @@ PSS::Sample PSS::finish_sample(const PixelSample& ps, const spectrum& value)
       large_step_time = global_time;
     ++global_time;
   }
+  // Otherwise, return the new sample and pop the stack history
   else
   {
     contrib_sample = new_sample;
@@ -121,8 +122,8 @@ scalar PSS::perturb_coord(scalar s, scalar u)
 {
   const scalar s1 = 1.0/1024, s2 = 1.0/64;
   const scalar lm = -log(s2 / s1);
-  auto v = s +s2 * exp(lm * u);
-  return v > 1 ? v - 1 : (v < 0 ? v + 1 : v);
+  auto v = s + (s2 * exp(lm * u));
+  return v >= 1 ? (v - 1) : (v < 0 ? v + 1 : v);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

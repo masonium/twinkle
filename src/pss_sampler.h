@@ -24,6 +24,8 @@ public:
   PSSampler nth_sampler(int index, int total);
   void seed(int);
 
+  bool is_large_step() const { return large_step; }
+
   Sample finish_sample(const PixelSample&, const spectrum&);
 
 private:
