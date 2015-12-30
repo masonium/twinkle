@@ -87,7 +87,24 @@ public:
 
 private:
   std::default_random_engine reng;
-  std::uniform_real_distribution<scalar> randr;
+  std::uniform_real_distribution<double> randr;
+
+  // template <typename T>
+  // T gen_uni()
+  // {
+  //   return randr(reng);
+  // }
+
+  // template<>
+  // float gen_uni()
+  // {
+  //   double rd = randr(reng);
+  //   float rf = rd;
+  //   if (rf > rd) {
+  //     rf = std::nextafter(rf, -std::numeric_limits<float>::infinity());
+  //   }
+  //   return rf;
+  // }
 };
 
 class HaltonSampler : public Sampler

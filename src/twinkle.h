@@ -1,6 +1,7 @@
 #pragma once
 
 #include <limits>
+#define USE_DOUBLES
 
 #ifdef USE_DOUBLES
 
