@@ -81,31 +81,42 @@ namespace
 
   SUITE(ToneMap)
   {
-    TEST(LinearNoOp)
+    class TonemapFixture
+    {
+    public:
+      TonemapFixture() : img(1, 1)
+      {
+      }
+
+      Array2D<spectrum> img;
+    };
+
+    TEST_FIXTURE(TonemapFixture, LinearNoOp)
     {
       LinearToneMapper tm;
       spectrum val{0.2, 0.5, 0.3};
-      vector<spectrum> image{val};
-      tm.tonemap(image, image, 1, 1);
-      CHECK_VEC(val, image[0]);
+      img(0, 0) = val;
+      auto image = tm.tonemap(img);
+      CHECK_VEC(val, img(0, 0));
     }
-    TEST(Linear)
+
+    TEST_FIXTURE(TonemapFixture, Linear)
     {
       LinearToneMapper tm;
       spectrum val{0.2, 2.0, 0.3};
       spectrum lin_val{0.1, 1.0, 0.15};
-      vector<spectrum> image{val};
-      tm.tonemap(image, image, 1, 1);
-      CHECK_VEC(lin_val, image[0]);
+      img(0, 0) = val;
+      auto image = tm.tonemap(img);
+      CHECK_VEC(lin_val, image(0, 0));
     }
-    TEST(Cutoff)
+    TEST_FIXTURE(TonemapFixture, Cutoff)
     {
       CutoffToneMapper tm;
       spectrum val{0.2, 2.0, 0.3};
       spectrum cut_val{0.2, 1.0, 0.3};
-      vector<spectrum> image{val};
-      tm.tonemap(image, image, 1, 1);
-      CHECK_VEC(cut_val, image[0]);
+      img(0, 0) = val;
+      auto image = tm.tonemap(img);
+      CHECK_VEC(cut_val, image(0, 0));
     }
   }
 }

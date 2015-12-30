@@ -11,8 +11,7 @@ class ReinhardGlobal : public ToneMapper
 public:
   ReinhardGlobal(scalar mid = 0.18) : key_value(mid) {}
 
-  void tonemap(const vector<spectrum>& input, vector<spectrum>& output,
-               uint w, uint h) const override;
+  sp_image tonemap(const sp_image& input) const override;
 
 private:
   scalar key_value;
@@ -41,8 +40,7 @@ public:
 
   ReinhardLocal(const Options&);
 
-  void tonemap(const vector<spectrum>& input, vector<spectrum>& output,
-               uint w, uint h) const override;
+  sp_image tonemap(const sp_image& input) const override;
 
 private:
   static vector<vector<pair<scalar, scalar>>> center_surround_functions(uint, uint, const vector<scalar>&, const Options&);

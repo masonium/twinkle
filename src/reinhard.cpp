@@ -9,10 +9,11 @@ using std::transform;
  * Compute the luminance vector Lw, as well as the mean log luminance, as
  * specified in Eq. 1.
  */
-void reinhard_tonemap_aux(const vector<spectrum>& input, int n,
+void reinhard_tonemap_aux(const sp_image& input,
                           vector<scalar>& luminances, scalar& mean_log_luminance)
 {
   scalar delta = 0.001;
+  const auto n = input.size();
   luminances.resize(n);
 
   transform(input.begin(), input.end(), luminances.begin(),
@@ -24,13 +25,12 @@ void reinhard_tonemap_aux(const vector<spectrum>& input, int n,
   mean_log_luminance = exp(total_log / n);
 }
 
-
-void ReinhardGlobal::tonemap(const vector<spectrum>& input, vector<spectrum>& output,
-                             uint w, uint h) const
+sp_image ReinhardGlobal::tonemap(const sp_image& input) const
 {
+  const auto w = input.width(), h = input.height();
   vector<scalar> luminances(w*h);
   scalar mean_log_luminance;
-  reinhard_tonemap_aux(input, w*h, luminances, mean_log_luminance);
+  reinhard_tonemap_aux(input, luminances, mean_log_luminance);
 
   scalar l_mult = key_value / mean_log_luminance;
   scalar max_luminance = *max_element(luminances.begin(), luminances.end());
@@ -41,9 +41,12 @@ void ReinhardGlobal::tonemap(const vector<spectrum>& input, vector<spectrum>& ou
   transform(luminances.begin(), luminances.end(), luminances.begin(),
             [=](scalar s) { return s * (l_mult + s / ml2) / (1 + l_mult * s); });
 
+  sp_image output(w, h);
   transform(input.begin(), input.end(), luminances.begin(),
             output.begin(),
             [](const spectrum& sp, scalar s) { return sp.rescale_luminance(s).clamp(); });
+
+  return output;
 }
 
 ReinhardLocal::ReinhardLocal(const Options& options) : opt(options)
@@ -56,12 +59,12 @@ ReinhardLocal::Options::Options()
 {
 }
 
-void ReinhardLocal::tonemap(const vector<spectrum>& input, vector<spectrum>& output,
-                            uint w, uint h) const
+sp_image ReinhardLocal::tonemap(const sp_image& input) const
 {
+  const auto w = input.width(), h = input.height();
   vector<scalar> luminances(w*h);
   scalar mean_log_luminance;
-  reinhard_tonemap_aux(input, w*h, luminances, mean_log_luminance);
+  reinhard_tonemap_aux(input, luminances, mean_log_luminance);
   scalar l_mult = opt.key_value / mean_log_luminance;
 
   // Explicitly compute L(x, y) as specified in equation 2.
@@ -83,7 +86,7 @@ void ReinhardLocal::tonemap(const vector<spectrum>& input, vector<spectrum>& out
     //display_lum[i] = center_surround[5][i].first;
   }
 
-  output.resize(input.size());
+  sp_image output(w, h);
   transform(display_lum.begin(), display_lum.end(), input.begin(), output.begin(),
             [](scalar lum, const spectrum& s) { return s.rescale_luminance(std::min<scalar>(lum, 1.0)).clamp(); });
   // transform(display_lum.begin(), display_lum.end(), output.begin(),
@@ -92,7 +95,7 @@ void ReinhardLocal::tonemap(const vector<spectrum>& input, vector<spectrum>& out
   //             return spectrum{lum};
   //           });
 
-  CutoffToneMapper().tonemap(output, output, w, h);
+  return CutoffToneMapper().tonemap(output);
 }
 
 vector<vector<pair<scalar, scalar>>> ReinhardLocal::center_surround_functions(

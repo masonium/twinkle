@@ -13,30 +13,33 @@ CompositeToneMapper::CompositeToneMapper(std::initializer_list<shared_ptr<ToneMa
   assert( mappers.size() > 0 );
 }
 
-void CompositeToneMapper::tonemap(const vector<spectrum>& input, vector<spectrum>& output,
-                                  uint w, uint h) const
+sp_image CompositeToneMapper::tonemap(const sp_image& input) const
 {
-  mappers[0]->tonemap(input, output, w, h);
+  auto a = mappers[0]->tonemap(input);
 
   for (size_t i = 1; i < mappers.size(); ++i)
   {
-    mappers[i]->tonemap(output, output, w, h);
+    a = mappers[i]->tonemap(a);
   }
+
+  return a;
 }
 
-void CutoffToneMapper::tonemap(const vector<spectrum>& input, vector<spectrum>& output,
-                               uint w, uint h) const
+sp_image CutoffToneMapper::tonemap(const sp_image& input) const
 {
+  sp_image output(input.width(), input.height());
   transform(input.begin(), input.end(), output.begin(),
             [](const spectrum& s) { return s.clamp(0.0, 1.0); });
+  return output;
 }
-
-void LinearToneMapper::tonemap(const vector<spectrum>& input, vector<spectrum>& output,
-                               uint w, uint h) const
+sp_image LinearToneMapper::tonemap(const sp_image& input) const
 {
-  spectrum M = accumulate(input.begin(), input.end(),  spectrum::one, spectrum::max);
+  spectrum M = accumulate(input.begin(), input.end(), spectrum::one, spectrum::max);
   scalar cM = max(max(M.x, M.y), M.z);
 
+  sp_image output(input.width(), input.height());
   transform(input.begin(), input.end(), output.begin(),
             [&](const spectrum& s) { return s / cM; });
+
+  return output;
 }
