@@ -31,9 +31,6 @@ struct PixelSample
   Ray ray;
 };
 
-using PixelSampleValue = pair<PixelSample, spectrum>;
-using SampleVector = vector<PixelSampleValue>;
-
 /**
  * An image sample filter combines adds a pixel sample to the film. A given
  * pixel sample is allowed to contribute to multiple pixels, but the filter must
@@ -100,6 +97,8 @@ public:
   Film(const Film& f);
 
   Array2D<uint> samples_by_variance(uint spp) const;
+
+  Array2D<spectrum> image() const;
 
   Film as_weights() const;
   Film as_pv() const;

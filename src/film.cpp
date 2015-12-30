@@ -88,10 +88,20 @@ scalar Film::average_intensity() const
   return r;
 }
 
+Array2D<spectrum> Film::image() const
+{
+  Array2D<spectrum> img(width, height);
+  
+  transform(plate.begin(), plate.end(), img.begin(),
+            [](const auto& p) { return p.value(); });
+            
+  return img;
+}
+
 void Film::render_to_ppm(ostream& out, const ToneMapper& mapper)
 {
-  vector<spectrum> final = pixel_list();
-  mapper.tonemap(final, final, width, height);
+  auto final = image();
+  final = mapper.tonemap(final);
   auto pl = pixel_list();
   out << "P3 " << width << " " << height << " 255\n";
 
@@ -99,7 +109,7 @@ void Film::render_to_ppm(ostream& out, const ToneMapper& mapper)
   {
     for(uint x = 0; x < width; ++x)
     {
-      const auto& c = final[index(x, y)];//.clamp(0, 1);
+      const auto& c = final(x, y);//.clamp(0, 1);
       if (std::isnan(c.x) || c.x < 0 || c.y < 0 || c.z < 0)
       {
         cerr << x << ", " << y << ", " << c << std::endl;
