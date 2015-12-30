@@ -3,7 +3,7 @@
 
 * TODO Visible Features
 ** Shapes
-- [ ] box primitive
+- [X] box primitive
 - [X] parametric mesh
 - [X] heightmap (based on kd-mesh)
 - [X] implicit built-ins
@@ -16,12 +16,13 @@
 - [ ] rough glass material
 - [ ] plastic (cook-torrance)
 - [ ] layered brdf
+  - [ ] improved sampling method for GGX
 
 ** Textures
 - [X] image-based
 - [X] function-based
 - [ ] worley-noise
-- [ ] new sky texture
+- [X] new sky texture
 
 ** Renders
 - [X] time-based debug renderer (intersection-only)
@@ -35,9 +36,10 @@
   - [X] sphere
   - [X] plane
   - [X] lights
-  - [ ] envlights
+  - [X] envlights
   - [X] color material
   - [X] implicit
+  - [ ] noise texture
 - [X] push luastate into generic renderer
 
 ** Internal advancements
@@ -45,15 +47,14 @@
 - [X] push scheduler as argument to renderer
 - [X] lua state into
 - [X] Mesh or KDMesh based on number of triangles
-- [ ] condensing of nested transforms into transform shapes
-  - [ ] RTTI for all (possibly implement, possibly built-in)
+- [X] condensing of nested transforms into transform shapes
+  - [X] RTTI for all (possibly implement, possibly built-in)
 - [X] cache-friendly 8-byte kdtree-node
 - [ ] cache-coherent kd-tree (re)organization
-- [ ] population monte-carlo for grid-render
+- [X] population monte-carlo for grid-render
 - [ ] population monte-carlo for pixel-choice of direct lighting
-- [ ] triangle fan implementation (faster mesh rendering)
-- [ ] convert environment map to normal light (improved sampling)
-
+- [X] convert environment map to normal light (improved sampling)
+- [ ] shape lights / emissive materials as lights (improved sampling)
 
 * Scenes
 - [X] 'showcase-scene': all available shapes
