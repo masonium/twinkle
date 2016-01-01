@@ -95,6 +95,8 @@ sp_image ReinhardLocal::tonemap(const sp_image& input) const
 vector<vector<pair<scalar, scalar>>> ReinhardLocal::center_surround_functions(
   uint w, uint h, const vector<scalar>& luminances, const Options& opt)
 {
+  // The center-surround images. Each element of the outer vector<> is an image,
+  // a pair of values V and V1.
   vector<vector<pair<scalar, scalar>>> cs(opt.num_scales);
 
   vector<scalar> v1, v2, filter;
@@ -107,7 +109,7 @@ vector<vector<pair<scalar, scalar>>> ReinhardLocal::center_surround_functions(
     convolve(w, h, luminances, fs, fs, filter, v1);
   }
 
-  scalar normalizing_mult = pow(2, opt.sharpening_factor) * opt.key_value;
+  const scalar normalizing_mult = pow(2, opt.sharpening_factor) * opt.key_value;
 
   /*
    * At each iteration, compute the surround function, followed by the
@@ -115,8 +117,10 @@ vector<vector<pair<scalar, scalar>>> ReinhardLocal::center_surround_functions(
    */
   for (int i = 0; i < opt.num_scales; ++i)
   {
+    // v2_gf_sigma is larger than (the implicit) v1_gf_sigma by opt.cs_ratio.
     scalar v2_gf_sigma = opt.scale_pixel_factor * current_scale * opt.cs_ratio;
     int fs = gaussian_filter(v2_gf_sigma, filter);
+
     const scalar normalization = normalizing_mult / (current_scale * current_scale);
     convolve(w, h, luminances, fs, fs, filter, v2);
 
@@ -131,6 +135,8 @@ vector<vector<pair<scalar, scalar>>> ReinhardLocal::center_surround_functions(
     // that we can reuse the surround from the previous scale as the center for
     // the current scale.
     current_scale *= opt.cs_ratio;
+
+    // The v2 of the scale becomes the v1 for the next, larger scale.
     std::swap(v1, v2);
   }
 
