@@ -2,7 +2,8 @@
 #include <fstream>
 #include <string>
 #include <memory>
-#include "film.h"
+#include "util.h"
+#include "util/images.h"
 #include "reinhard.h"
 
 using std::string;
@@ -13,14 +14,19 @@ using std::endl;
 using std::make_shared;
 using std::shared_ptr;
 
-int main(int argc, char** argv)
+int main(int UNUSED(argc), char** argv)
 {
-  string filename(argv[0]);
+  string filename(argv[1]);
 
-  ifstream f(filename, std::ios::in | std::ios::binary);
-  Film film(f);
+  auto img = load_image(filename);
+  cerr << "Image loaded." << endl;
+  if (img.width() == 0)
+  {
+    cerr << "Could not load image " << filename.c_str() << "\n";
+  }
 
-  auto tonemap = make_shared<ReinhardGlobal>(0.18);
+  ReinhardLocal::Options opt;
+  auto tonemapper = make_shared<ReinhardGlobal>();
 
-  film.render_to_ppm(cout, *tonemap);
+  save_image(argv[2], tonemapper->tonemap(img));
 }

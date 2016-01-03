@@ -48,11 +48,12 @@ int main(int argc, char** args)
 
   parser.add_option("-w", "--width").action("store").type("int").set_default("400");
   parser.add_option("-h", "--height").action("store").type("int").set_default("300");
-  parser.add_option("--type").action("store").choices(texture_choices).set_default("noise");
-  parser.add_option("--mapper").action("store").choices(mapper_choices).set_default("linear");
-  parser.add_option("-a", "--angle").action("store").type("float").set_default("0");
-  parser.add_option("-t", "--turbidity").action("store").type("float").set_default("7.0")
+  parser.add_option("--type").action("store").choices(texture_choices).set_default("hosek_sky");
+  parser.add_option("--mapper").action("store").choices(mapper_choices).set_default("rh_global");
+  parser.add_option("-a", "--angle").action("store").type("float").set_default("40");
+  parser.add_option("-t", "--turbidity").action("store").type("float").set_default("3.0")
     .help("turbidity of the sky models");
+  parser.add_option("-o", "--output_file").action("store");
 
   auto& options = parser.parse_args(argc, args);
 
@@ -88,7 +89,6 @@ int main(int argc, char** args)
   {
     for (int x = 0; x < width; ++x)
     {
-      //scalar z = 0.2;
       auto uv = Vec2(x / sw, (y / sh));
 
       auto s = tex->at_coord(uv);
@@ -113,5 +113,7 @@ int main(int argc, char** args)
     mapper = make_shared<ReinhardGlobal>();
   else
     mapper = make_shared<ReinhardLocal>(ReinhardLocal::Options());
-  f.render_to_ppm(cout, *mapper);
+
+  string filename = options.get("output_file");
+  save_image(filename, mapper->tonemap(f.image()));
 }

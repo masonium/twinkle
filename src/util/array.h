@@ -1,6 +1,7 @@
 #pragma once
 #include <unistd.h>
 #include <vector>
+#include <algorithm>
 
 using std::vector;
 
@@ -9,6 +10,10 @@ class Array2D
 {
 public:
   using value_type = T;
+
+  Array2D() : Array2D(0, 0)
+  {
+  }
 
   Array2D(size_t w, size_t h) : _w(w), _data(w*h)
   {
@@ -36,10 +41,10 @@ public:
     const size_t mh = std::min(height(), new_h);
 
     vector<T> new_data(new_w * new_h);
-    for (int y = 0; y < mh; ++y)
+    for (auto y = 0u; y < mh; ++y)
     {
-      copy(_data.data() + y * _w, _data.data() + y * _w + mw,
-           new_data.data() + y * new_w);
+      std::copy(_data.data() + y * _w, _data.data() + y * _w + mw,
+                new_data.data() + y * new_w);
     }
 
     swap(_data, new_data);
@@ -53,7 +58,7 @@ public:
 
   size_t height() const
   {
-    return _data.size() / _w;
+    return _w > 0 ? _data.size() / _w : 0;
   }
 
   size_t size() const

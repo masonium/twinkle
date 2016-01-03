@@ -79,21 +79,15 @@ sp_image ReinhardLocal::tonemap(const sp_image& input) const
     int scale = 0;
     for ( ; scale < opt.num_scales - 1; ++scale)
     {
-      if (fabs(center_surround[scale][i].first) < opt.scale_selection_threshhold)
+      if (fabs(center_surround[scale][i].first) > opt.scale_selection_threshhold)
         break;
     }
     display_lum[i] = luminances[i] / (1 + center_surround[scale][i].second);
-    //display_lum[i] = center_surround[5][i].first;
   }
 
   sp_image output(w, h);
   transform(display_lum.begin(), display_lum.end(), input.begin(), output.begin(),
-            [](scalar lum, const spectrum& s) { return s.rescale_luminance(std::min<scalar>(lum, 1.0)).clamp(); });
-  // transform(display_lum.begin(), display_lum.end(), output.begin(),
-  //           [](scalar lum)
-  //           {
-  //             return spectrum{lum};
-  //           });
+            [](scalar lum, const spectrum& s) { return s.rescale_luminance(lum).clamp(); });
 
   return CutoffToneMapper().tonemap(output);
 }

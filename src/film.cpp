@@ -88,46 +88,14 @@ scalar Film::average_intensity() const
   return r;
 }
 
-Array2D<spectrum> Film::image() const
+sp_image Film::image() const
 {
-  Array2D<spectrum> img(width, height);
+  sp_image img(width, height);
   
   transform(plate.begin(), plate.end(), img.begin(),
             [](const auto& p) { return p.value(); });
             
   return img;
-}
-
-void Film::render_to_ppm(ostream& out, const ToneMapper& mapper)
-{
-  auto final = image();
-  final = mapper.tonemap(final);
-  auto pl = pixel_list();
-  out << "P3 " << width << " " << height << " 255\n";
-
-  for (int y = height - 1; y >= 0; --y)
-  {
-    for(uint x = 0; x < width; ++x)
-    {
-      const auto& c = final(x, y);//.clamp(0, 1);
-      if (std::isnan(c.x) || c.x < 0 || c.y < 0 || c.z < 0)
-      {
-        cerr << x << ", " << y << ", " << c << std::endl;
-        const auto& p = plate[index(x, y)];
-        cerr << p.mean << ", " << p.ss << ", " << p.weight << std::endl;
-      }
-
-      assert(c.x >= 0);
-      assert(c.y >= 0);
-      assert(c.z >= 0);
-
-      assert(c.x <= 1);
-      assert(c.y <= 1);
-      assert(c.z <= 1);
-      out << int(c.x * 255) << " " << int(c.y * 255) << " " << int(c.z * 255) << " ";
-    }
-    out << "\n";  
-  }
 }
 
 void Film::render_to_twi(ostream& out) const
@@ -140,45 +108,27 @@ void Film::render_to_twi(ostream& out) const
     s.serialize(out);
 }
 
-void Film::render_to_console(ostream& out) const
+sp_image Film::as_weights() const
 {
-  for (int y = height - 1; y >= 0; --y)
-  {
-    for (uint x = 0; x < width; ++x)
-    {
-      spectrum s = plate[index(x,y)].total;
-      if (norm(s) > 0.5)
-        out << '*';
-      else if (norm(s) > 0.25)
-        out << '.';
-      else
-        out << ' ';
-    }
-    out << '\n';
-  }
-}
-
-Film Film::as_weights() const
-{
-  Film f(this->width, this->height);
+  sp_image f(this->width, this->height);
   transform(plate.begin(), plate.end(),
-            f.plate.begin(),
+            f.begin(),
             [] (const auto& pixel)
             {
-              return AccPixel(spectrum{pixel.weight});
+              return spectrum{pixel.weight};
             });
 
   return f;
 }
 
-Film Film::as_pv() const
+sp_image Film::as_pv() const
 {
-  Film f(this->width, this->height);
+  sp_image f(this->width, this->height);
   transform(plate.begin(), plate.end(),
-            f.plate.begin(),
+            f.begin(),
             [] (const auto& pixel)
             {
-              return AccPixel(spectrum{pixel.perceptual_variance()});
+              return spectrum{pixel.perceptual_variance()};
             });
 
   return f;

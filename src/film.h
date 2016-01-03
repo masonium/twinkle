@@ -98,10 +98,11 @@ public:
 
   Array2D<uint> samples_by_variance(uint spp) const;
 
-  Array2D<spectrum> image() const;
+  sp_image image() const;
+  void render_to_twi(ostream& out) const;
 
-  Film as_weights() const;
-  Film as_pv() const;
+  sp_image as_weights() const;
+  sp_image as_pv() const;
 
   void add_sample(const PixelSample& ps, const spectrum& s, scalar w = 1.0);
 
@@ -111,10 +112,6 @@ public:
   scalar average_intensity() const;
 
   Rect rect() const { return Rect(0, 0, width, height); }
-
-  void render_to_console(ostream& out) const;
-  void render_to_ppm(ostream& out, const ToneMapper& mapper);
-  void render_to_twi(ostream& out) const;
   
   void merge(const Film& other);
 

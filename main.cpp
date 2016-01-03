@@ -57,13 +57,14 @@ auto parse_args(int argc, char**args)
   std::transform(DEBUG_TYPE_MAP.begin(), DEBUG_TYPE_MAP.end(), 
                  std::inserter(debug_map_keys, debug_map_keys.end()), [](const auto& e) { return e.first; });
 
+  vector<string> mapper_choices({"linear", "cutoff", "rh_global", "rh_local"});
+
   parser.add_option("-w", "--width").action("store").type("int").set_default(400);
   parser.add_option("-h", "--height").action("store").type("int").set_default(300);
   parser.add_option("-t", "--threads").action("store").type("int").set_default(1);
   parser.add_option("-s", "--samples").action("store").type("int").set_default(5);
   parser.add_option("-b", "--benchmark").action("store").type("int").set_default(1);
-  parser.add_option("-o", "--output_image").action("store_true").type("bool");
-  parser.add_option("-q", "--no_image").action("store_false").dest("output_image");
+  parser.add_option("-o", "--output_file").action("store");
   parser.add_option("-d", "--debug_type").action("store").choices(debug_map_keys).set_default("normal");
   parser.add_option("-i", "--integrator").action("store").choices(std::vector<string>({"path", "direct", "debug"})).set_default("path");
   parser.add_option("--pssmlt").action("store_true").type("bool").dest("pssmlt").set_default(false)
@@ -74,7 +75,7 @@ auto parse_args(int argc, char**args)
     .help("PSS large step probability");
 
   parser.add_option("--pmc").action("store_true").type("bool").dest("pmc").set_default(false);
-  parser.add_option("-m", "--mapper").action("store").choices(std::vector<string>({"linear", "cutoff", "rh_global"})).set_default("linear");
+  parser.add_option("-m", "--mapper").action("store").choices(mapper_choices).set_default("linear");
   parser.add_option("--kd").action("store_const").dest("scene_container").set_const("kd");
   parser.add_option("--basic").action("store_const").dest("scene_container").set_const("basic");
 
@@ -83,7 +84,6 @@ auto parse_args(int argc, char**args)
   parser.add_option("--weights").action("store_true").set_default(false);
   parser.add_option("--pv").action("store_true").set_default(false);
 
-  parser.set_defaults("output_image", "true");
   parser.set_defaults("scene_container", "kd");
 
   return parser.parse_args(argc, args);
@@ -158,14 +158,12 @@ int main(int argc, char** args)
   scalar render_time = 0;
 
   auto benchmark_trials = options.get("benchmark").as<int>();
-  bool write_image =  options.get("output_image").as<bool>();
 
   {
     auto scheduler = make_scheduler(num_threads);
 
     if (benchmark_trials > 1)
     {
-      write_image = false;
       RunningStats stats;
     
       cerr << "Benchmarking with " << benchmark_trials << " trials" << endl;
@@ -219,14 +217,18 @@ int main(int argc, char** args)
     }
   }
 
+  sp_image image_to_show = f.image();
+
+  /*
   if (options.get("weights").as<bool>())
   {
-    f = f.as_weights();
+    image = f.as_weights();
   }
   else if (options.get("pv").as<bool>())
   {
     f = f.as_pv();
   }
+  */
 
 
   shared_ptr<ToneMapper> mapper;
@@ -243,9 +245,18 @@ int main(int argc, char** args)
   {
     mapper = make_shared<ReinhardGlobal>();
   }
+  else if (map_type == "rh_local")
+  {
+    ReinhardLocal::Options opt;
+    mapper = make_shared<ReinhardLocal>(opt);
+  }
 
-  if (write_image)
-    f.render_to_ppm(cout, *mapper);
+  string output_file = options.get("output_file");
+  if (!output_file.empty())
+  {
+    std::cerr << "Saving image to " << output_file << "\n";
+    save_image(output_file, mapper->tonemap(image_to_show));
+  }
 
   return 0;
 }

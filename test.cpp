@@ -88,7 +88,7 @@ namespace
       {
       }
 
-      Array2D<spectrum> img;
+      sp_image img;
     };
 
     TEST_FIXTURE(TonemapFixture, LinearNoOp)

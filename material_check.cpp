@@ -74,6 +74,7 @@ auto parse_args(int argc, char** args)
   parser.add_option("--height").action("store").type("int").set_default(512);
 
   parser.add_option("-r", "--roughness").action("store").type("float").set_default(0.0);
+  parser.add_option("output_file").action("store").set_default("");
 
   return parser.parse_args(argc, args);
 }
@@ -82,8 +83,6 @@ int main(int argc, char** args)
 {
   auto opt = parse_args(argc, args);
 
-  // auto tex = make_shared<Checkerboard2D>(spectrum{0.6, 0.1, 0.2},
-  //                                        spectrum{0.2, 0.1, 0.6}, 16.0);
   auto tex = make_shared<SolidColor>(spectrum{0.2, 0.1, 0.8});
   auto base_mat = make_shared<RoughMaterial>(opt.get("roughness").as<float>(), tex.get());
 
@@ -91,16 +90,12 @@ int main(int argc, char** args)
 
   vector<decltype(layer)> layers({layer});
   auto mat = make_shared<LayeredMFMaterial>(layers, base_mat.get());
-  // auto mat = make_shared<MaterialTLDAdapter>(
-  //   refraction_index::AIR, refraction_index::CROWN_GLASS, make_shared<GTR>(0.2));
 
   Film film(opt.get("width").as<int>(), opt.get("height").as<int>());
 
   render_material_scene(mat, film);
 
-  //ReinhardLocal::Options rl_opt;
-  //film.render_to_ppm(cout, ReinhardGlobal());
-  film.render_to_ppm(cout, LinearToneMapper());
+  save_image(opt.get("output_file"), LinearToneMapper().tonemap(film.image()));
 
   return 0;
 }

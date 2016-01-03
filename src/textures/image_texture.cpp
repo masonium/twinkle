@@ -1,45 +1,35 @@
 #include "textures/image_texture.h"
-#include "util/images.h"
 #include <cassert>
 
-ImageTexture2D::ImageTexture2D(const Texture2D& tex, int width, int height)
-  : _w(width), _h(height), _data(_w * _h)
+ImageTexture2D::ImageTexture2D(const Texture2D& tex, size_t width, size_t height)
+  : _image(width, height)
 {
   _resample_texture(tex);
 }
 
 ImageTexture2D::ImageTexture2D(const string& filename)
-  : _w(0), _h(0)
 {
-  Image img;
-  assert(load_image(filename, img));
-  _w = img.width;
-  _h = img.height;
-  _data = std::move(img.data);
+  _image = load_image(filename);
+  assert(_image.width() > 0);
 }
 
-int ImageTexture2D::index(int x, int y) const
+spectrum& ImageTexture2D::at(size_t x, size_t y)
 {
-  return y * _w + x;
+  return _image(x, y);
 }
-
-spectrum& ImageTexture2D::at(int x, int y)
+const spectrum& ImageTexture2D::at(size_t x, size_t y) const
 {
-  return _data[index(x, y)];
-}
-const spectrum& ImageTexture2D::at(int x, int y) const
-{
-  return _data[index(x, y)];
+  return _image(x, y);
 }
 
 void ImageTexture2D::_resample_texture(const Texture2D& tex)
 {
-  for (auto y = 0u; y < _h; ++y)
+  for (auto y = 0u; y < _image.height(); ++y)
   {
-    scalar fy = (y + 0.5) / _h;
-    for (auto x = 0u; x < _w; ++x)
+    scalar fy = (y + 0.5) / _image.height();
+    for (auto x = 0u; x < _image.width(); ++x)
     {
-      Vec2 uv((x + 0.5) / _w, fy);
+      Vec2 uv((x + 0.5) / _image.width(), fy);
       at(x, y) = tex.at_coord(uv);
     }
   }
@@ -55,8 +45,8 @@ spectrum ImageTexture2D::at_coord(const Vec2& uv) const
     v += 1.0;
 
   // nearest neighbor
-  int x = u * _w;
-  int y = v * _h;
+  int x = u * _image.width();
+  int y = v * _image.height();
 
   return at(x, y);
 }

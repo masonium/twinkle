@@ -2,13 +2,12 @@
 
 #include "spectrum.h"
 #include "util/array.h"
+#include "util/images.h"
 #include <vector>
 #include <numeric>
 
 using std::vector;
 using std::shared_ptr;
-
-using sp_image = Array2D<spectrum>;
 
 class ToneMapper
 {
