@@ -22,11 +22,14 @@ HosekSkyTexture::HosekSkyTexture(const Vec3& sun_dir, double turbidity, bool wit
 spectrum HosekSkyTexture::at_coord(const Vec2& uv) const
 {
   spectrum s{0.0};
-  scalar elev_angle = uv.v * M_PI;
+  Vec3 dir = from_euler_uv(uv);
+  scalar theta, phi;
+  std::tie(theta, phi) = dir.to_euler();
+  scalar elev_angle = phi;
   if (elev_angle > M_PI / 2.0)
     return s;
 
-  scalar gamma = acos(from_euler_uv(uv).dot(_sun_direction));
+  scalar gamma = acos(dir.dot(_sun_direction));
 
   for (int i = 0; i < 3; ++i)
   {
