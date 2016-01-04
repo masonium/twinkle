@@ -76,6 +76,7 @@ auto parse_args(int argc, char**args)
 
   parser.add_option("--pmc").action("store_true").type("bool").dest("pmc").set_default(false);
   parser.add_option("-m", "--mapper").action("store").choices(mapper_choices).set_default("linear");
+
   parser.add_option("--kd").action("store_const").dest("scene_container").set_const("kd");
   parser.add_option("--basic").action("store_const").dest("scene_container").set_const("basic");
 
@@ -84,7 +85,7 @@ auto parse_args(int argc, char**args)
   parser.add_option("--weights").action("store_true").set_default(false);
   parser.add_option("--pv").action("store_true").set_default(false);
 
-  parser.set_defaults("scene_container", "kd");
+  parser.set_defaults("scene_container", "");
 
   return parser.parse_args(argc, args);
 }
@@ -102,11 +103,7 @@ int main(int argc, char** args)
   uint per_pixel = options.get("samples").as<int>();
   assert(per_pixel > 0);
 
-  shared_ptr<Scene> scene;
-  if (options["scene_container"] == "kd")
-    scene = make_shared<KDScene>();
-  else
-    scene = make_shared<BasicScene>();
+  auto scene = make_scene(options.get("scene_container"));
 
   string scene_filename = options.get("scene").as<string>();
 
@@ -220,14 +217,14 @@ int main(int argc, char** args)
   sp_image image_to_show = f.image();
 
   /*
-  if (options.get("weights").as<bool>())
-  {
+    if (options.get("weights").as<bool>())
+    {
     image = f.as_weights();
-  }
-  else if (options.get("pv").as<bool>())
-  {
+    }
+    else if (options.get("pv").as<bool>())
+    {
     f = f.as_pv();
-  }
+    }
   */
 
 

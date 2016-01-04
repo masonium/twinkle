@@ -34,5 +34,7 @@ const scalar SCALAR_MIN = std::numeric_limits<scalar>::min();
 #define FEATURE_DEBUG_TRACER 1
 #define FEATURE_DIRECT_LIGHTING 1
 #define FEATURE_PATH_TRACER 1
+#define FEATURE_BIDIRECTIONAL 1
 
-//#define FEATURE_BIDIRECTIONAL 1
+#define FEATURE_BASIC_SCENE 0
+#define FEATURE_KD_SCENE 1

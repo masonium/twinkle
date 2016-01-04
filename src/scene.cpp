@@ -1,9 +1,31 @@
 #include "scene.h"
+#include "kdscene.h"
 #include <limits>
 
 using std::move;
 using std::numeric_limits;
 using std::min;
+
+shared_ptr<Scene> make_scene(const std::string& scene_type)
+{
+  #if FEATURE_KD_SCENE
+  if (scene_type == "kd" || scene_type == "")
+  {
+    return make_shared<KDScene>();
+  }
+  #endif
+  #if FEATURE_BASIC_SCENE
+  if (scene_type == "basic")
+  {
+    return make_shared<BasicScene>();
+  }
+  #endif
+
+  return nullptr;
+}
+
+
+#if FEATURE_BASIC_SCENE
 
 BasicScene::BasicScene()
 {
@@ -75,3 +97,5 @@ spectrum BasicScene::environment_light_emission(const Vec3& dir) const
 
   return s;
 }
+
+#endif

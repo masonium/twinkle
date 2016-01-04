@@ -16,6 +16,7 @@ public:
   void prepare() override;
 
   Light const* sample_light(scalar r1, scalar&) const override;
+  EmissionSample sample_emission(Sampler& sampler) const override;
 
   optional<Intersection> intersect(const Ray& ray) const override;
 

@@ -1,5 +1,6 @@
-#include "kdscene.h"
 #include <limits>
+#include "util.h"
+#include "kdscene.h"
 
 using std::move;
 using std::numeric_limits;
@@ -54,6 +55,21 @@ Light const* KDScene::sample_light(scalar r1, scalar& light_prob) const
 
   auto max_light_idx = lights_.size() - 1;
   return lights_[min(max_light_idx, decltype(max_light_idx)(r1 * lights_.size()))];
+}
+
+EmissionSample KDScene::sample_emission(Sampler& sampler) const
+{
+  scalar lp = 0;
+
+  // sample the light, then sample an emission from the light.
+  auto light = sample_light(sampler.sample_1d(), lp);
+  if (unlikely(lp == 0))
+    return EmissionSample(light, Ray(Vec3::zero, Vec3::z_axis));
+
+  auto es = light->sample_emission(*this, sampler);
+  es.light_prob = lp;
+
+  return es;
 }
 
 optional<Intersection> KDScene::intersect(const Ray& ray) const

@@ -21,6 +21,7 @@ public:
   virtual void prepare() { }
 
   virtual Light const* sample_light(scalar r1, scalar&) const = 0;
+  virtual EmissionSample sample_emission(Sampler& sampler) const = 0;
 
   virtual optional<Intersection> intersect(const Ray& ray) const = 0;
 
@@ -30,6 +31,10 @@ public:
 
   virtual ~Scene() { }
 };
+
+shared_ptr<Scene> make_scene(const std::string& scene_type);
+
+#if FEATURE_BASIC_SCENE
 
 class BasicScene : public Scene
 {
@@ -55,3 +60,5 @@ private:
   vector<const Light*> lights_;
   vector<const EnvironmentLight*> env_lights_;
 };
+
+#endif

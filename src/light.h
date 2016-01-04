@@ -6,6 +6,7 @@
 #include "shape.h"
 
 class Scene;
+class Light;
 
 enum OcclusionType
 {
@@ -14,6 +15,9 @@ enum OcclusionType
   OCCLUSION_NONE
 };
 
+/*
+ * Sampled emission from a specific light towards a specific intersection point.
+ */
 class LightSample
 {
 public:
@@ -41,10 +45,46 @@ private:
   OcclusionType occ_type;
 };
 
+enum class EmissionType
+{
+  EMISSION_POINT,
+  EMISSION_RAY,
+  EMISSION_NONE
+};
+
+/*
+ * Sampled emission to a scene.
+ */
+class EmissionSample
+{
+public:
+  EmissionSample() : light(nullptr), ray(Vec3::zero, Vec3::z_axis) { }
+  EmissionSample(Light const* l, const Ray& r)  : light(l), ray(r) {}
+
+  Light const* light;
+  Ray ray;
+
+  // probability of this specific light being chosen
+  scalar light_prob;
+
+  // Probability of the ray being chosen, conditioned on the specific light.
+  scalar ray_prob;
+};
+
 class Light : public Base
 {
 public:
+  /* Given an intersection point, sample an emission from the point. */
   virtual LightSample sample_emission(const Intersection& isect, Sampler&) const = 0;
+
+  /* Sample an emission generically, from anywhere within the scene. */
+  virtual EmissionSample sample_emission(const Scene& scene, Sampler&) const = 0;
+
+  /* Compute the emission from the light to the the intersection point, given
+     the chosen emission sample.
+   */
+  virtual  spectrum emission(const Scene& scene, const IntersectionView& isect,
+                             const EmissionSample& sample) const = 0;
 
   virtual std::string to_string() const { return "Light"; }
 
@@ -54,7 +94,7 @@ public:
 class DirectionalLight : public Light
 {
 public:
-  // direction: direction of
+  // direction: direction of the (distant) light source
   DirectionalLight(const Vec3& dir_source, const spectrum& r) : direction(dir_source.normal()), emission(r)
   {
   }
