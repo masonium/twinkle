@@ -20,6 +20,11 @@ public:
                            scalar& p, spectrum& reflectance) const = 0;
 
   virtual scalar pdf(const Vec3& incoming, const Vec3& outgoing) const = 0;
+
+  virtual bool is_emissive(const IntersectionView&) const
+  {
+    return false;
+  }
   
   virtual spectrum emission(const IntersectionView&) const
   {
@@ -109,6 +114,10 @@ public:
 
   scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
 
+  bool is_emissive(const IntersectionView& isect) const override
+  {
+    return true;
+  }
   spectrum emission(const IntersectionView& isect) const override;
   
 private:
