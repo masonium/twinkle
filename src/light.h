@@ -59,7 +59,7 @@ class EmissionSample
 {
 public:
   EmissionSample() : light(nullptr), ray(Vec3::zero, Vec3::z_axis) { }
-  EmissionSample(Light const* l, const Ray& r)  : light(l), ray(r) {}
+  EmissionSample(Light const* l, const Ray& r, scalar p)  : light(l), ray(r), ray_prob(p) {}
 
   Light const* light;
   Ray ray;
@@ -83,7 +83,7 @@ public:
   /* Compute the emission from the light to the the intersection point, given
      the chosen emission sample.
    */
-  virtual  spectrum emission(const Scene& scene, const IntersectionView& isect,
+  virtual spectrum emission(const Scene& scene, const IntersectionView& isect,
                              const EmissionSample& sample) const = 0;
 
   virtual std::string to_string() const { return "Light"; }
@@ -95,29 +95,37 @@ class DirectionalLight : public Light
 {
 public:
   // direction: direction of the (distant) light source
-  DirectionalLight(const Vec3& dir_source, const spectrum& r) : direction(dir_source.normal()), emission(r)
+  DirectionalLight(const Vec3& dir_source, const spectrum& r)
+    : direction(dir_source.normal()), _emission(r)
   {
   }
 
   LightSample sample_emission(const Intersection& isect, Sampler&) const override;
+  EmissionSample sample_emission(const Scene& scene, Sampler&) const override;
+  spectrum emission(const Scene& scene, const IntersectionView& isect,
+                    const EmissionSample& sample) const override;
 
 private:
   Vec3 direction; // source of the light
-  spectrum emission;
+  spectrum _emission;
 };
 
 class PointLight : public Light
 {
 public:
-  PointLight(const Vec3& pos, const spectrum& r) : position(pos), emission(r)
+  PointLight(const Vec3& pos, const spectrum& r)
+    : position(pos), _emission(r)
   {
   }
 
   LightSample sample_emission(const Intersection& isect, Sampler&) const override;
+  EmissionSample sample_emission(const Scene& scene, Sampler&) const override;
+  spectrum emission(const Scene& scene, const IntersectionView& isect,
+                    const EmissionSample& sample) const override;
 
   std::string to_string() const override;
 
 private:
   Vec3 position;
-  spectrum emission;
+  spectrum _emission;
 };

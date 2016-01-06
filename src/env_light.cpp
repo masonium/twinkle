@@ -1,4 +1,5 @@
 #include "env_light.h"
+#include "scene.h"
 #include <cmath>
 
 using std::tie;
@@ -24,4 +25,18 @@ LightSample EnvironmentLight::sample_emission(const Intersection& isect, Sampler
   auto emit = emission(d);
 
   return LightSample(emit, p, Ray{isect.position, d}.nudge(0.0005));
+}
+
+EmissionSample EnvironmentLight::sample_emission(const Scene& scene, Sampler& sampler) const
+{
+  auto d = uniform_sphere_sample(sampler.sample_2d());
+
+  return EmissionSample(this, Ray{d*1000, -d}, 1 / (4.0 * PI));
+}
+
+spectrum EnvironmentLight::emission(const Scene& scene, const IntersectionView& isect,
+                                    const EmissionSample& e_sample) const
+{
+  auto shadow_isect = scene.intersect(Ray{isect.position, e_sample.ray.direction}.nudge(SHADOW_EPSILON));
+  return shadow_isect.is() ? spectrum::zero : emission(-e_sample.ray.direction);
 }

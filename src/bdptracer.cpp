@@ -9,7 +9,6 @@ BidirectionalPathTracer::BidirectionalPathTracer(const BDPTOptions& opt_)
 
 void BidirectionalPathTracer::render(const Camera* cam, const Scene* scene, Film& film)
 {
-
 }
 
 void BidirectionalPathTracer::construct_light_path(Sampler& sampler, const Scene* scene,

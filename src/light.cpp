@@ -43,9 +43,29 @@ LightSample PointLight::sample_emission(const Intersection& isect,
 {
   // inverse-squared falloff
   const auto d = position - isect.position;
-  spectrum emit = emission;// / d.norm2();
+  spectrum emit = _emission;// / d.norm2();
 
   return LightSample{emit, 1.0, isect.position + d.normal() * 0.001, position};
+}
+
+/* Sample an emission generically, from anywhere within the scene. */
+EmissionSample PointLight::sample_emission(const Scene& UNUSED(scene), Sampler& sampler) const
+{
+  const auto d = uniform_sphere_sample(sampler.sample_2d());
+
+  return EmissionSample{this, Ray{position, d},  1/(2.0 * PI)};
+}
+
+
+spectrum PointLight::emission(const Scene& scene, const IntersectionView& isect,
+                              const EmissionSample& sample) const
+{
+  auto L = isect.position - position;
+  auto shadow_isect = scene.intersect(Ray{position, L}, scalar_fp{1.0 - EPSILON});
+  if (!shadow_isect.is() || shadow_isect.get().t() >= 1.0)
+    return _emission;
+
+  return spectrum::zero;
 }
 
 LightSample DirectionalLight::sample_emission(const Intersection& isect,
@@ -54,5 +74,18 @@ LightSample DirectionalLight::sample_emission(const Intersection& isect,
   if (isect.normal.dot(direction) < 0)
     return LightSample();
 
-  return LightSample(emission, 1.0, Ray{isect.position, direction}.normal().nudge(0.0005) );
+  return LightSample(_emission, 1.0, Ray{isect.position, direction}.normal().nudge(0.0005) );
 }
+
+EmissionSample DirectionalLight::sample_emission(const Scene& scene,
+                                                 Sampler& UNUSED(sampler)) const
+{
+  return EmissionSample(this, Ray{-direction * 1000, direction}, 1.0);
+}
+spectrum DirectionalLight::emission(const Scene& scene, const IntersectionView& isect,
+                                          const EmissionSample& e_sample) const
+{
+  auto shadow_isect = scene.intersect(Ray{isect.position, direction}.nudge(SHADOW_EPSILON));
+  return shadow_isect.is() ? spectrum::zero : _emission;
+}
+
