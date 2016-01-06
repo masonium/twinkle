@@ -18,7 +18,8 @@ public:
   Light const* sample_light(scalar r1, scalar&) const override;
   EmissionSample sample_emission(Sampler& sampler) const override;
 
-  optional<Intersection> intersect(const Ray& ray) const override;
+  optional<Intersection> intersect(const Ray& ray, scalar_fp max_t) const override;
+  using Scene::intersect;
 
   spectrum environment_light_emission(const Vec3& dir) const override;
 

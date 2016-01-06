@@ -64,7 +64,7 @@ EmissionSample KDScene::sample_emission(Sampler& sampler) const
   // sample the light, then sample an emission from the light.
   auto light = sample_light(sampler.sample_1d(), lp);
   if (unlikely(lp == 0))
-    return EmissionSample(light, Ray(Vec3::zero, Vec3::z_axis));
+    return EmissionSample(light, Ray(Vec3::zero, Vec3::z_axis), 0.0);
 
   auto es = light->sample_emission(*this, sampler);
   es.light_prob = lp;
@@ -72,7 +72,7 @@ EmissionSample KDScene::sample_emission(Sampler& sampler) const
   return es;
 }
 
-optional<Intersection> KDScene::intersect(const Ray& ray) const
+optional<Intersection> KDScene::intersect(const Ray& ray, scalar_fp max_t) const
 {
   /*
    * In most scenes, you expect the infinite objects to behind the finite
@@ -82,7 +82,7 @@ optional<Intersection> KDScene::intersect(const Ray& ray) const
   SubGeo best_geom = SUBGEO_NONE;
   Shape const* best_shape = nullptr;
 
-  auto best_t = sfp_none;
+  auto best_t = max_t;
 
   for (auto s: unbounded_shapes_)
   {

@@ -67,11 +67,11 @@ Light const* BasicScene::sample_light(scalar r1, scalar& light_prob) const
 }
 
 
-optional<Intersection> BasicScene::intersect(const Ray& ray) const
+optional<Intersection> BasicScene::intersect(const Ray& ray, scalar_fp max_t) const
 {
   const Shape* best_shape = nullptr;
   SubGeo best_geom = 0;
-  scalar_fp best_t = sfp_none;
+  scalar_fp best_t = max_t;
 
   for (auto s: shapes_)
   {
