@@ -1,7 +1,7 @@
 #include "tests/test_util.h"
 #include "geometry/sphere.h"
 #include "textures.h"
-#include "scene.h"
+#include "kdscene.h"
 
 namespace
 {
@@ -14,9 +14,10 @@ namespace
                             ray{Vec3{5.0, 0.0, 0.0}, Vec3{-2.0, 0.0, 0.0}}
     {
       scene.add(shape.get());
+      scene.prepare();
     }
 
-    BasicScene scene;
+    KDScene scene;
     shared_ptr<Sphere> sphere;
     shared_ptr<Material> mat;
     shared_ptr<Shape> shape;
