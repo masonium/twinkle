@@ -18,6 +18,11 @@ Vec2& Vec2::operator*=(scalar f)
   return *this;
 }
 
+scalar Vec2::dot(const Vec2& v)
+{
+  return x * v.x + y * v.y;
+}
+
 Vec2 Vec2::rotate(scalar angle) const
 {
   scalar c = cos(angle);

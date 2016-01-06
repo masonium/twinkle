@@ -10,6 +10,7 @@
 #include <vector>
 #include <memory>
 #include "cpp-optparse/OptionParser.h"
+#include "materials/ggx.h"
 
 using std::make_shared;
 using std::vector;
@@ -66,6 +67,82 @@ void render_material_scene(shared_ptr<Material> m, Film& film)
   }
 }
 
+void check_ggx(scalar roughness)
+{
+  int N = 10000;
+  int G = 10;
+  GGX ggx(roughness);
+  Vec3 incoming = Vec3::z_axis;
+
+  UniformSampler us;
+
+  Array2D<int> hist(G, G);
+  fill(hist.begin(), hist.end(), 0);
+
+  for (int i = 0; i < N; ++i)
+  {
+    auto m = ggx.sample_micronormal(incoming, us);
+    auto angles = m.to_euler();
+    hist(int(angles.first * G / (2*M_PI)), int(angles.second * G / (M_PI/2)))++;
+  }
+
+  for (int y = 0; y < G; ++y)
+  {
+    for (int x = 0; x < G; ++x)
+      cout << hist(x, y) << " ";
+    cout << "\n";
+  }
+
+  for (int y = 0; y < G; ++y)
+  {
+    scalar up = 0.5 * M_PI * (y + 0.5) / G;
+    for (int x = 0; x < G; ++x)
+    {
+      scalar tp = 2 * M_PI * (x + 0.5) / G;
+      Vec3 m = Vec3::from_euler(tp, up);
+      //cout << m << "\n";
+      cout << N * ggx.pdf_micronormal(incoming, m) << " ";
+    }
+    cout << "\n";
+  }
+
+}
+
+void check_ggx_x(scalar roughness)
+{
+  int N = 10000;
+  int G = 10;
+  GGX ggx(roughness);
+  Vec3 incoming = Vec3(1.0, 1.0, 0.3).normal();
+
+  UniformSampler us;
+
+  vector<int> hist(G);
+  fill(hist.begin(), hist.end(), 0);
+
+  for (int i = 0; i < N; ++i)
+  {
+    scalar xs = ggx.sample_marginal_x_slope(acos(incoming.z), us.sample_1d());
+    scalar theta = atan(xs);
+    hist[(theta/PI + 0.5)*G] ++;
+  }
+
+  for (int i = 0; i < G; ++i)
+    cout << hist[i] << " ";
+  cout << "\n";
+
+  for (int i = 0; i < G; ++i)
+  {
+    scalar theta_i = M_PI * ( (i + 0.0) / G - 0.5);
+    scalar theta_j = M_PI * ( (i + 1.0) / G - 0.5);
+
+    cout << N * (ggx.cdf_marginal_x_slope(incoming, theta_j) - ggx.cdf_marginal_x_slope(incoming, theta_i)) << " ";
+  }
+  cout << "\n";
+}
+
+
+
 auto parse_args(int argc, char** args)
 {
   optparse::OptionParser parser;
@@ -82,20 +159,21 @@ auto parse_args(int argc, char** args)
 int main(int argc, char** args)
 {
   auto opt = parse_args(argc, args);
+  check_ggx_x(opt.get("roughness").as<float>());
 
-  auto tex = make_shared<SolidColor>(spectrum{0.2, 0.1, 0.8});
-  auto base_mat = make_shared<RoughMaterial>(opt.get("roughness").as<float>(), tex.get());
+  // auto tex = make_shared<SolidColor>(spectrum{0.2, 0.1, 0.8});
+  // auto base_mat = make_shared<RoughMaterial>(opt.get("roughness").as<float>(), tex.get());
 
-  auto layer = make_shared<MFLayer>(0.0, spectrum{1.0}, make_shared<GTR>(0.1));
+  // auto layer = make_shared<MFLayer>(0.0, spectrum{1.0}, make_shared<GTR>(0.1));
 
-  vector<decltype(layer)> layers({layer});
-  auto mat = make_shared<LayeredMFMaterial>(layers, base_mat.get());
+  // vector<decltype(layer)> layers({layer});
+  // auto mat = make_shared<LayeredMFMaterial>(layers, base_mat.get());
 
-  Film film(opt.get("width").as<int>(), opt.get("height").as<int>());
+  // Film film(opt.get("width").as<int>(), opt.get("height").as<int>());
 
-  render_material_scene(mat, film);
+  // render_material_scene(mat, film);
 
-  save_image(opt.get("output_file"), LinearToneMapper().tonemap(film.image()));
+  // save_image(opt.get("output_file"), LinearToneMapper().tonemap(film.image()));
 
   return 0;
 }

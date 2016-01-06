@@ -22,6 +22,8 @@ public:
   Vec2& operator+=(const Vec2& v);
   Vec2& operator*=(scalar f);
 
+  scalar dot(const Vec2& v);
+
   Vec2 rotate(scalar angle) const;
 
   union
