@@ -70,7 +70,7 @@ scalar GGX::pdf_marginal_x_slope(const Vec3& scaled_incoming, const Vec3& scaled
   scalar dp = cos_i - x_slope * sin_i;
   if (dp <= 0)
     return 0;
-  scalar G1 = GGX(1.0).g1(scaled_incoming, scaled_m);
+  scalar G1 = g1_11(sin_i/cos_i);
   return G1 / cos_i * dp / (2.0 * pow(square(x_slope) + 1, 1.5));
 }
 
@@ -114,10 +114,10 @@ scalar GGX::sample_conditional_y_slope(scalar x_slope, scalar u) const
     s = -1.0;
     u = 2 * (0.5 - u);
   }
-  return s * ggx_cy_inverse_func(u) * sqrt(1 + square(x_slope*0.5));
+  return s * ggx_cy_inverse_func(u) * sqrt(1 + square(x_slope));
 }
 
-scalar GGX::pdf_conditional_y_slope(const Vec3& scaled_incoming, const Vec3& scaled_m) const
+scalar GGX::pdf_conditional_y_slope(const Vec3& scaled_m) const
 {
   scalar x_slope = - scaled_m.x / scaled_m.z;
   scalar y_slope = - scaled_m.y / scaled_m.z;
@@ -136,33 +136,34 @@ scalar GGX::cdf_conditional_y_slope(scalar y_slope, scalar x_slope) const
   if (y_slope_theta > PI/2 - 0.0001)
     return 1.0;
 
-  return 0.5 * (y_slope / sqrt(1 + square(x_slope) + square(y_slope)) + 1.0);
+  scalar y = y_slope;
+  scalar x = x_slope;
+  const scalar a2 = 1 + x*x;
+  const scalar a = sqrt(a2);
+
+  return 0.5 + (a * y / (a2 + y*y) + atan(y_slope /a)) / M_PI;
 }
 
 scalar GGX::pdf_micronormal(const Vec3& incoming, const Vec3& m) const
 {
-  const auto scale_incoming = Vec3{-incoming.x / _r, -incoming.y / _r, incoming.z}.normal();
-  const auto scale_m = Vec3{m.x / _r, m.y / _r, m.z}.normal();
+  const auto scale_incoming = Vec3{_r * incoming.x, _r * incoming.y, incoming.z}.normal();
+  scalar angle = atan2(scale_incoming.y, scale_incoming.x);
 
-  if (scale_incoming.z == 1.0)
-  {
-    scalar x_slope = -scale_m.x / scale_m.z;
-    scalar y_slope = -scale_m.y / scale_m.z;
-    return 1.0 / (M_PI * square(1.0 + square(x_slope) + square(y_slope)));
-  }
+  const auto slopes = Vec2{-m.x / (_r * m.z), -m.y / (_r * m.z)};
+  const auto rot_slopes = slopes.rotate(-angle);
+  const auto scale_m = Vec3{-rot_slopes.x, -rot_slopes.y, 1.0}.normal();
 
-  return pdf_marginal_x_slope(scale_incoming, scale_m) * pdf_conditional_y_slope(scale_incoming, scale_m) / (m.z*m.z*m.z);;
+  return pdf_marginal_x_slope(scale_incoming, scale_m) * pdf_conditional_y_slope(scale_m) / (m.z*m.z*m.z);;
 }
 
 Vec3 GGX::sample_micronormal(const Vec3& incoming, Sampler& sampler) const
 {
-  const auto scale_incoming = Vec3{-incoming.x / _r, -incoming.y / _r, incoming.z}.normal();
+  const auto scale_incoming = Vec3{incoming.x * _r, incoming.y * _r, incoming.z}.normal();
   scalar up_angle, tangent_plane_angle;
   scale_incoming.to_euler(tangent_plane_angle, up_angle);
 
   Vec2 tslopes;
   auto u = sampler.sample_2d();
-  assert(up_angle <= M_PI/2.0);
   tslopes[0] = sample_marginal_x_slope(up_angle, u[0]);
   tslopes[1] = sample_conditional_y_slope(tslopes[0], u[1]);
 

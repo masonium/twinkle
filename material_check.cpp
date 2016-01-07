@@ -15,6 +15,7 @@
 
 using std::make_shared;
 using std::vector;
+using std::cerr;
 using std::cout;
 using std::endl;
 
@@ -68,12 +69,12 @@ void render_material_scene(shared_ptr<Material> m, Film& film)
   }
 }
 
-void check_ggx(scalar roughness)
+void check_ggx(scalar roughness, scalar x_slope)
 {
   int N = 10000;
   int G = 10;
   GGX ggx(roughness);
-  Vec3 incoming = Vec3::z_axis;
+  Vec3 incoming = Vec3{0.0, 1.0, 1.0}.normal();
 
   UniformSampler us;
 
@@ -90,31 +91,31 @@ void check_ggx(scalar roughness)
   for (int y = 0; y < G; ++y)
   {
     for (int x = 0; x < G; ++x)
-      cout << hist(x, y) << " ";
-    cout << "\n";
+      cerr << hist(x, y) << " ";
+    cerr << "\n";
   }
 
   for (int y = 0; y < G; ++y)
   {
     scalar up = 0.5 * M_PI * (y + 0.5) / G;
+    scalar sup = sin(up);
     for (int x = 0; x < G; ++x)
     {
       scalar tp = 2 * M_PI * (x + 0.5) / G;
       Vec3 m = Vec3::from_euler(tp, up);
-      //cout << m << "\n";
-      cout << N * ggx.pdf_micronormal(incoming, m) << " ";
+      cerr << N * ggx.pdf_micronormal(incoming, m) * sup / G << " ";
     }
-    cout << "\n";
+    cerr << "\n";
   }
 
 }
 
 void check_ggx_xy(scalar roughness, scalar fixed_x_slope)
 {
-  int N = 10000;
+  int N = 1000;
   int G = 10;
   GGX ggx(roughness);
-  Vec3 incoming = Vec3(0, 0, 1).normal();
+  Vec3 incoming = Vec3(0, 1, 1).normal();
 
   UniformSampler us;
 
@@ -129,28 +130,32 @@ void check_ggx_xy(scalar roughness, scalar fixed_x_slope)
   }
 
   for (int i = 0; i < G; ++i)
-    cout << hist[i] << " ";
-  cout << "\n";
+    cerr << hist[i] << " ";
+  cerr << "\n";
 
   for (int i = 0; i < G; ++i)
   {
     scalar theta_i = M_PI * ( (i + 0.0) / G - 0.5);
     scalar theta_j = M_PI * ( (i + 1.0) / G - 0.5);
 
-    cout << N * (ggx.cdf_marginal_x_slope(incoming, theta_j) - ggx.cdf_marginal_x_slope(incoming, theta_i)) << " ";
+    cerr << N * (ggx.cdf_marginal_x_slope(incoming, theta_j) -
+                 ggx.cdf_marginal_x_slope(incoming, theta_i)) << " ";
   }
 
-  cout << "\n";
+  cerr << "\n";
 
   fill(hist.begin(), hist.end(), 0);
   for (int i = 0; i < N; ++i)
   {
-    scalar y_slope = ggx.sample_conditional_y_slope(fixed_x_slope, i * 1.0 / N);
+    scalar u = i * 1.0 / N;
+    scalar xs = ggx.sample_marginal_x_slope(acos(incoming.z), u);
+    scalar x_theta = atan(xs);
+    scalar y_slope = ggx.sample_conditional_y_slope(fixed_x_slope, u);
     scalar theta = atan(y_slope);
     hist[(theta/PI + 0.5)*G] ++;
   }
-  copy(hist.begin(), hist.end(), std::ostream_iterator<int>(cout, "    "));
-  cout << "\n";
+  copy(hist.begin(), hist.end(), std::ostream_iterator<int>(cerr, "    "));
+  cerr << "\n";
 
   for (int i = 0; i < G; ++i)
   {
@@ -161,9 +166,9 @@ void check_ggx_xy(scalar roughness, scalar fixed_x_slope)
       ggx.cdf_conditional_y_slope(tan(theta_j), fixed_x_slope) -
       ggx.cdf_conditional_y_slope(tan(theta_i), fixed_x_slope);
 
-    cout << N * cdf_ij << " ";
+    cerr << N * cdf_ij << " ";
   }
-  cout << "\n";
+  cerr << "\n";
 }
 
 
@@ -188,6 +193,10 @@ int main(int argc, char** args)
   check_ggx_xy(opt.get("roughness").as<float>(),
                opt.get("x_slope").as<float>());
 
+  std::cerr << "\n";
+
+  check_ggx(opt.get("roughness").as<float>(),
+            opt.get("x_slope").as<float>());
 
   // auto tex = make_shared<SolidColor>(spectrum{0.2, 0.1, 0.8});
   // auto base_mat = make_shared<RoughMaterial>(opt.get("roughness").as<float>(), tex.get());
