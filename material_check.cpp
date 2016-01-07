@@ -7,6 +7,7 @@
 #include "textures.h"
 #include "reinhard.h"
 #include <iostream>
+#include <iterator>
 #include <vector>
 #include <memory>
 #include "cpp-optparse/OptionParser.h"
@@ -108,12 +109,12 @@ void check_ggx(scalar roughness)
 
 }
 
-void check_ggx_x(scalar roughness)
+void check_ggx_xy(scalar roughness, scalar fixed_x_slope)
 {
   int N = 10000;
   int G = 10;
   GGX ggx(roughness);
-  Vec3 incoming = Vec3(1.0, 1.0, 0.3).normal();
+  Vec3 incoming = Vec3(0, 0, 1).normal();
 
   UniformSampler us;
 
@@ -122,7 +123,7 @@ void check_ggx_x(scalar roughness)
 
   for (int i = 0; i < N; ++i)
   {
-    scalar xs = ggx.sample_marginal_x_slope(acos(incoming.z), us.sample_1d());
+    scalar xs = ggx.sample_marginal_x_slope(acos(incoming.z), i * 1.0 / N);
     scalar theta = atan(xs);
     hist[(theta/PI + 0.5)*G] ++;
   }
@@ -138,6 +139,30 @@ void check_ggx_x(scalar roughness)
 
     cout << N * (ggx.cdf_marginal_x_slope(incoming, theta_j) - ggx.cdf_marginal_x_slope(incoming, theta_i)) << " ";
   }
+
+  cout << "\n";
+
+  fill(hist.begin(), hist.end(), 0);
+  for (int i = 0; i < N; ++i)
+  {
+    scalar y_slope = ggx.sample_conditional_y_slope(fixed_x_slope, i * 1.0 / N);
+    scalar theta = atan(y_slope);
+    hist[(theta/PI + 0.5)*G] ++;
+  }
+  copy(hist.begin(), hist.end(), std::ostream_iterator<int>(cout, "    "));
+  cout << "\n";
+
+  for (int i = 0; i < G; ++i)
+  {
+    scalar theta_i = M_PI * ( (i + 0.0) / G - 0.5);
+    scalar theta_j = M_PI * ( (i + 1.0) / G - 0.5);
+
+    scalar cdf_ij =
+      ggx.cdf_conditional_y_slope(tan(theta_j), fixed_x_slope) -
+      ggx.cdf_conditional_y_slope(tan(theta_i), fixed_x_slope);
+
+    cout << N * cdf_ij << " ";
+  }
   cout << "\n";
 }
 
@@ -150,7 +175,8 @@ auto parse_args(int argc, char** args)
   parser.add_option("-w", "--width").action("store").type("int").set_default(512);
   parser.add_option("--height").action("store").type("int").set_default(512);
 
-  parser.add_option("-r", "--roughness").action("store").type("float").set_default(0.0);
+  parser.add_option("-r", "--roughness").action("store").type("float").set_default(1.0);
+  parser.add_option("-x", "--x_slope").action("store").type("float").set_default(0.0);
   parser.add_option("output_file").action("store").set_default("");
 
   return parser.parse_args(argc, args);
@@ -159,7 +185,9 @@ auto parse_args(int argc, char** args)
 int main(int argc, char** args)
 {
   auto opt = parse_args(argc, args);
-  check_ggx_x(opt.get("roughness").as<float>());
+  check_ggx_xy(opt.get("roughness").as<float>(),
+               opt.get("x_slope").as<float>());
+
 
   // auto tex = make_shared<SolidColor>(spectrum{0.2, 0.1, 0.8});
   // auto base_mat = make_shared<RoughMaterial>(opt.get("roughness").as<float>(), tex.get());
