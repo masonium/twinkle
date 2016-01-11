@@ -191,7 +191,7 @@ namespace script
       }
       int rotate_aa(lua_State* L)
       {
-        LUA_CHECK_NUM_ARGS(L, 2);
+        LUA_CHECK_NUM_ARGS(L, 3);
 
         auto geom = lua_togeometry(L, 1);
         auto axis = lua_tovector(L, 2);
