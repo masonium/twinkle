@@ -32,6 +32,11 @@ scalar GGX::g1(const Vec3& v, const Vec3& h) const
   return 2.0 / (1.0 + sqrt(1.0 + _r2 * tan2_tv));
 }
 
+scalar GGX::g2(const Vec3& i, const Vec3& o, const Vec3& h) const
+{
+  return g1(i, h) * g1(o, h);
+}
+
 scalar GGX::g1_11(scalar tan_vi) const
 {
   return 2.0 / (1.0 + sqrt(1.0 + tan_vi * tan_vi));
@@ -156,7 +161,7 @@ scalar GGX::pdf_micronormal(const Vec3& incoming, const Vec3& m) const
   return pdf_marginal_x_slope(scale_incoming, scale_m) * pdf_conditional_y_slope(scale_m) / (m.z*m.z*m.z);;
 }
 
-Vec3 GGX::sample_micronormal(const Vec3& incoming, Sampler& sampler) const
+MNSample GGX::sample_micronormal(const Vec3& incoming, Sampler& sampler) const
 {
   const auto scale_incoming = Vec3{incoming.x * _r, incoming.y * _r, incoming.z}.normal();
   scalar up_angle, tangent_plane_angle;
@@ -170,5 +175,6 @@ Vec3 GGX::sample_micronormal(const Vec3& incoming, Sampler& sampler) const
   Vec2 slopes = _r * tslopes.rotate(tangent_plane_angle);
 
   auto m = Vec3(-slopes[0], -slopes[1], 1.0).normal();
-  return m;
+
+  return MNSample{m, pdf_micronormal(incoming, m)};
 }

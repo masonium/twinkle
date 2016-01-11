@@ -3,16 +3,16 @@
 #include "vec3.h"
 #include "sampler.h"
 
-struct DistributionSample
+struct MNSample
 {
-  Vec3 reflection_dir;
+  Vec3 m;;
   scalar p;
 };
 
 class MicrofacetDistribution
 {
 public:
-  virtual Vec3 sample_micronormal(const Vec3& incoming, Sampler& sampler) const = 0;
+  virtual MNSample sample_micronormal(const Vec3& incoming, Sampler& sampler) const = 0;
 };
 
 class GGX : public MicrofacetDistribution
@@ -20,18 +20,15 @@ class GGX : public MicrofacetDistribution
 public:
   GGX(scalar roughness);
 
-  DistributionSample sample_direction(const Vec3& incoming, Sampler& sampler) const;
-
-  scalar reflectance(scalar schlick_f0, const Vec3& incoming,
-                     const Vec3& outgoing, scalar& shadowing) const;
+  scalar g2(const Vec3& i, const Vec3& o, const Vec3& h) const;
 
   scalar pdf_micronormal(const Vec3& incoming, const Vec3& micronormal) const;
-
-  Vec3 sample_micronormal(const Vec3& incoming, Sampler& sampler) const override;
+  MNSample sample_micronormal(const Vec3& incoming, Sampler& sampler) const override;
 
   scalar density(const Vec3& h) const;
 
   scalar g1(const Vec3& v, const Vec3& h) const;
+
   scalar g1_11(scalar tan_v) const;
 
   // visible normal sampling
