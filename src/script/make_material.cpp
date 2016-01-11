@@ -3,6 +3,7 @@
 #include "material.h"
 #include "textures.h"
 #include "materials/multilayered.h"
+#include "materials/rough_glass_material.h"
 #include "script/make_material.h"
 #include "script/script_util.h"
 
@@ -35,6 +36,24 @@ namespace script
       }
 
       return script_material(L, make_shared<GlassMaterial>(ref_in, ref_out));
+    }
+
+    int rough_dielectric(lua_State* L)
+    {
+      LUA_CHECK_RANGE_ARGS(L, 1, 3);
+
+      int i = 1;
+      scalar roughness = lua_tonumber(L, i++);
+      scalar ref_in = refraction_index::CROWN_GLASS;
+      scalar ref_out = refraction_index::AIR;
+      if (lua_gettop(L) > 1)
+      {
+        ref_in = lua_tonumber(L, i++);
+        if (lua_gettop(L) > 1)
+          ref_out = lua_tonumber(L, i++);
+      }
+
+      return script_material(L, make_glass_material(roughness, ref_in, ref_out));
     }
 
     int glossy_paint(lua_State* L)

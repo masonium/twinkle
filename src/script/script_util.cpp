@@ -191,6 +191,7 @@ namespace script
     luaL_Reg material_package[] = {{"color", material::color},
                                    {"glossy_paint", material::glossy_paint},
                                    {"dielectric", material::dielectric},
+                                   {"rough_dielectric", material::rough_dielectric},
                                    {"diffuse", material::diffuse},
                                    {"mirror", material::mirror},
                                    {"emissive", material::emissive},
