@@ -23,9 +23,9 @@ public:
   BSDFSample sample(const Vec3& incoming, Sampler& sampler) const override;
 
 private:
-  GGX ggx;
-  scalar roughness;
-  scalar refr_incoming, refr_outgoing;
+  GGX _ggx;
+  scalar _roughness;
+  scalar _nr;
 };
 
 class RoughGlassMaterial : public Material

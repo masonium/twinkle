@@ -86,8 +86,8 @@ scalar MirrorMaterial::pdf(const Vec3& incoming,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-GlassMaterial::GlassMaterial(scalar refr_in, scalar refr_out) : 
-  nr_inside(refr_in), nr_outside(refr_out)
+GlassMaterial::GlassMaterial(scalar refr_inside, scalar refr_outside) : 
+  _nr(refr_outside/refr_inside)
 {
   
 }
@@ -101,8 +101,6 @@ spectrum GlassMaterial::reflectance(const IntersectionView&,
 MaterialSample GlassMaterial::sample_bsdf(
   const IntersectionView&, const Vec3& incoming, Sampler& sampler) const
 {
-  scalar n1 = nr_outside;
-  scalar n2 = nr_inside;
   auto normal = Vec3::z_axis;
   scalar az = std::abs(incoming.z);
   if (az < 0.0001)
@@ -110,12 +108,13 @@ MaterialSample GlassMaterial::sample_bsdf(
     return MaterialSample::invalid;
   }
 
+  scalar nr = _nr;
   if (incoming.z < 0)
   {
-    std::swap<scalar>(n1, n2);
+    nr = 1 / _nr;
     normal *= -1;
   }
-  scalar fr = fresnel_reflectance(incoming, normal, n1, n2);
+  scalar fr = fresnel_reflectance(incoming, normal, nr);
   scalar refl_prob = fr;
   scalar samp = sampler.sample_1d();
 
@@ -127,7 +126,7 @@ MaterialSample GlassMaterial::sample_bsdf(
   else
   {
     // transmit
-    auto wo = refraction_direction(incoming, normal, n1, n2);
+    auto wo = refraction_direction(incoming, normal, nr);
     return MaterialSample{wo, 1 - refl_prob, spectrum{(1 - fr) / az}};
   }
 }

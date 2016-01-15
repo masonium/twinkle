@@ -6,12 +6,13 @@ using std::cerr;
 using std::endl;
 
 RoughGlassBSDF::RoughGlassBSDF(scalar r, scalar ref_inside, scalar ref_outside)
-  : ggx{r}, roughness(r), refr_incoming(ref_outside), refr_outgoing(ref_inside)
+  : _ggx{r}, _roughness(r), _nr(ref_outside/ref_inside)
 {
 }
 
-scalar RoughGlassBSDF::pdf(const Vec3& incoming, const Vec3& outgoing) const
+scalar RoughGlassBSDF::pdf(const Vec3& UNUSED(incoming), const Vec3& UNUSED(outgoing)) const
 {
+  assert("unimplemented.");
   return 0.0;
 }
 
@@ -20,9 +21,9 @@ Vec3 m_hr(const Vec3& i, const Vec3& o)
   return (i + o).normal() * sign(i.z);
 }
 
-Vec3 m_ht(const Vec3& i, const Vec3& o, scalar ri, scalar ro)
+Vec3 m_ht(const Vec3& i, const Vec3& o, scalar nr)
 {
-  return -(i * ri + o * ro).normal();
+  return -(i * nr + o).normal();
 }
 
 scalar RoughGlassBSDF::reflectance(const Vec3& incoming, const Vec3& outgoing) const
@@ -31,25 +32,29 @@ scalar RoughGlassBSDF::reflectance(const Vec3& incoming, const Vec3& outgoing) c
   scalar bsdf_refraction_contribution = 0;
   const auto ainon = std::abs(incoming.z * outgoing.z);
 
+  scalar nr = _nr;
+  if (incoming.z < 0)
+    nr = 1 / nr;
+
   {
     const auto hr = m_hr(incoming, outgoing);
 
-    const auto fresnel_refl = fresnel_reflectance(incoming, hr, refr_incoming, refr_outgoing);
+    const auto fresnel_refl = fresnel_reflectance(incoming, hr, nr);
 
-    bsdf_reflection_contribution = fresnel_refl * ggx.g2(incoming, outgoing, hr) * ggx.density(hr) /
+    bsdf_reflection_contribution = fresnel_refl * _ggx.g2(incoming, outgoing, hr) * _ggx.density(hr) /
         (4 * ainon);
   }
 
   {
-    const auto ht = m_ht(incoming, outgoing, refr_incoming, refr_outgoing);
+    const auto ht = m_ht(incoming, outgoing, nr);
     
-    const auto fresnel_refr = fresnel_transmittance(incoming, ht, refr_incoming, refr_outgoing);
+    const auto fresnel_refr = fresnel_transmittance(incoming, ht, nr);
     
     const auto i_ht = incoming.dot(ht), o_ht = outgoing.dot(ht);
     const auto angle_coefficient = std::abs(i_ht * o_ht) / ainon;
 
-    const auto numerator = square(refr_outgoing) * fresnel_refr * ggx.g2(incoming, outgoing, ht) * ggx.density(ht);
-    auto denom_sqrt = (refr_incoming * i_ht + refr_outgoing * o_ht);
+    const auto numerator =  fresnel_refr * _ggx.g2(incoming, outgoing, ht) * _ggx.density(ht);
+    auto denom_sqrt = (nr * i_ht + o_ht);
 
     bsdf_refraction_contribution = angle_coefficient * numerator / square(denom_sqrt);
   }
@@ -60,7 +65,7 @@ scalar RoughGlassBSDF::reflectance(const Vec3& incoming, const Vec3& outgoing) c
 BSDFSample RoughGlassBSDF::sample(const Vec3& incoming, Sampler& sampler) const
 {
   // Generate a microsurface normal.
-  MNSample mnp = ggx.sample_micronormal(incoming, sampler);
+  MNSample mnp = _ggx.sample_micronormal(incoming, sampler);
 
   // Reflect or refract, based on the micronormal
   //scalar refl_prob = fresnel_reflectance_schlick(incoming, mnp.m, refr_incoming, refr_outgoing);
@@ -69,18 +74,21 @@ BSDFSample RoughGlassBSDF::sample(const Vec3& incoming, Sampler& sampler) const
   scalar jac = 0;
   scalar p;
   Vec3 outgoing;
+  scalar nr = incoming.z < 0 ? 1 / _nr : _nr;
+    
   if (sampler.sample_1d() < refl_prob)
   {
     outgoing = incoming.reflect_over(mnp.m);
-    Vec3 half = incoming + outgoing.normal();
+    Vec3 half = m_hr(incoming, outgoing);
     jac = 0.25 / std::abs(outgoing.dot(half));
     p = refl_prob;
   }
   else
   {
-    outgoing = refraction_direction(incoming, mnp.m, refr_incoming, refr_outgoing);
-    Vec3 half = -incoming * refr_incoming - outgoing * refr_outgoing;
-    jac = refr_outgoing * refr_outgoing * std::abs(outgoing.dot(half.normal())) / half.norm2();
+    outgoing = refraction_direction(incoming, mnp.m, nr);
+    Vec3 half = m_ht(incoming, outgoing, nr);
+    jac = std::abs(outgoing.dot(half)) 
+      / square(nr * incoming.dot(half) + outgoing.dot(half));
     p = 1 - refl_prob;
   }
 
@@ -88,11 +96,8 @@ BSDFSample RoughGlassBSDF::sample(const Vec3& incoming, Sampler& sampler) const
   // micro_normal probability.
   p *= mnp.p * jac;
 
-  // if (p < 0.0001)
-  //   cerr << mnp.p << " " << jac << " " << mnp.m << endl;
-
   scalar refl = this->reflectance(incoming, outgoing.normal());
-  return BSDFSample{outgoing, p, refl}; //mnp.m;//Vec3::z_axis;
+  return BSDFSample{outgoing, p, refl}; 
 }
 
 ////////////////////////////////////////////////////////////////////////////////

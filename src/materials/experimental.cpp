@@ -16,9 +16,9 @@ MaterialSample SimpleSmoothPlastic::sample_bsdf(
   const IntersectionView& isect, const Vec3& incoming, Sampler& sampler) const
 {
   // choose between specular and diffuse based on the fresnel coefficient
-  const scalar n1 = refraction_index::AIR, n2 = 1.5;
+  const scalar nr = 1 / 1.5;
 
-  scalar fr_r = fresnel_reflectance(incoming, Vec3::z_axis, n1, n2);
+  scalar fr_r = fresnel_reflectance(incoming, Vec3::z_axis, nr);
   Vec3 outgoing;
   if (sampler.sample_1d() < fr_r)
   {

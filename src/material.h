@@ -116,7 +116,7 @@ public:
 
   scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
 private:
-  scalar nr_inside, nr_outside;
+  scalar _nr;
 };
 
 

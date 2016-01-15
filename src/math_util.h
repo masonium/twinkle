@@ -10,6 +10,7 @@ using std::move;
 const scalar PI = 4.0 * atan(1.0);
 const scalar INV_PI = 1 / PI;
 const scalar INV_2PI = 1 / (2 * PI);
+const scalar INV_4PI = 1 / (4 * PI);
 const scalar PId4 = PI / 4.0;
 const scalar PId2 = PI / 2.0;
 
@@ -43,9 +44,9 @@ inline constexpr scalar sign(scalar val) {
 /**
  * Return the F0 term in the schlick reflection approximation.
  */
-inline constexpr scalar schlick_r0_term(scalar n1, scalar n2)
+inline constexpr scalar schlick_r0_term(scalar nr)
 {
-  return square( (n1 - n2) / (n1 + n2) );
+  return square( (nr - 1) / (nr + 1) );
 }
 
 
@@ -54,19 +55,19 @@ inline constexpr scalar schlick_r0_term(scalar n1, scalar n2)
  * medium. Assumes that incoming and normal originate from the same point.
  */
 scalar fresnel_reflectance(const Vec3& incoming, const Vec3& normal,
-                           scalar n1, scalar n2);
+                           scalar nr);
 scalar fresnel_reflectance_schlick(const Vec3& incoming, const Vec3& half,
-                           scalar n1, scalar n2);
+                           scalar nr);
 
 scalar fresnel_transmittance(const Vec3& incoming, const Vec3& normal,
-                             scalar n1, scalar n2);
+                             scalar nr);
 scalar fresnel_transmittance_schlick(const Vec3& incoming, const Vec3& half,
-                                     scalar n1, scalar n2);
+                                     scalar nr);
 
 bool has_tir(const Vec3& incoming, const Vec3& normal,
-             scalar n1, scalar n2);
+             scalar nr);
 Vec3 refraction_direction(const Vec3& incoming, const Vec3& normal,
-                          scalar n1, scalar n2);
+                          scalar nr);
 
 template <typename T>
 T lerp(const T& a, const T& b, scalar x)
