@@ -7,7 +7,6 @@
 #include "vec2.h"
 #include "bsdf.h"
 
-
 using namespace std;
 
 struct sas
@@ -41,19 +40,17 @@ void compare_bsdf(const BRDF& brdf, uint num_samples)
   for (auto i = 0u; i < num_samples; ++i)
   {
     // compute the pdf
-    scalar p;
-    scalar refl;
-    Vec3 dir = brdf.sample(incoming_dir, sampler, p, refl);
+    auto bs = brdf.sample(incoming_dir, sampler);
 
     scalar theta, phi;
-    dir.to_euler(theta, phi);
+    bs.direction.to_euler(theta, phi);
 
     int theta_i = theta / (2 * PI) * theta_grid ;
     int phi_i = phi / (PI / 2) * phi_grid ;
     assert(0 <= theta_i  && theta_i < theta_grid);
     assert(0 <= phi_i  && phi_i < phi_grid);
     r[theta_i][phi_i].n += 1;
-    r[theta_i][phi_i].tp += p;
+    r[theta_i][phi_i].tp += bs.prob;
   }
 
   const int num_cells = theta_grid * phi_grid;
@@ -128,12 +125,10 @@ scalar compute_rho_hd(const Material* mat, const Vec3& incoming, uint num_sample
 
   for (auto i = 0u; i < num_samples; ++i)
   {
-    scalar p;
-    spectrum reflectance;
-    Vec3 d = mat->sample_bsdf(isect, -ray.direction.normal(), sampler, p, reflectance);
-    if (p == 0)
+    auto bs = mat->sample_bsdf(isect, -ray.direction.normal(), sampler);
+    if (bs.prob == 0)
       continue;
-    r += reflectance / p * d.z;
+    r += bs.reflectance / bs.prob * bs.direction.z;
     ++valid_samples;
   }
 

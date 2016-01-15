@@ -5,13 +5,27 @@
 #include "vec3.h"
 #include "sampler.h"
 
+struct BSDFSample
+{
+  BSDFSample() {} 
+  BSDFSample(const Vec3& d, scalar p, scalar refl)
+    : direction(d), prob(p), reflectance(refl)
+  {
+  }
+
+  static BSDFSample invalid;
+
+  Vec3 direction;
+  scalar prob;
+  scalar reflectance;
+};
+
 class BRDF
 {
 public:
   virtual scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const = 0;
 
-  virtual Vec3 sample(const Vec3& incoming, Sampler& sampler,
-                      scalar& p, scalar& reflectance) const = 0;
+  virtual BSDFSample sample(const Vec3& incoming, Sampler& sampler) const = 0;
   
   virtual scalar pdf(const Vec3& incoming, const Vec3& outgoing) const = 0;
 
@@ -27,8 +41,7 @@ public:
 
   scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const override;
 
-  Vec3 sample(const Vec3& incoming, Sampler& s,
-              scalar& p, scalar& reflectance) const override;
+  BSDFSample sample(const Vec3& incoming, Sampler& s) const override;
 
   scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
 
@@ -41,8 +54,7 @@ public:
   OrenNayar(scalar refl, scalar roughness);
   scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const override;
   
-  Vec3 sample(const Vec3& incoming, Sampler& s,
-              scalar& p, scalar& reflectance) const override;
+  BSDFSample sample(const Vec3& incoming, Sampler& s) const override;
 
   scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
 
@@ -62,22 +74,8 @@ public:
   {
     return 0.0;
   }
+  BSDFSample sample(const Vec3& incoming, Sampler& s) const override;
 
-  Vec3 sample(const Vec3& incoming, Sampler& s,
-              scalar& p, scalar& reflectance) const override
-  {
-    if (incoming.z <= 0)
-    {
-      p = 0.0;
-      reflectance = 0;
-      return Vec3::zero;
-    }
-
-    p = 1.0;
-    reflectance = 1.0 / incoming.z;
-    
-    return incoming.reflect_over(Vec3::z_axis);
-  }
 
   scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override
   {

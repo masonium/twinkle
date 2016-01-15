@@ -6,44 +6,41 @@ SimpleSmoothPlastic::SimpleSmoothPlastic(const Texture* tex, scalar roughness)
 {
 }
 
-spectrum SimpleSmoothPlastic::reflectance(const IntersectionView& view, const Vec3& incoming, const Vec3& outgoing) const
+spectrum SimpleSmoothPlastic::reflectance(
+  const IntersectionView& view, const Vec3& incoming, const Vec3& outgoing) const
 {
   return _base.reflectance(view, incoming, outgoing);
 }
 
-Vec3 SimpleSmoothPlastic::sample_bsdf(const IntersectionView& isect, const Vec3& incoming, Sampler& sampler,
-                                      scalar& p, spectrum& reflectance) const
+MaterialSample SimpleSmoothPlastic::sample_bsdf(
+  const IntersectionView& isect, const Vec3& incoming, Sampler& sampler) const
 {
   // choose between specular and diffuse based on the fresnel coefficient
   const scalar n1 = refraction_index::AIR, n2 = 1.5;
 
   scalar fr_r = fresnel_reflectance(incoming, Vec3::z_axis, n1, n2);
-  reflectance = spectrum{0};
   Vec3 outgoing;
   if (sampler.sample_1d() < fr_r)
   {
-    // specular direction
-    p = fr_r;
-
-    outgoing = incoming.reflect_over(Vec3::z_axis);
+    auto outgoing = incoming.reflect_over(Vec3::z_axis);
 
     // specular + underlying diffuse (from remaining transmitted specular)
-    reflectance = spectrum{fr_r} + (1 - fr_r) * _base.reflectance(isect, incoming, outgoing);
+    spectrum refl = spectrum{fr_r} + (1 - fr_r) * _base.reflectance(isect, incoming, outgoing);
+
+    return MaterialSample{outgoing, fr_r, refl};
   }
   else
   {
     // diffuse direction
-    scalar diffuse_p;
-    spectrum diffuse_refl;
-    outgoing = _base.sample_bsdf(isect, incoming, sampler, diffuse_p, diffuse_refl);
+    auto diffuse_sample = _base.sample_bsdf(isect, incoming, sampler);
 
-    p = (1 - fr_r) * diffuse_p;
+    scalar p = (1 - fr_r) * diffuse_sample.prob;
 
     // only the underlying diffuse
-    reflectance = (1 - fr_r) * diffuse_refl;
-  }
+    auto reflectance = (1 - fr_r) * diffuse_sample.reflectance;
 
-  return outgoing;
+    return MaterialSample{diffuse_sample.direction, p, reflectance};
+  }
 }
 
 scalar SimpleSmoothPlastic::pdf(const Vec3& incoming, const Vec3& outgoing) const

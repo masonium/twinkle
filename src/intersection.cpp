@@ -35,15 +35,13 @@ spectrum Intersection::reflectance(const Vec3& incoming, const Vec3& outgoing) c
 }
 
 
-Vec3 Intersection::sample_bsdf(const Vec3& incoming, Sampler& sampler,
-                               scalar& p, spectrum& reflectance) const
+MaterialSample Intersection::sample_bsdf(const Vec3& incoming, Sampler& sampler) const
 {
   auto local_incoming = to_z * incoming;
-  auto local_outgoing = shape->material->sample_bsdf(*this, local_incoming, sampler, p, reflectance);
-  auto outgoing = from_z * local_outgoing;
-  return outgoing;
+  auto ms = shape->material->sample_bsdf(*this, local_incoming, sampler);
+  ms.direction = from_z * ms.direction;
+  return ms;
 }
-
 
 bool Intersection::is_emissive() const
 {

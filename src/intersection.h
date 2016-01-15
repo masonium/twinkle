@@ -8,6 +8,7 @@
 #include "geometry.h"
 
 class Shape;
+struct MaterialSample;
 
 /**
  * An IntersectionView represents the results of intersection a ray with the
@@ -51,8 +52,7 @@ public:
 
   spectrum reflectance(const Vec3& incoming, const Vec3& outgoing) const;
 
-  Vec3 sample_bsdf(const Vec3& incoming, Sampler& sampler,
-                   scalar& p, spectrum& reflectance) const;
+  MaterialSample sample_bsdf(const Vec3& incoming, Sampler& sampler) const;
 
 
   bool is_emissive() const;

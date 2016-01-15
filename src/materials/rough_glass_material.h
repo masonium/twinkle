@@ -2,25 +2,25 @@
 
 #include "material.h"
 #include "ggx.h"
+#include "bsdf.h"
 
 /**
  * This file implements a material for rough refractive surfaces, based on the
  * paper "Microfacet Models for Refraction through Rough Surfaces" by Walter
  * et. al.
  */
-class RoughGlassBSDF
+class RoughGlassBSDF : public BRDF
 {
 public:
   RoughGlassBSDF(scalar roughness,
                  scalar ref_inside = refraction_index::CROWN_GLASS,
                  scalar ref_outside = refraction_index::AIR);
 
-  scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const;
+  scalar reflectance(const Vec3& incoming, const Vec3& outgoing) const override;
 
-  scalar pdf(const Vec3& incoming, const Vec3& outgoing) const;
+  scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
 
-  Vec3 sample(const Vec3& incoming, Sampler& sampler,
-              scalar& p, scalar& reflectance) const;
+  BSDFSample sample(const Vec3& incoming, Sampler& sampler) const override;
 
 private:
   GGX ggx;
@@ -38,8 +38,8 @@ public:
   spectrum reflectance(const IntersectionView&,
                        const Vec3& incoming, const Vec3& outgoing) const override;
 
-  Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
-                   scalar& p, spectrum& reflectance) const override;
+  MaterialSample sample_bsdf(
+    const IntersectionView&, const Vec3& incoming, Sampler& sampler) const override;
 
   scalar pdf(const Vec3&, const Vec3&) const override { return 0.0; };
 

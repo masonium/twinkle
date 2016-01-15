@@ -1,18 +1,17 @@
 #include "bsdf.h"
+#include "util.h"
 #include "math_util.h"
 #include "sampler.h"
 
-Vec3 Lambertian::sample(const Vec3& incoming, 
-                        Sampler& sampler, scalar& p,
-                        scalar& reflectance) const
+BSDFSample BSDFSample::invalid(Vec3::zero, 0, 0);
+
+BSDFSample Lambertian::sample(const Vec3& UNUSED(incoming), Sampler& sampler) const
 {
   auto sample = sampler.sample_2d();
+  
   Vec3 wo = cosine_weighted_hemisphere_sample(sample);
 
-  p = wo.z / PI;
-  reflectance = r;
-
-  return wo;
+  return BSDFSample(wo, wo.z / PI, r);
 }
 
 scalar Lambertian::reflectance(const Vec3& incoming, const Vec3& outgoing) const
@@ -37,17 +36,12 @@ OrenNayar::OrenNayar(scalar refl, scalar rough) :
   
 }
 
-Vec3 OrenNayar::sample(const Vec3& incoming,
-                       Sampler& sampler, scalar& p,
-                       scalar& reflectance) const
+BSDFSample OrenNayar::sample(const Vec3& incoming, Sampler& sampler) const
 {
   auto sample = sampler.sample_2d();
   Vec3 wo = cosine_weighted_hemisphere_sample(sample);
 
-  p = wo.z / PI;
-  reflectance = this->reflectance(incoming, wo);
-
-  return wo;
+  return BSDFSample(wo, wo.z / PI, this->reflectance(incoming, wo));
 }
 
 scalar OrenNayar::pdf(const Vec3& incoming, const Vec3& outgoing) const
@@ -67,4 +61,12 @@ scalar OrenNayar::reflectance(const Vec3& incoming, const Vec3& outgoing) const
   outgoing.to_euler(t2, p2);
   
   return rpi * (A + B * max<scalar>(0, cos(t1 - t2)) * sin(max(p1, p2)) * tan(min(p1, p2)));
+}
+
+BSDFSample PerfectMirrorBRDF::sample(const Vec3& incoming, Sampler& UNUSED(s)) const
+{
+  if (incoming.z <= 0)
+    return BSDFSample::invalid;
+
+  return BSDFSample{incoming.reflect_over(Vec3::z_axis), 1.0, 1.0/incoming.z};
 }

@@ -11,13 +11,30 @@
 using std::shared_ptr;
 using std::unique_ptr;
 
+/*
+ * Sample the direction from a material, returning other required information.
+ */
+struct MaterialSample
+{
+  MaterialSample() { }
+  MaterialSample(const Vec3&, scalar, const spectrum&);
+  MaterialSample(const BSDFSample&, const spectrum&);
+
+  static MaterialSample invalid;
+
+  Vec3 direction;
+  scalar prob;
+  spectrum reflectance;
+};
+
 class Material : public Base
 {
 public:
-  virtual spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing) const = 0;
+  virtual spectrum reflectance(const IntersectionView&, const Vec3& incoming,
+                               const Vec3& outgoing) const = 0;
   
-  virtual Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
-                           scalar& p, spectrum& reflectance) const = 0;
+  virtual MaterialSample sample_bsdf(const IntersectionView&, const Vec3& incoming, 
+                                     Sampler& sampler) const = 0;
 
   virtual scalar pdf(const Vec3& incoming, const Vec3& outgoing) const = 0;
 
@@ -41,10 +58,11 @@ class RoughMaterial : public Material
 public:
   RoughMaterial(scalar roughness, const Texture* tex);
 
-  spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing) const override;
+  spectrum reflectance(const IntersectionView&, const Vec3& incoming, 
+                       const Vec3& outgoing) const override;
   
-  Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
-                   scalar& p, spectrum& reflectance) const override;
+  MaterialSample sample_bsdf(const IntersectionView&, const Vec3& incoming, 
+                             Sampler& sampler) const override;
 
   scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
 
@@ -75,8 +93,8 @@ public:
 
   spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing) const override;
   
-  Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
-                   scalar& p, spectrum& reflectance) const override;
+  MaterialSample sample_bsdf(const IntersectionView&, const Vec3& incoming, 
+                             Sampler& sampler) const override;
 
   scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
 
@@ -93,8 +111,8 @@ public:
 
   spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing) const override;
 
-  Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
-                   scalar& p, spectrum& reflectance) const override;
+  MaterialSample sample_bsdf(const IntersectionView&, const Vec3& incoming, 
+                             Sampler& sampler) const override;
 
   scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
 private:
@@ -109,8 +127,8 @@ public:
 
   spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing) const override;
 
-  Vec3 sample_bsdf(const IntersectionView&, const Vec3& incoming, Sampler& sampler,
-                   scalar& p, spectrum& reflectance) const override;
+  MaterialSample sample_bsdf(const IntersectionView&, const Vec3& incoming, 
+                             Sampler& sampler) const override;
 
   scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
 

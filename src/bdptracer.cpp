@@ -85,17 +85,15 @@ void BidirectionalPathTracer::construct_path(
     }
 
     // Sample to find the next point.
-    spectrum refl;
-    scalar brdf_p;
-    Vec3 new_ray_dir = isect.sample_bsdf(-ray.direction.normal(), sampler, brdf_p, refl);
-    path.add_vertex(isect, refl, dir_p);
+    auto mat_sample = isect.sample_bsdf(-ray.direction.normal(), sampler);
+    path.add_vertex(isect, mat_sample.reflectance, mat_sample.prob);
 
     // The proability of this new ray is equal to the probabilty of the next ray.
-    dir_p = brdf_p;
-    if (brdf_p == 0)
+    dir_p = mat_sample.prob;
+    if (mat_sample.prob == 0)
       break;
 
-    ray = Ray(isect.position, new_ray_dir).nudge();
+    ray = Ray(isect.position, mat_sample.direction).nudge();
   }
 }
 

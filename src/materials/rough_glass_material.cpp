@@ -54,13 +54,10 @@ scalar RoughGlassBSDF::reflectance(const Vec3& incoming, const Vec3& outgoing) c
     bsdf_refraction_contribution = angle_coefficient * numerator / square(denom_sqrt);
   }
 
-  //return bsdf_reflection_contribution + bsdf_refraction_contribution;
-  return bsdf_refraction_contribution;
+  return bsdf_reflection_contribution + bsdf_refraction_contribution;
 }
 
-
-Vec3 RoughGlassBSDF::sample(const Vec3& incoming, Sampler& sampler,
-                            scalar& p, scalar& refl) const
+BSDFSample RoughGlassBSDF::sample(const Vec3& incoming, Sampler& sampler) const
 {
   // Generate a microsurface normal.
   MNSample mnp = ggx.sample_micronormal(incoming, sampler);
@@ -70,6 +67,7 @@ Vec3 RoughGlassBSDF::sample(const Vec3& incoming, Sampler& sampler,
   scalar refl_prob = 0;
 
   scalar jac = 0;
+  scalar p;
   Vec3 outgoing;
   if (sampler.sample_1d() < refl_prob)
   {
@@ -88,13 +86,13 @@ Vec3 RoughGlassBSDF::sample(const Vec3& incoming, Sampler& sampler,
 
   // The actual probability of the outgoing vector is a modification of the
   // micro_normal probability.
-  p *= mnp.p;//  * jac;
+  p *= mnp.p * jac;
 
   // if (p < 0.0001)
   //   cerr << mnp.p << " " << jac << " " << mnp.m << endl;
 
-  refl = this->reflectance(incoming, outgoing.normal());
-  return outgoing.normal(); //mnp.m;//Vec3::z_axis;
+  scalar refl = this->reflectance(incoming, outgoing.normal());
+  return BSDFSample{outgoing, p, refl}; //mnp.m;//Vec3::z_axis;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -112,15 +110,10 @@ spectrum RoughGlassMaterial::reflectance(const IntersectionView&,
   return spectrum{bsdf.reflectance(incoming, outgoing)};
 }
 
-Vec3 RoughGlassMaterial::sample_bsdf(const IntersectionView&, 
-                                     const Vec3& incoming, Sampler& sampler,
-                                     scalar& p, spectrum& reflectance)  const
+MaterialSample RoughGlassMaterial::sample_bsdf(const IntersectionView&, 
+                                     const Vec3& incoming, Sampler& sampler)  const
 {
-  scalar scalar_refl;
-  Vec3 dir = bsdf.sample(incoming, sampler, p, scalar_refl);
-
-  reflectance = spectrum{scalar_refl};
-  return dir;
+  return MaterialSample{bsdf.sample(incoming, sampler), spectrum{1.0}};
 }
 
 shared_ptr<Material> make_glass_material(scalar roughness,

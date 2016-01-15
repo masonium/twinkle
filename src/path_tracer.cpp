@@ -88,18 +88,15 @@ spectrum PathTracerIntegrator::_trace_ray(const Scene& scene, const Ray& ray,
 
   if (continue_trace)
   {
-    scalar brdf_p = 0;
-    spectrum brdf_reflectance;
-    Vec3 brdf_dir = isect.sample_bsdf(ray_dir_origin, sampler,
-                                      brdf_p, brdf_reflectance);
+    auto mat_sample = isect.sample_bsdf(ray_dir_origin, sampler);
 
-    scalar nl = fabs(brdf_dir.dot(isect.normal));// max<scalar>(brdf_dir.dot(isect.normal), 0);
-    if (brdf_p > 0 && nl > 0)
+    scalar nl = fabs(mat_sample.direction.dot(isect.normal));// max<scalar>(brdf_dir.dot(isect.normal), 0);
+    if (mat_sample.prob > 0 && nl > 0)
     {
-      total += _trace_ray(scene, Ray{isect.position, brdf_dir}.nudge(),
+      total += _trace_ray(scene, Ray{isect.position, mat_sample.direction}.nudge(),
                           sampler, depth + 1) *
-        brdf_reflectance *
-        spectrum{p_mult / brdf_p * nl};
+        mat_sample.reflectance *
+        spectrum{p_mult / mat_sample.prob * nl};
     }
   }
 

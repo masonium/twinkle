@@ -97,13 +97,11 @@ spectrum DebugIntegrator::trace_ray(const Scene& scene, const Ray& ray,
     if (!isect_opt.is())
       return spectrum::zero;
 
-    scalar brdf_p;
-    spectrum bsdf_reflectance;
-    auto dir = isect_opt.get().sample_bsdf(-ray.direction.normal(), sampler, brdf_p, bsdf_reflectance);
+    auto ms = isect_opt.get().sample_bsdf(-ray.direction.normal(), sampler);
     if (opt.type == DI_SPECULAR)
-      return dir_to_spectrum(dir.normal());
+      return dir_to_spectrum(ms.direction.normal());
     else // if (opt.type == DI_SPECULAR_P)
-      return spectrum{brdf_p};
+      return spectrum{ms.prob};
   }
 
   if (opt.type == DI_FIRST_ENV)
@@ -112,13 +110,11 @@ spectrum DebugIntegrator::trace_ray(const Scene& scene, const Ray& ray,
       return spectrum{0.3, 0.02, 0.05};
 
     auto isect = isect_opt.get();
-    scalar brdf_p = 0;
-    spectrum brdf_r;
-    auto brdf_dir = isect.sample_bsdf(-ray.direction.normal(), sampler, brdf_p, brdf_r);
+    auto ms = isect.sample_bsdf(-ray.direction.normal(), sampler);
 
-    if (brdf_p > 0)
+    if (ms.prob > 0)
     {
-      return spectrum(scene.intersect(Ray{isect.position, brdf_dir}.nudge()).is() ? 0.0 : 1.0);
+      return spectrum(scene.intersect(Ray{isect.position, ms.direction}.nudge()).is() ? 0.0 : 1.0);
     }
     return spectrum::zero;
   }
