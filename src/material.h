@@ -39,7 +39,7 @@ public:
 class RoughMaterial : public Material
 {
 public:
-  RoughMaterial(scalar roughness, Texture* tex);
+  RoughMaterial(scalar roughness, const Texture* tex);
 
   spectrum reflectance(const IntersectionView&, const Vec3& incoming, const Vec3& outgoing) const override;
   
@@ -50,7 +50,7 @@ public:
 
 private:
   unique_ptr<BRDF> brdf;
-  Texture* texture;
+  const Texture* texture;
 };
 
 class SolidColor;

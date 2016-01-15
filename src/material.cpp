@@ -9,7 +9,7 @@ using std::make_shared;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RoughMaterial::RoughMaterial(scalar roughness_, Texture* tex_) :
+RoughMaterial::RoughMaterial(scalar roughness_, const Texture* tex_) :
   texture(tex_)
 {
   if (roughness_ > 0)
@@ -98,26 +98,35 @@ Vec3 GlassMaterial::sample_bsdf(const IntersectionView&, const Vec3& incoming, S
   scalar n1 = nr_outside;
   scalar n2 = nr_inside;
   auto normal = Vec3::z_axis;
+  scalar az = std::abs(incoming.z);
+  if (az < 0.0001)
+  {
+    p = 0;
+    reflectance = spectrum{0};
+    return Vec3::zero;
+  }
+
   if (incoming.z < 0)
   {
     std::swap<scalar>(n1, n2);
     normal *= -1;
   }
-  scalar frpdf = fresnel_reflectance(incoming, normal, n1, n2);
+  scalar fr = fresnel_reflectance(incoming, normal, n1, n2);
+  scalar refl_prob = fr;
   scalar samp = sampler.sample_1d();
 
-  if (samp < frpdf)
+  if (samp < refl_prob)
   {
     // reflect
-    p = frpdf;
-    reflectance = spectrum{frpdf * std::abs(1 / incoming.z)};
+    p = refl_prob;
+    reflectance = spectrum{fr / az};
     return incoming.reflect_over(normal);
   }
   else
   {
     // transmit
-    p = 1 - frpdf;
-    reflectance = spectrum{(1 - frpdf) * std::abs(1 / incoming.z)};
+    p = 1 - refl_prob;
+    reflectance = spectrum{(1 - fr) / az};
     return refraction_direction(incoming, normal, n1, n2);
   }
 }

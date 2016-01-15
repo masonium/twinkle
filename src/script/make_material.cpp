@@ -2,7 +2,7 @@
 #include <memory>
 #include "material.h"
 #include "textures.h"
-#include "materials/multilayered.h"
+#include "materials/experimental.h"
 #include "materials/rough_glass_material.h"
 #include "script/make_material.h"
 #include "script/script_util.h"
@@ -61,14 +61,7 @@ namespace script
       LUA_CHECK_NUM_ARGS(L, 1);
       auto tex = lua_totexture(L, 1);
 
-      auto layer = make_shared<MFLayer>(
-        0.0, spectrum{1.0}, make_shared<GTR>(0.2));
-
-      vector<decltype(layer)> layers({layer});
-
-      auto base_mat = make_entity<RoughMaterial>(0.0, tex);
-
-      return script_material(L, make_entity<LayeredMFMaterial>(layers, base_mat.get()));
+      return script_material(L, make_entity<SimpleSmoothPlastic>(tex, 0.0));
     }
 
     int diffuse(lua_State* L)
