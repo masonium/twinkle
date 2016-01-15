@@ -1,5 +1,4 @@
 #include "material.h"
-#include "materials/multilayered.h"
 #include "film.h"
 #include "geometries.h"
 #include "camera.h"
@@ -84,7 +83,7 @@ void check_ggx(scalar roughness, scalar x_slope)
   for (int i = 0; i < N; ++i)
   {
     auto m = ggx.sample_micronormal(incoming, us);
-    auto angles = m.to_euler();
+    auto angles = m.m.to_euler();
     hist(int(angles.first * G / (2*M_PI)), int(angles.second * G / (M_PI/2)))++;
   }
 
@@ -148,8 +147,8 @@ void check_ggx_xy(scalar roughness, scalar fixed_x_slope)
   for (int i = 0; i < N; ++i)
   {
     scalar u = i * 1.0 / N;
-    scalar xs = ggx.sample_marginal_x_slope(acos(incoming.z), u);
-    scalar x_theta = atan(xs);
+    //scalar xs = ggx.sample_marginal_x_slope(acos(incoming.z), u);
+    //scalar x_theta = atan(xs);
     scalar y_slope = ggx.sample_conditional_y_slope(fixed_x_slope, u);
     scalar theta = atan(y_slope);
     hist[(theta/PI + 0.5)*G] ++;
