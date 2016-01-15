@@ -1,7 +1,7 @@
 * Absolute priority
 + [X] refactor material so reflectance takes an intersection and returns a specturm (no separate texture-at-point)
 + bidirectional path tracing
-+ layered brdf
++ a few realistic-ish brdfs
 + microfacet refraction
 + MMLT or VCM (ideally VCM)
 + bilateral tone map
