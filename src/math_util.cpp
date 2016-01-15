@@ -107,6 +107,16 @@ scalar fresnel_transmittance(const Vec3& incoming, const Vec3& normal,
   return 1 - fresnel_reflectance(incoming, normal, n1, n2);
 }
 
+bool has_tir(const Vec3& incoming, const Vec3& normal,
+             scalar n1, scalar n2)
+{
+  scalar nr = n1 / n2;
+  scalar cosi = -incoming.dot(normal);
+  scalar sin2t = nr*nr*(1 - cosi*cosi);
+
+  return sin2t < 1;
+}
+
 Vec3 refraction_direction(const Vec3& incoming, const Vec3& normal,
                           scalar n1, scalar n2)
 {
