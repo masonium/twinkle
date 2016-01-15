@@ -8,24 +8,25 @@ BSDFSample BSDFSample::invalid(Vec3::zero, 0, 0);
 BSDFSample Lambertian::sample(const Vec3& UNUSED(incoming), Sampler& sampler) const
 {
   auto sample = sampler.sample_2d();
-  
-  Vec3 wo = cosine_weighted_hemisphere_sample(sample);
 
-  return BSDFSample(wo, wo.z / PI, r);
+  scalar p;
+  Vec3 wo = cosine_weighted_hemisphere_sample(sample, p);
+
+  return BSDFSample(wo, p, r);
 }
 
-scalar Lambertian::reflectance(const Vec3& incoming, const Vec3& outgoing) const
+scalar Lambertian::reflectance(const Vec3& UNUSED(incoming), const Vec3& outgoing) const
 {
-  if (incoming.z * outgoing.z < 0)
+  if (outgoing.z < 0)
     return 0.0f;
   return r;
 }
 
-scalar Lambertian::pdf(const Vec3& incoming, const Vec3& outgoing) const
+scalar Lambertian::pdf(const Vec3& UNUSED(incoming), const Vec3& outgoing) const
 {
-  if (incoming.z * outgoing.z < 0)
+  if (outgoing.z < 0)
     return 0.0f;
-  return fabs(outgoing.z) / PI;
+  return cosine_weighted_hemisphere_pdf(outgoing);
 }
 
 OrenNayar::OrenNayar(scalar refl, scalar rough) :
@@ -39,21 +40,22 @@ OrenNayar::OrenNayar(scalar refl, scalar rough) :
 BSDFSample OrenNayar::sample(const Vec3& incoming, Sampler& sampler) const
 {
   auto sample = sampler.sample_2d();
-  Vec3 wo = cosine_weighted_hemisphere_sample(sample);
+  scalar p;
+  Vec3 wo = cosine_weighted_hemisphere_sample(sample, p);
 
-  return BSDFSample(wo, wo.z / PI, this->reflectance(incoming, wo));
+  return BSDFSample(wo, p, this->reflectance(incoming, wo));
 }
 
-scalar OrenNayar::pdf(const Vec3& incoming, const Vec3& outgoing) const
+scalar OrenNayar::pdf(const Vec3& UNUSED(incoming), const Vec3& outgoing) const
 {
-  if (incoming.z * outgoing.z < 0)
+  if (outgoing.z < 0)
     return 0.0f;
-  return fabs(outgoing.z) / PI;
+  return cosine_weighted_hemisphere_pdf(outgoing);
 }
 
 scalar OrenNayar::reflectance(const Vec3& incoming, const Vec3& outgoing) const
 {
-  if (incoming.z * outgoing.z < 0)
+  if (outgoing.z < 0)
     return 0.0f;
 
   scalar t1, t2, p1, p2;

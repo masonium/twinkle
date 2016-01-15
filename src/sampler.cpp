@@ -146,8 +146,13 @@ Vec3 cosine_weighted_hemisphere_sample(const Sample2D& sample)
 Vec3 cosine_weighted_hemisphere_sample(const Sample2D& sample, scalar& p)
 {
   auto cwhs = cosine_weighted_hemisphere_sample(sample);
-  p = sin(2 * cwhs.z) * INV_2PI;
+  p = cosine_weighted_hemisphere_pdf(cwhs);
   return cwhs;
+}
+
+scalar cosine_weighted_hemisphere_pdf(const Vec3& v)
+{
+  return v.z * INV_PI;
 }
 
 Vec3 uniform_hemisphere_sample(const Sample2D& sample)
@@ -161,8 +166,13 @@ Vec3 uniform_hemisphere_sample(const Sample2D& sample)
 Vec3 uniform_hemisphere_sample(const Sample2D& sample, scalar& p)
 {
   auto ret = uniform_hemisphere_sample(sample);
-  p = INV_2PI;
+  p = uniform_hemisphere_pdf(ret);
   return ret;
+}
+
+scalar uniform_hemisphere_pdf(const Vec3& UNUSED(v))
+{
+  return INV_2PI;
 }
 
 Vec3 uniform_sphere_sample(const Sample2D& sample)
@@ -171,6 +181,17 @@ Vec3 uniform_sphere_sample(const Sample2D& sample)
   scalar phi = acos(sample[1] * 2.0 - 1.0);
 
   return Vec3::from_euler(theta, phi);
+}
+
+Vec3 uniform_sphere_sample(const Sample2D& sample, scalar& p)
+{
+  auto v = uniform_sphere_sample(sample);
+  p = uniform_sphere_pdf(v);
+  return v;
+}
+scalar uniform_sphere_pdf(const Vec3& UNUSED(v))
+{
+  return INV_4PI;
 }
 
 Vec2 uniform_sample_disc(const Sample2D& sample)

@@ -143,12 +143,16 @@ T random_real(scalar a, scalar b)
 ////////////////////////////////////////////////////////////////////////////////
 
 Vec3 cosine_weighted_hemisphere_sample(const Sample2D& sample);
+scalar cosine_weighted_hemisphere_pdf(const Vec3& p);
 Vec3 cosine_weighted_hemisphere_sample(const Sample2D& sample, scalar& p);
 
 Vec3 uniform_hemisphere_sample(const Sample2D& sample);
+scalar uniform_hemisphere_pdf(const Vec3&);
 Vec3 uniform_hemisphere_sample(const Sample2D& sample, scalar& p);
 
 Vec3 uniform_sphere_sample(const Sample2D& sample);
+scalar uniform_sphere_pdf(const Vec3&);
+Vec3 uniform_sphere_sample(const Sample2D& sample, scalar& p);
 
 class Vec2;
 
