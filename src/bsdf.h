@@ -35,7 +35,7 @@ public:
 class Lambertian : public BRDF
 {
 public:
-  explicit Lambertian(scalar r_) : r(r_ / PI)
+  explicit Lambertian(scalar r_) : rpi(r_ / PI)
   {
   }
 
@@ -45,7 +45,7 @@ public:
 
   scalar pdf(const Vec3& incoming, const Vec3& outgoing) const override;
 
-  scalar r;
+  scalar rpi;
 };
 
 class OrenNayar : public BRDF

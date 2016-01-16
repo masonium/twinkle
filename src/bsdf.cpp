@@ -12,14 +12,14 @@ BSDFSample Lambertian::sample(const Vec3& UNUSED(incoming), Sampler& sampler) co
   scalar p;
   Vec3 wo = cosine_weighted_hemisphere_sample(sample, p);
 
-  return BSDFSample(wo, p, r);
+  return BSDFSample(wo, p, rpi);
 }
 
 scalar Lambertian::reflectance(const Vec3& UNUSED(incoming), const Vec3& outgoing) const
 {
   if (outgoing.z < 0)
     return 0.0f;
-  return r;
+  return rpi;
 }
 
 scalar Lambertian::pdf(const Vec3& UNUSED(incoming), const Vec3& outgoing) const
