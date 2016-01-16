@@ -15,6 +15,11 @@ public:
   virtual MNSample sample_micronormal(const Vec3& incoming, Sampler& sampler) const = 0;
 };
 
+// The GGX slope distribution is:
+// p(x_m, y_m) = 1/pi * 1/(a_x * a_y) * 1 / ( (x_m/a_x)^2 + (y_m/a_y)^2 + 1)
+//
+// where x_m = - H_x / H_z, y_m = -H_y / H_z
+
 class GGX : public MicrofacetDistribution
 {
 public:
@@ -34,6 +39,8 @@ public:
   // visible normal sampling
   scalar sample_marginal_x_slope(scalar angle, scalar u) const;
   scalar sample_conditional_y_slope(scalar x_slope, scalar u) const;
+
+  scalar pdf_micronormal_slopes(const Vec3& m) const;
 
   // pdfs
   scalar pdf_marginal_x_slope(const Vec3& scaled_incoming, const Vec3& scaled_m) const;

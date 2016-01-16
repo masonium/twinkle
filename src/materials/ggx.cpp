@@ -149,6 +149,13 @@ scalar GGX::cdf_conditional_y_slope(scalar y_slope, scalar x_slope) const
   return 0.5 + (a * y / (a2 + y*y) + atan(y_slope /a)) / M_PI;
 }
 
+scalar GGX::pdf_micronormal_slopes(const Vec3& m) const
+{
+  scalar mx = m.x / (_r * m.z);
+  scalar my = m.y / (_r * m.y);
+  return 1.0 / (M_PI * _r2 * square(mx*mx + my*my + 1));
+}
+
 scalar GGX::pdf_micronormal(const Vec3& incoming, const Vec3& m) const
 {
   const auto scale_incoming = Vec3{_r * incoming.x, _r * incoming.y, incoming.z}.normal();
@@ -158,7 +165,7 @@ scalar GGX::pdf_micronormal(const Vec3& incoming, const Vec3& m) const
   const auto rot_slopes = slopes.rotate(-angle);
   const auto scale_m = Vec3{-rot_slopes.x, -rot_slopes.y, 1.0}.normal();
 
-  return pdf_marginal_x_slope(scale_incoming, scale_m) * pdf_conditional_y_slope(scale_m) / (m.z*m.z*m.z);;
+  return std::abs(g1(incoming, m) * m.dot(scale_m) * pdf_micronormal_slopes(m) / incoming.z);
 }
 
 MNSample GGX::sample_micronormal(const Vec3& incoming, Sampler& sampler) const
