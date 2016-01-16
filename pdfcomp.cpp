@@ -135,6 +135,57 @@ scalar compute_rho_hd(const Material* mat, const Vec3& incoming, uint num_sample
   return (r / scalar(num_samples)).luminance();
 }
 
+// Given the cosine of the angle of incidence, return the cosine of the angle of
+// transmission.
+scalar fresnel_trans_cosdir(scalar cosi, scalar nr)
+{
+  scalar x = 1 - nr * nr * (1 - cosi * cosi);
+  return sqrt(std::max(0.0, x));
+}
+
+scalar fresnel_refl(scalar cosi, scalar nr)
+{
+  scalar cost = fresnel_trans_cosdir(cosi, nr);
+
+  scalar Rs = square( (nr * cosi - cost) / (nr * cosi + cost) );
+  scalar Rp = square( (nr * cost - cosi) / (nr * cost + cosi) );
+
+  return 0.5 * (Rs + Rp);
+}
+
+scalar fresnel_diffuse_reflectance_approx(scalar eta)
+{
+  static const scalar coefs_lt[6] = {0.919317, -3.4793, 6.75335, -7.80989, 4.98554, -1.36881};
+  static const scalar coefs_gt[6] = {-9.23372, 22.2272, -20.9292, 10.2291, -2.54396, 0.254913};
+
+  const scalar* coefs = eta < 1 ? coefs_lt : coefs_gt;
+
+  scalar sum = 0;
+  for (int i = 4; i >= 0; --i)
+  {
+    sum = sum * eta + coefs[i];
+  }
+  return sum;
+}
+
+scalar compute_fresnel_diffuse_reflectance(scalar eta)
+{
+  const int N = 20000;
+  UniformSampler s;
+  scalar sum = 0;
+  for (int i = 1; i <= N; ++i)
+  {
+    scalar theta = asin(i * 1.0 / N);
+    scalar cosi = cos(theta);
+
+    // get the fresnel reflection amount
+    scalar refl = fresnel_refl(cosi, eta);
+    sum += refl * cosi * sqrt(1-cosi*cosi) / (cosi);
+  }
+
+  return sum / N;
+}
+
 int main(int argc, char** args)
 {
   using namespace refraction_index;
@@ -143,6 +194,12 @@ int main(int argc, char** args)
   //auto mat = make_shared<MirrorMaterial>();
   auto base_mat = make_shared<RoughColorMaterial>(0.0, spectrum(0.0));
   vector<scalar> angles({0.0, 5.0, 10.0, 20.0, 30.0, 45.0, 60.0, 80.0, 85.0, 89.0});
+
+  for (float nr = 0.25; nr <= 4.0; nr += 0.01)
+  {
+    cout << nr << " " << compute_fresnel_diffuse_reflectance(nr) << ' '
+         << fresnel_diffuse_reflectance_approx(nr) * 0.5 <<  endl;
+  }
 
 //  compare_tld(GTR(0.1), 10000000);
   return 0;
