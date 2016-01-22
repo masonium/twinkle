@@ -152,24 +152,20 @@ scalar GGX::cdf_conditional_y_slope(scalar y_slope, scalar x_slope) const
 scalar GGX::pdf_micronormal_slopes(const Vec3& m) const
 {
   scalar mx = m.x / (_r * m.z);
-  scalar my = m.y / (_r * m.y);
+  scalar my = m.y / (_r * m.z);
   return 1.0 / (M_PI * _r2 * square(mx*mx + my*my + 1));
 }
 
 scalar GGX::pdf_micronormal(const Vec3& incoming, const Vec3& m) const
 {
-  const auto scale_incoming = Vec3{_r * incoming.x, _r * incoming.y, incoming.z}.normal();
-  scalar angle = atan2(scale_incoming.y, scale_incoming.x);
-
-  const auto slopes = Vec2{-m.x / (_r * m.z), -m.y / (_r * m.z)};
-  const auto rot_slopes = slopes.rotate(-angle);
-  const auto scale_m = Vec3{-rot_slopes.x, -rot_slopes.y, 1.0}.normal();
-
-  return std::abs(g1(incoming, m) * m.dot(scale_m) * pdf_micronormal_slopes(m) / incoming.z);
+  return std::abs(g1(incoming, m) * m.dot(incoming) * pdf_micronormal_slopes(m) / incoming.z);
 }
 
 MNSample GGX::sample_micronormal(const Vec3& incoming, Sampler& sampler) const
 {
+  if (incoming.z < 0.001)
+    return MNSample{Vec3::zero, 0};
+
   const auto scale_incoming = Vec3{incoming.x * _r, incoming.y * _r, incoming.z}.normal();
   scalar up_angle, tangent_plane_angle;
   scale_incoming.to_euler(tangent_plane_angle, up_angle);
@@ -183,5 +179,10 @@ MNSample GGX::sample_micronormal(const Vec3& incoming, Sampler& sampler) const
 
   auto m = Vec3(-slopes[0], -slopes[1], 1.0).normal();
 
-  return MNSample{m, pdf_micronormal(incoming, m)};
+  scalar p = pdf_micronormal(incoming, m);
+
+  if (p < BSDF_PDF_EPSILON)
+    return MNSample{Vec3::zero, 0};
+
+  return MNSample{m, p};
 }

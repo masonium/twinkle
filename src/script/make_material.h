@@ -13,6 +13,7 @@ namespace script
     int rough_dielectric(lua_State* L);
     int diffuse(lua_State* L);
     int mirror(lua_State* L);
+    int rough_mirror(lua_State* L);
     int emissive(lua_State* L);
   }
 }

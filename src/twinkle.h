@@ -6,14 +6,16 @@
 #ifdef USE_DOUBLES
 
 using scalar = double;
-const scalar EPSILON         = 0.0001;
-const scalar SHADOW_EPSILON  = 0.001;
+const scalar EPSILON         = 0.00001;
+const scalar SHADOW_EPSILON  = 0.0001;
+const scalar BSDF_PDF_EPSILON = 0.001;
 
 #else
 
 using scalar = float;
-const scalar EPSILON         = 0.00001;
-const scalar SHADOW_EPSILON  = EPSILON;
+const scalar EPSILON         = 0.0001;
+const scalar SHADOW_EPSILON  = 0.001;
+const scalar BSDF_PDF_EPSILON = 0.001;
 
 #endif
 

@@ -189,6 +189,9 @@ auto parse_args(int argc, char** args)
 int main(int argc, char** args)
 {
   auto opt = parse_args(argc, args);
+
+  cout << GGX(0.01).pdf_micronormal(Vec3::z_axis, Vec3::z_axis) << "\n";
+
   check_ggx_xy(opt.get("roughness").as<float>(),
                opt.get("x_slope").as<float>());
 

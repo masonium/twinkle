@@ -99,7 +99,10 @@ spectrum DebugIntegrator::trace_ray(const Scene& scene, const Ray& ray,
 
     auto ms = isect_opt.get().sample_bsdf(-ray.direction.normal(), sampler);
     if (opt.type == DI_SPECULAR)
-      return dir_to_spectrum(ms.direction.normal());
+      if (ms.prob > 0)
+        return dir_to_spectrum(ms.direction.normal());
+      else
+        return spectrum::zero;
     else // if (opt.type == DI_SPECULAR_P)
       return spectrum{ms.prob};
   }

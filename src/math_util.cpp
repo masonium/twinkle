@@ -117,7 +117,10 @@ Vec3 refraction_direction(const Vec3& incoming, const Vec3& normal, scalar nr)
 {
   scalar cosi = -incoming.dot(normal);
   scalar sin2t = nr*nr*(1 - cosi*cosi);
-  return (-incoming * nr - (nr * cosi + sqrt(1 - sin2t))*normal).normal();
+  scalar cos2t = 1 - sin2t;
+  if (cos2t < 0)
+    return Vec3::zero;
+  return (-incoming * nr - (nr * cosi + sqrt(cos2t))*normal).normal();
 }
 
 

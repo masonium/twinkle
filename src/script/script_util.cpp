@@ -194,6 +194,7 @@ namespace script
                                    {"rough_dielectric", material::rough_dielectric},
                                    {"diffuse", material::diffuse},
                                    {"mirror", material::mirror},
+                                   {"rough_mirror", material::rough_mirror},
                                    {"emissive", material::emissive},
                                    {NULL, NULL}};
     luaL_register(L, "material", material_package);

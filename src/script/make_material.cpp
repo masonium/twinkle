@@ -3,6 +3,7 @@
 #include "material.h"
 #include "textures.h"
 #include "materials/experimental.h"
+#include "materials/rough_mirror.h"
 #include "materials/rough_glass_material.h"
 #include "script/make_material.h"
 #include "script/script_util.h"
@@ -62,6 +63,15 @@ namespace script
       auto tex = lua_totexture(L, 1);
 
       return script_material(L, make_entity<SimpleSmoothPlastic>(tex, 0.0));
+    }
+
+    int rough_mirror(lua_State* L)
+    {
+      LUA_CHECK_NUM_ARGS(L, 1);
+      auto r = lua_tonumber(L, 1);
+      assert(r > 0);
+
+      return script_material(L, make_entity<RoughMirror>(r));
     }
 
     int diffuse(lua_State* L)
