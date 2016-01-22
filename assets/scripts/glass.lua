@@ -4,12 +4,18 @@ function scene()
    glass_plate = geom.translate(geom.rotate_aa(glass_plate, {1.0, 0.0, 0.0}, -math.pi/5.0), {0.0, 3.0, 3.0});
 
    --local m = material.rough_dielectric(0.01);
-   local m = material.dielectric();
+   local gm = material.dielectric();
 
    local cube = geom.box({0.0}, {0.4});
 
+   local mir_sph = geom.sphere({1.25, 0, 3.0}, 1.0);
+
+   local mm = material.dielectric();
+   --local mm = material.rough_dielectric(0.01);
+
    local shapes = {
-      shape(glass_plate, m),
+      shape(glass_plate, gm),
+      shape(mir_sph,mm),
       shape(geom.translate(cube, {2.5, 2.5, 0.0}), material.diffuse(texture.color({0.2, 0.2, 0.8}))),
       shape(geom.translate(cube, {0.0, 2.5, 0.0}), material.diffuse(texture.color({0.8, 0.2, 0.3}))),
       shape(geom.plane({0, 0, 1}, 0), material.diffuse(texture.grid({0.7,0.7,0.9}, {0.3}, 0.75, 0.05)))
