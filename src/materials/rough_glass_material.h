@@ -23,6 +23,8 @@ public:
   BSDFSample sample(const Vec3& incoming, Sampler& sampler) const override;
 
 private:
+  scalar reflectance(const Vec3& incoming, const Vec3& outgoing, scalar nr) const;
+
   GGX _ggx;
   scalar _roughness;
   scalar _nr;
