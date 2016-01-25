@@ -3,6 +3,8 @@
 #include <unordered_map>
 #include <iterator>
 #include <string>
+#include <sstream>
+#include <vector>
 
 using std::iterator_traits;
 using std::forward_iterator_tag;
@@ -56,6 +58,22 @@ inline void hash_combine(std::size_t& seed, const T& v)
 }
 
 std::string lowercase(const std::string&);
+
+template <typename Container>
+std::string join(const Container& vals, const std::string& con)
+{
+  std::ostringstream s;
+  bool c = false;
+  for (const auto& x: vals)
+  {
+    if (c)
+      s << con;
+    s << x;
+    c = true;
+  }
+  return s.str();
+}
+
 
 #ifdef __GNUC__
 #  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
