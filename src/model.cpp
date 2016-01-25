@@ -504,3 +504,29 @@ vertex_ref parse_obj_vertex_ref(string token) {
   ref.n = std::stoi(token.substr(tpos+1)) - 1;
   return ref;
 }
+
+void RawModel::save_to_obj(ostream& o) const
+{
+  for (const auto& v: verts_)
+    o << "v " << v.position.x << ' ' << v.position.y << ' ' << v.position.z << '\n';
+  o << '\n';
+  for (const auto& v: verts_)
+    o << "vn " << v.normal.x << ' ' << v.normal.y << ' ' << v.normal.z << '\n';
+  o << '\n';
+  if (has_tex_)
+  {
+    for (const auto& v: verts_)
+      o << "vp " << v.uv.u << ' ' << v.uv.v << '\n';
+    o << '\n';
+  }
+  for (const auto& tri: tris_)
+  {
+    o << "f " << tri.v[0] + 1 << ' ' << tri.v[1] + 1 << ' ' << tri.v[2] + 1 << '\n';
+  }
+}
+
+ostream& operator <<(ostream& out, const Triangle& tri)
+{
+  out << tri.v[0] << ' '  << tri.v[1] << ' '  << tri.v[2];
+  return out;
+}

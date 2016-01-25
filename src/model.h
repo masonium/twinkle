@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 #include "geometry.h"
 #include "vec3.h"
 #include "vec2.h"
@@ -10,6 +11,7 @@
 
 using std::string;
 using std::vector;
+using std::ostream;
 
 namespace RawModelLoad
 {
@@ -29,6 +31,9 @@ struct Vertex
 
 struct Triangle
 {
+  Triangle() { }
+  Triangle(uint a, uint b, uint c) : v{a, b, c} {}
+
   uint v[3];
 };
 
@@ -70,6 +75,11 @@ public:
    * Load .stl files.
    */
   RawModelLoadStatus load_from_stl(string filename);
+
+  /*
+   * Save the model in .obj format
+   */
+  void save_to_obj(ostream& o) const;
 
   RawModel merge_vertices(scalar eps = EPSILON) const;
 
@@ -116,3 +126,6 @@ private:
                                      const vector<RawModelLoad::vertex_ref>& vertex_ref_list,
                                      const vector<RawModelLoad::tri_ref>& tri_list);
 };
+
+
+ostream& operator <<(ostream& out, const Triangle& tri);
