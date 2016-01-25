@@ -56,6 +56,12 @@ scalar p3_interp(scalar x)
 {
   return x * x * (-2 + x + 3);
 }
+
+Vec3 lerp(const Vec3& a, const Vec3& b, const Vec3& t)
+{
+  return Vec3{lerp(a.x, b.x, t.x), lerp(a.y, b.y, t.y), lerp(a.z, b.z, t.z)};
+}
+
 scalar unitize(scalar x)
 {
   return x * 0.5 + 0.5;

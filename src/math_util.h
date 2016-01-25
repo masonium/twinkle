@@ -75,6 +75,8 @@ T lerp(const T& a, const T& b, scalar x)
   return a + (b-a) * x;
 }
 
+Vec3 lerp(const Vec3& a, const Vec3& b, const Vec3& x);
+
 Vec2 to_euler_uv(const Vec3& dir);
 Vec3 from_euler_uv(const Vec2& dir);
 
